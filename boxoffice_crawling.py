@@ -64,9 +64,9 @@ def base_boxoffice():
 
         # 해당 일의 1~10위 박스오피스 순위
         boxoffice_list = data.get("boxOfficeResult").get("dailyBoxOfficeList")  # [0]
-        # print(datetime.today())
-        # print("==========================")
-        # # pprint.pprint(boxoffice_list)
+        print(datetime.today())
+        print("==========================")
+        # pprint.pprint(boxoffice_list)
 
         for j in range(10):
             now_movie = boxoffice_list[j]
@@ -74,7 +74,7 @@ def base_boxoffice():
             rank = now_movie.get("rank")
 
             Ranking.objects.create(title=title, rank=rank, crawling_date=crawling_date)
-        # print("============= fin =============")
+        print("============= fin =============")
 
 
 # base_boxoffice()
@@ -92,7 +92,7 @@ yesterday = datetime.today() - timedelta(days=1)
 
 def boxoffice_rank():
     # 일주일치 데이터만 보관예정 : 일주일이 지난 데이터는 삭제
-    delete_date = (yesterday - timedelta(days=8)).strftime("%Y-%m-%d")
+    delete_date = (yesterday - timedelta(days=7)).strftime("%Y-%m-%d")
     old_data = Ranking.objects.filter(crawling_date=delete_date)
     old_data.delete()
 
@@ -119,7 +119,7 @@ def boxoffice_rank():
         Ranking.objects.create(title=title, rank=rank, crawling_date=crawling_date)
 
 
-boxoffice_rank()
+# boxoffice_rank()
 
 # # step3.실행 주기 설정
 # schedule.every().day.at("12:00:00").do(boxoffice_rank)  # 매일 오후 12시에 실행
