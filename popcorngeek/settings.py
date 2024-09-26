@@ -11,16 +11,15 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import environ
 import os
-from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Set the project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 env = environ.Env(
-    # 기본값을 설정하거나 강제할 수 있습니다.
     DEBUG=(bool, False)
 )
 
+# Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
@@ -95,6 +94,8 @@ DATABASES = {
     }
 }
 
+# API 키 설정
+KMDB_API_KEY = env("KMDB_API_KEY")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
