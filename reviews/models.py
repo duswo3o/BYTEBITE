@@ -16,3 +16,22 @@ class Reviews(models.Model):
 
     def __str__(self):
         return self.content[:20]
+
+
+class Comments(models.Model):
+    review = models.ForeignKey(
+        "Reviews", on_delete=models.CASCADE, related_name="comments"
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return self.content[:20]
