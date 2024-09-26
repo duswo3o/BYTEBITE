@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 
 # Create your models here.
-# Helper Class : 모델을 관리하는 클래스로 user 생성과 superuser를 생성할 때의 행위를 지정
+# Helper Class : 모델을 관리하는 클래스로 user 생성과 superuer를 생성할 때의 행위를 지정
 class UserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         if not email:
