@@ -18,12 +18,26 @@ class MovieListApiView(APIView):
 
 
 class MovieAPIView(APIView):
-    API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
-
+    def get_object(self, pk):
+        return get_object_or_404(Movie, pk=pk)
+    
     def get(self, request, movie_pk):
-        movie = get_object_or_404(Movie, pk=movie_pk)
+        movie = self.get_object(movie_pk)
         serializer = MovieSerializer(movie)
         return Response(serializer.data)
+
+    def post(self, request, movie_pk):
+        movie = self.get_object(movie_pk)
+
+
+class MovieDataBaseAPIView(APIView):
+    """데이터베이스 최신화 요청 클래스
+
+    현재 버전에서는 테스트용 데이터가 필요하기 때문에 개발자가 원하는 시점에
+    요청을 보내서 DB를 업데이트 할 수 있도록 함.
+    추후에는 삭제 또는 수정될 예정입니다.
+    """
+    API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
 
     def post(self, request):
         start_count = 0
@@ -56,7 +70,7 @@ class MovieAPIView(APIView):
                 return Response(
                     {"error": "API에 접속에 실패했습니다."},
                     status=status.HTTP_400_BAD_REQUEST
-                                )
+                    )
 
         save_to_database(total_data)
         return Response(
