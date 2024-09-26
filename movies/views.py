@@ -1,23 +1,30 @@
 import requests
 import time
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Movie
+from .serializers import MovieSerializer
 
 
 class MovieAPIView(APIView):
     API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
 
-    def get(self, request):
+    def get(self, request, movie_pk):
+        movie = get_object_or_404(Movie, pk=movie_pk)
+        serializer = MovieSerializer(movie)
+        return Response(serializer.data)
+
+    def post(self, request):
         start_count = 0
         total_data = []
 
         while True:
             params = {
                 "ServiceKey": settings.KMDB_API_KEY,
-                "listCount": 1000,
+                "listCount": 101,
                 "startCount": start_count,
                 "detail": "N",
             }
@@ -52,18 +59,20 @@ class MovieAPIView(APIView):
 
 def save_to_database(total_data):
     for item in total_data:
-        movie_cd = item['movieSeq']
-        title = item['title']
+        movie_cd = item["movieSeq"]
+        title = item["title"]
         # genre = item['genre']
-        runtime = item['runtime'] if item['runtime'] else None
-        plot = item['plots']['plot'][0]['plotText']
+        runtime = item["runtime"] if item["runtime"] else None
+        rating = item["rating"] if item["rating"] else None
+        plot = item["plots"]["plot"][0]["plotText"]
 
         movie, created = Movie.objects.update_or_create(
             movie_cd=movie_cd,
             defaults={
-                'title': title,
+                "title": title,
                 # 'genre': genre,
-                'runtime': runtime,
-                'plot': plot
+                "runtime": runtime,
+                "grade": rating,
+                "plot": plot,
                 }
             )
