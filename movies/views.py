@@ -5,8 +5,16 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Movie
-from .serializers import MovieSerializer
+from .models import Movie, Ranking
+from .serializers import BoxofficeSerializer, MovieSerializer
+
+
+class MovieListApiView(APIView):
+    def get(self, request):
+        today_movie = Ranking.objects.last().crawling_date
+        movies = Ranking.objects.filter(crawling_date=today_movie)
+        serializer = BoxofficeSerializer(movies, many=True)
+        return Response(serializer.data)
 
 
 class MovieAPIView(APIView):
