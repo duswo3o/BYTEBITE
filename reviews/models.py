@@ -3,7 +3,6 @@ from django.conf import settings
 
 
 class Reviews(models.Model):
-    title = models.CharField(max_length=100)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -12,4 +11,4 @@ class Reviews(models.Model):
     )
 
     def __str__(self):
-        return self.title
+        return self.content[:20]
