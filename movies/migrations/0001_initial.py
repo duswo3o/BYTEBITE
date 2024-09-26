@@ -27,4 +27,23 @@ class Migration(migrations.Migration):
                 ("crawling_date", models.DateField()),
             ],
         ),
+        migrations.CreateModel(
+            name="Movie",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("movie_cd", models.IntegerField(unique=True)),
+                ("title", models.CharField(max_length=50)),
+                ("runtime", models.IntegerField(blank=True)),
+                ("grade", models.CharField(blank=True, max_length=50)),
+                ("plot", models.TextField(blank=True)),
+            ],
+        ),
     ]
