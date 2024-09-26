@@ -32,7 +32,7 @@ class MovieAPIView(APIView):
         while True:
             params = {
                 "ServiceKey": settings.KMDB_API_KEY,
-                "listCount": 101,
+                "listCount": 100,
                 "startCount": start_count,
                 "detail": "N",
             }
