@@ -13,6 +13,16 @@ class Ranking(models.Model):
         return self.title
 
 
+class Staff(models.Model):
+    name_cd = models.IntegerField(unique=True)
+    name = models.CharField(max_length=50)
+    # filmography = 추가예정
+    role = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+
 class Tag(models.Model):
     name = models.CharField(max_length=30, unique=True)
 
@@ -29,7 +39,7 @@ class Genre(models.Model):
 
 class Movie(models.Model):
     movie_cd = models.IntegerField(unique=True)
-    title = models.CharField(max_length=50)
+    title = models.CharField(max_length=255)
     genre = models.ManyToManyField(
         Genre,
         related_name="movies",
@@ -53,6 +63,7 @@ class Movie(models.Model):
         related_name="disliked_movies",
         blank=True,
     )
+    # staffs = 
     tags = models.ManyToManyField(
         Tag,
         related_name="movies",
