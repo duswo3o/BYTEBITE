@@ -1,30 +1,46 @@
+# 서드파티 라이브러리
 from rest_framework import viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+# Django 기능 및 프로젝트 관련
 from .models import Review, Comment
 from .serializers import ReviewSerializer, CommentSerializer
-from rest_framework.permissions import AllowAny
+from .permissions import IsAuthorOrReadOnly
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
-    def perform_create(self, serializer):
-        # serializer.save(author=self.request.user)
-        if self.request.user.is_anonymous:
-            serializer.save(author=None)
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            permission_classes = [AllowAny]
+        elif self.action in ["create"]:
+            permission_classes = [IsAuthenticated]
         else:
-            serializer.save(author=self.request.user)
+            permission_classes = [IsAuthorOrReadOnly]
+        return [permission() for permission in permission_classes]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            permission_classes = [AllowAny]
+        elif self.action == "create":
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsAuthorOrReadOnly]
+        return [permission() for permission in permission_classes]
+
     def perform_create(self, serializer):
         review_id = self.kwargs.get("review_pk")
-        serializer.save(review_id=review_id, author=None)
+        serializer.save(review_id=review_id, author=self.request.user)
 
     def get_queryset(self):
         review_id = self.kwargs.get("review_pk")
