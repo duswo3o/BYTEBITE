@@ -1,10 +1,18 @@
-import requests
+# 표준 라이브러리
 import time
+
+# 서드파티 라이브러리
+import requests
+from rest_framework import status
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+# Django 기능 및 프로젝트 관련
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from django.utils.decorators import method_decorator
 from .models import Movie, Ranking
 from .serializers import BoxofficeSerializer, MovieSerializer
 
@@ -18,12 +26,64 @@ class MovieListApiView(APIView):
 
 
 class MovieAPIView(APIView):
-    API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
+    def get_object(self, pk):
+        return get_object_or_404(Movie, pk=pk)
 
+    # 영화 상세페이지 조회
     def get(self, request, movie_pk):
-        movie = get_object_or_404(Movie, pk=movie_pk)
+        movie = self.get_object(movie_pk)
         serializer = MovieSerializer(movie)
         return Response(serializer.data)
+
+    # 영화 보고싶어요, 관심없어요.
+    @method_decorator(permission_classes([IsAuthenticated]))
+    def post(self, request, movie_pk):
+        movie = self.get_object(movie_pk)
+
+        # 보고싶어요
+        if request.data.get("like") == "like":
+            movie.dislike_users.remove(request.user)
+
+            if movie.like_users.filter(pk=request.user.pk).exists():
+                movie.like_users.remove(request.user)
+                return Response(
+                    {"detail": "보고싶어요를 해제합니다."},
+                    status=status.HTTP_200_OK
+                    )
+            else:
+                movie.like_users.add(request.user)
+                movie.save()
+                return Response(
+                    {"detail": "이 영화가 보고싶어요."},
+                    status=status.HTTP_200_OK
+                    )
+        # 관심없어요
+        else:
+            movie.like_users.remove(request.user)
+
+            if movie.dislike_users.filter(pk=request.user.pk).exists():
+                movie.dislike_users.remove(request.user)
+                return Response(
+                    {"detail": "관심없어요를 해제합니다."},
+                    status=status.HTTP_200_OK
+                    )
+            else:
+                movie.dislike_users.add(request.user)
+                movie.save()
+                return Response(
+                    {"detail": "이 영화가 관심없어요."},
+                    status=status.HTTP_200_OK
+                    )
+
+
+class MovieDataBaseAPIView(APIView):
+    """데이터베이스 최신화 요청 클래스
+
+    현재 버전에서는 테스트용 데이터가 필요하기 때문에 개발자가 원하는 시점에
+    요청을 보내서 DB를 업데이트 할 수 있도록 함.
+    추후에는 삭제 또는 수정할 예정입니다.
+    """
+    API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
 
     def post(self, request):
         start_count = 0
@@ -32,7 +92,7 @@ class MovieAPIView(APIView):
         while True:
             params = {
                 "ServiceKey": settings.KMDB_API_KEY,
-                "listCount": 101,
+                "listCount": 100,
                 "startCount": start_count,
                 "detail": "N",
             }
@@ -56,7 +116,7 @@ class MovieAPIView(APIView):
                 return Response(
                     {"error": "API에 접속에 실패했습니다."},
                     status=status.HTTP_400_BAD_REQUEST
-                                )
+                    )
 
         save_to_database(total_data)
         return Response(
