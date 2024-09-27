@@ -1,6 +1,6 @@
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
-from rest_framework.generics import UpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -103,3 +103,30 @@ class UserChangePasswordAPIView(APIView):
                 {"password": "패스워드가 변경되었습니다."}, status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserFollowAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_pk):
+        user = get_object_or_404(User, pk=user_pk)
+        me = request.user
+
+        if me == user:
+            return Response(
+                {"message": "나를 팔로우 할 수 없습니다"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if me in user.followers.all():
+            user.followers.remove(me)
+            return Response(
+                {"message": f"{user.nickname}을/를 언팔로우 하였습니다"},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            user.followers.add(me)
+            return Response(
+                {"message": f"{user.nickname}을/를 팔로우 하였습니다"},
+                status=status.HTTP_200_OK,
+            )
