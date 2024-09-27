@@ -158,44 +158,48 @@ def save_to_database(total_data):
         actors = item["actors"]["actor"]
 
         # 스태프 로직(추후에 함수화)
-        staffs = []
-
-        for director in directors:
-            staffs.append(
-                {"name_cd": director["directorId"],
-                 "name": director["directorNm"],
-                 "role": "director"}
-                )
-
-        for actor in actors:
-            staffs.append(
-                {"name_cd": actor["actorId"],
-                 "name": actor["actorNm"],
-                 "role": "actor"}
-                )
-
-        for staff in staffs:
-            name_cd = staff.get('name_cd')
-            name_cd = int(name_cd) if name_cd else None
-
-            name = staff.get('name')
-            role = staff.get('role')
-
-            try:
-                if name_cd is not None:
-                    staff, created = Staff.objects.get_or_create(
-                        name_cd=name_cd,
-                        defaults={"name": name, "role": role}
-                        )
-                else:
-                    staff, created = Staff.objects.get_or_create(
-                        name=name,
-                        role=role
-                        )
-
-                movie.staffs.add(staff)
-
-            except IntegrityError:
-                pass
+        create_staff(movie, directors, actors)
 
         movie.save()
+
+
+def create_staff(movie, directors, actors):
+    staffs = []
+
+    for director in directors:
+        staffs.append(
+            {"name_cd": director["directorId"],
+                "name": director["directorNm"],
+                "role": "director"}
+            )
+
+    for actor in actors:
+        staffs.append(
+            {"name_cd": actor["actorId"],
+                "name": actor["actorNm"],
+                "role": "actor"}
+            )
+
+    for staff in staffs:
+        name_cd = staff.get('name_cd')
+        name_cd = int(name_cd) if name_cd else None
+
+        name = staff.get('name')
+        role = staff.get('role')
+
+        try:
+            if name_cd is not None:
+                staff, created = Staff.objects.get_or_create(
+                    name_cd=name_cd,
+                    defaults={"name": name, "role": role}
+                    )
+            else:
+                staff, created = Staff.objects.get_or_create(
+                    name=name,
+                    role=role
+                    )
+
+            movie.staffs.add(staff)
+
+        except IntegrityError:
+            pass
