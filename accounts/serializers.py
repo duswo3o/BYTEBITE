@@ -104,3 +104,28 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data["new_password"])
         instance.save()
         return instance
+
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "nickname",
+            "gender",
+            "age",
+            "bio",
+        ]
+
+    def validate_nickname(self, value):
+        # print("222222222222222222")
+        if User.objects.filter(nickname=value):
+            raise serializers.ValidationError({"error": "이미 사용중인 닉네임 입니다."})
+        return value
+
+    def validate_age(self, value):
+        # print("33333333333333333333")
+        if value < 0:
+            raise serializers.ValidationError(
+                {"error": "나이는 0세 이상 입력 가능합니다."}
+            )
+        return value
