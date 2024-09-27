@@ -1,21 +1,29 @@
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 
 from .serializers import UserCreateSerializer
 
 
 # Create your views here
-class UserCreateAPIView(CreateAPIView):
-    queryset = None
-    serializer_class = UserCreateSerializer
-
-
 class UserAPIView(APIView):
+    def post(self, request):
+        if request.user.is_authenticated:
+            return Response(
+                {"message": "현재 로그인된 상태입니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = UserCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors)
+
+    @permission_classes([IsAuthenticated])
     def delete(self, request):
         password = request.data.get("password")
 
