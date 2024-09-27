@@ -41,7 +41,7 @@ class MovieAPIView(APIView):
         movie = self.get_object(movie_pk)
 
         # 보고싶어요
-        if request.data.get("evaluate") == "like":
+        if request.data.get("like") == "like":
             movie.dislike_users.remove(request.user)
 
             if movie.like_users.filter(pk=request.user.pk).exists():
