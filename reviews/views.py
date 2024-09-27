@@ -1,13 +1,13 @@
 from rest_framework import viewsets
-from .models import Reviews, Comments
-from .serializers import ReviewsSerializer, CommentSerializer
+from .models import Review, Comment
+from .serializers import ReviewSerializer, CommentSerializer
 from rest_framework.permissions import AllowAny
 
 
-class ReviewsViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
-    queryset = Reviews.objects.all()
-    serializer_class = ReviewsSerializer
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
         # serializer.save(author=self.request.user)
@@ -17,9 +17,9 @@ class ReviewsViewSet(viewsets.ModelViewSet):
             serializer.save(author=self.request.user)
 
 
-class CommentsViewSet(viewsets.ModelViewSet):
+class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
-    queryset = Comments.objects.all()
+    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
     def perform_create(self, serializer):

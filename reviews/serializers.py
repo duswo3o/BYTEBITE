@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import Reviews, Comments
+from .models import Review, Comment
 
 
-class ReviewsSerializer(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source="author.username")
 
     class Meta:
-        model = Reviews
+        model = Review
         fields = "__all__"
 
 
@@ -15,5 +15,5 @@ class CommentSerializer(serializers.ModelSerializer):
     review = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
-        model = Comments
+        model = Comment
         fields = ["id", "review", "content", "author", "created_at", "updated_at"]

@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 
 
-class Reviews(models.Model):
+class Review(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -18,9 +18,9 @@ class Reviews(models.Model):
         return self.content[:20]
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     review = models.ForeignKey(
-        "Reviews", on_delete=models.CASCADE, related_name="comments"
+        "Review", on_delete=models.CASCADE, related_name="comments"
     )
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
