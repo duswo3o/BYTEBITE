@@ -77,6 +77,20 @@ class MovieAPIView(APIView):
                     )
 
 
+# 평점
+class MovieScoreAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, movie_pk):
+        movie = get_object_or_404(Movie, pk=movie_pk)
+        score = request.data.get('evaluate')
+
+        movie.recommendation.remove(request.user)
+
+        # if score != 0:
+        #     movie.rating
+
+
 class MovieDataBaseAPIView(APIView):
     """데이터베이스 최신화 요청 클래스
 

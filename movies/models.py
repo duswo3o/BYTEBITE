@@ -44,7 +44,7 @@ class Movie(models.Model):
         related_name="movies",
         blank=True,
     )
-    avg_rating = models.ManyToManyField(
+    rating = models.ManyToManyField(
         User,
         related_name="evaluated_movies",
         blank=True,
