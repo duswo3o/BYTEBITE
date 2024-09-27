@@ -86,7 +86,7 @@ class MovieDataBaseAPIView(APIView):
     API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
 
     def post(self, request):
-        start_count = 0
+        start_count = 200
         total_data = []
 
         while True:
@@ -126,6 +126,8 @@ class MovieDataBaseAPIView(APIView):
 
 
 def save_to_database(total_data):
+    staffs = []
+
     for item in total_data:
         movie_cd = item["movieSeq"]
         title = item["title"]
@@ -133,8 +135,22 @@ def save_to_database(total_data):
         rating = item["rating"] if item["rating"] else None
         plot = item["plots"]["plot"][0]["plotText"]
 
-        genres = item['genre'].split(',')
+        genres = item["genre"].split(",")
         genre_objects = []
+
+        for director in item["directors"]["director"]:
+            staffs.append(
+                {"name_cd": director["directorId"],
+                 "name": director["directorNm"],
+                 "role": "director"}
+                )
+
+        for actor in item["actors"]["actor"]:
+            staffs.append(
+                {"name_cd": actor["actorId"],
+                 "name": actor["actorNm"],
+                 "role": "actor"}
+                )
 
         for genre_name in genres:
             genre_name = genre_name.strip()
