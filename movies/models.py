@@ -44,11 +44,6 @@ class Movie(models.Model):
         related_name="movies",
         blank=True,
     )
-    rating = models.ManyToManyField(
-        User,
-        related_name="evaluated_movies",
-        blank=True,
-    )
     runtime = models.IntegerField(null=True, blank=True)
     grade = models.CharField(null=True, blank=True, max_length=50)
     plot = models.TextField(blank=True)
@@ -75,3 +70,23 @@ class Movie(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Rating(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="ratings"
+        )
+    movie = models.ForeignKey(
+        Movie,
+        on_delete=models.CASCADE,
+        related_name="ratings"
+        )
+    score = models.FloatField()
+
+    class Meta:
+        unique_together = ('user', 'movie')
+
+    def __str__(self):
+        return f"{self.user} rated {self.movie} as {self.score}"
