@@ -1,7 +1,10 @@
+# 서드파티 라이브러리
 from rest_framework import viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+# Django 기능 및 프로젝트 관련
 from .models import Review, Comment
 from .serializers import ReviewSerializer, CommentSerializer
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from .permissions import IsAuthorOrReadOnly
 
 
