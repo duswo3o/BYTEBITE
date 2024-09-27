@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from .models import Movie, Ranking
+from .models import Genre, Movie, Ranking
 from .serializers import BoxofficeSerializer, MovieSerializer
 
 
@@ -129,18 +129,27 @@ def save_to_database(total_data):
     for item in total_data:
         movie_cd = item["movieSeq"]
         title = item["title"]
-        # genre = item['genre']
         runtime = item["runtime"] if item["runtime"] else None
         rating = item["rating"] if item["rating"] else None
         plot = item["plots"]["plot"][0]["plotText"]
+
+        genres = item['genre'].split(',')
+        genre_objects = []
+
+        for genre_name in genres:
+            genre_name = genre_name.strip()
+            genre, created = Genre.objects.get_or_create(name=genre_name)
+            genre_objects.append(genre)
 
         movie, created = Movie.objects.update_or_create(
             movie_cd=movie_cd,
             defaults={
                 "title": title,
-                # 'genre': genre,
                 "runtime": runtime,
                 "grade": rating,
                 "plot": plot,
                 }
             )
+
+        movie.genre.set(genre_objects)
+        movie.save()
