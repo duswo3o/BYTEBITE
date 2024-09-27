@@ -23,13 +23,21 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            permission_classes = [AllowAny]
+        elif self.action == "create":
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsAuthorOrReadOnly]
+        return [permission() for permission in permission_classes]
+
     def perform_create(self, serializer):
         review_id = self.kwargs.get("review_pk")
-        serializer.save(review_id=review_id, author=None)
+        serializer.save(review_id=review_id, author=self.request.user)
 
     def get_queryset(self):
         review_id = self.kwargs.get("review_pk")
