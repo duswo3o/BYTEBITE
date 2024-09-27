@@ -20,14 +20,39 @@ class MovieListApiView(APIView):
 class MovieAPIView(APIView):
     def get_object(self, pk):
         return get_object_or_404(Movie, pk=pk)
-    
+
+    # 영화 상세페이지 조회
     def get(self, request, movie_pk):
         movie = self.get_object(movie_pk)
         serializer = MovieSerializer(movie)
         return Response(serializer.data)
 
+    # 영화 보고싶어요, 관심없어요.
     def post(self, request, movie_pk):
         movie = self.get_object(movie_pk)
+        
+        # 추천
+        if request.data.get('evaluate') == 'recommendation':
+            movie.non_recommendation.remove(request.user)
+
+            if movie.recommendation.filter(pk=request.user.pk).exists():
+                movie.recommendation.remove(request.user)
+                return Response({"detail": "추천이 취소되었습니다."}, status=status.HTTP_200_OK)
+            else:
+                movie.recommendation.add(request.user)
+                movie.save()
+                return Response({"detail": "이 기사를 추천합니다."}, status=status.HTTP_200_OK)
+        # 비추천
+        else:
+            movie.recommendation.remove(request.user)
+
+            if movie.non_recommendation.filter(pk=request.user.pk).exists():
+                movie.non_recommendation.remove(request.user)
+                return Response({"detail": "비추천이 취소되었습니다."}, status=status.HTTP_200_OK)
+            else:
+                movie.non_recommendation.add(request.user)
+                movie.save()
+                return Response({"detail": "이 기사를 비추천합니다."}, status=status.HTTP_200_OK)
 
 
 class MovieDataBaseAPIView(APIView):

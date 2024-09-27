@@ -29,7 +29,12 @@ class Movie(models.Model):
     plot = models.TextField(blank=True)
     like_users = models.ManyToManyField(
         get_user_model(),
-        related_name="movies",
+        related_name="liked_movies",
+        blank=True,
+    )
+    dislike_users = models.ManyToManyField(
+        get_user_model(),
+        related_name="disliked_movies",
         blank=True,
     )
     tags = models.ManyToManyField(
