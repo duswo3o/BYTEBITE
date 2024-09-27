@@ -14,7 +14,7 @@ from django.conf import settings
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from .models import Genre, Movie, Ranking, Staff
+from .models import Genre, Movie, Ranking, Rating, Staff
 from .serializers import BoxofficeSerializer, MovieSerializer
 
 
@@ -75,6 +75,31 @@ class MovieAPIView(APIView):
                     {"detail": "이 영화가 관심없어요."},
                     status=status.HTTP_200_OK
                     )
+
+
+# 평점
+class MovieScoreAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, movie_pk):
+        movie = get_object_or_404(Movie, pk=movie_pk)
+        score = request.data.get('evaluate')
+
+        Rating.objects.filter(user=request.user, movie=movie).delete()
+
+        if score == 0 or score > 5:
+            return Response(
+                {"detail": "이 영화의 평가를 취소합니다."},
+                status=status.HTTP_200_OK
+                )
+        else:
+            score = int(score * 10) / 10
+            Rating.objects.create(user=request.user, movie=movie, score=score)
+
+            return Response(
+                {"detail": f"이 영화의 점수를 {score}로 평가합니다."},
+                status=status.HTTP_200_OK
+                )
 
 
 class MovieDataBaseAPIView(APIView):
