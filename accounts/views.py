@@ -15,6 +15,23 @@ class UserCreateAPIView(CreateAPIView):
     serializer_class = UserCreateSerializer
 
 
+class UserAPIView(APIView):
+    def delete(self, request):
+        password = request.data.get("password")
+
+        if not request.user.check_password(password):
+            return Response(
+                {"password": "패스워드가 일치하지 않습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        request.user.is_active = False
+        request.user.save()
+        return Response(
+            {"message": "회원정보가 비활성화 되었습니다."}, status=status.HTTP_200_OK
+        )
+
+
 class UserSigninAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
