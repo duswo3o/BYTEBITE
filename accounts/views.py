@@ -1,12 +1,14 @@
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
+from rest_framework.generics import UpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 
-from .serializers import UserCreateSerializer
+from .serializers import UserCreateSerializer, ChangePasswordSerializer
+from .models import User
 
 
 # Create your views here
@@ -87,3 +89,17 @@ class UserSignoutAPIView(APIView):
             )
 
         return Response({"message": "로그아웃 되었습니다"}, status=status.HTTP_200_OK)
+
+
+class UserChangePasswordAPIView(APIView):
+    def put(self, request):
+        user = User.objects.get(pk=request.user.pk)
+        serializer = ChangePasswordSerializer(
+            instance=user, data=request.data, context=user
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"password": "패스워드가 변경되었습니다."}, status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
