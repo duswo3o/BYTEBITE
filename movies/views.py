@@ -11,9 +11,10 @@ from rest_framework.views import APIView
 
 # Django 기능 및 프로젝트 관련
 from django.conf import settings
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from .models import Genre, Movie, Ranking
+from .models import Genre, Movie, Ranking, Staff
 from .serializers import BoxofficeSerializer, MovieSerializer
 
 
@@ -133,7 +134,7 @@ def save_to_database(total_data):
         rating = item["rating"] if item["rating"] else None
         plot = item["plots"]["plot"][0]["plotText"]
 
-        genres = item['genre'].split(',')
+        genres = item["genre"].split(",")
         genre_objects = []
 
         for genre_name in genres:
@@ -152,4 +153,53 @@ def save_to_database(total_data):
             )
 
         movie.genre.set(genre_objects)
+
+        directors = item["directors"]["director"]
+        actors = item["actors"]["actor"]
+
+        # 스태프 로직(추후에 함수화)
+        create_staff(movie, directors, actors)
+
         movie.save()
+
+
+def create_staff(movie, directors, actors):
+    staffs = []
+
+    for director in directors:
+        staffs.append(
+            {"name_cd": director["directorId"],
+                "name": director["directorNm"],
+                "role": "director"}
+            )
+
+    for actor in actors:
+        staffs.append(
+            {"name_cd": actor["actorId"],
+                "name": actor["actorNm"],
+                "role": "actor"}
+            )
+
+    for staff in staffs:
+        name_cd = staff.get("name_cd")
+        name_cd = int(name_cd) if name_cd else None
+
+        name = staff.get("name")
+        role = staff.get("role")
+
+        try:
+            if name_cd is not None:
+                staff, created = Staff.objects.get_or_create(
+                    name_cd=name_cd,
+                    defaults={"name": name, "role": role}
+                    )
+            else:
+                staff, created = Staff.objects.get_or_create(
+                    name=name,
+                    role=role
+                    )
+
+            movie.staffs.add(staff)
+
+        except IntegrityError:
+            pass
