@@ -69,8 +69,6 @@ class UserSigninAPIView(APIView):
             user[0].save()
             message = "계정이 활성화되었습니다."
 
-        print(user[0].is_active)
-
         user = authenticate(email=email, password=password)
 
         if not user:
