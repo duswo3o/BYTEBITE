@@ -25,6 +25,15 @@ class UserAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        email = request.data.get("email")
+        user = User.objects.filter(email=email)
+        if user and user[0].is_active == False:
+            return Response(
+                {
+                    "message": "계정이 비활성화 상태입니다. 로그인해서 계정을 활성화 할 수 있습니다."
+                }
+            )
+
         serializer = UserCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -53,6 +62,15 @@ class UserSigninAPIView(APIView):
         email = request.data.get("email")
         password = request.data.get("password")
 
+        user = User.objects.filter(email=email)
+        message = False
+        if user and user[0].is_active == False:
+            user[0].is_active = True
+            user[0].save()
+            message = "계정이 활성화되었습니다."
+
+        print(user[0].is_active)
+
         user = authenticate(email=email, password=password)
 
         if not user:
@@ -62,11 +80,15 @@ class UserSigninAPIView(APIView):
             )
 
         refresh = RefreshToken.for_user(user)
+        data = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+        if message:
+            data["message"] = message
+
         return Response(
-            {
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-            },
+            data=data,
             status=status.HTTP_200_OK,
         )
 
