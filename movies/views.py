@@ -181,11 +181,11 @@ def create_staff(movie, directors, actors):
             )
 
     for staff in staffs:
-        name_cd = staff.get('name_cd')
+        name_cd = staff.get("name_cd")
         name_cd = int(name_cd) if name_cd else None
 
-        name = staff.get('name')
-        role = staff.get('role')
+        name = staff.get("name")
+        role = staff.get("role")
 
         try:
             if name_cd is not None:
