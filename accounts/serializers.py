@@ -4,6 +4,8 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 
 from .models import User
+from movies.models import Movie
+from reviews.models import Review
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -104,3 +106,48 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data["new_password"])
         instance.save()
         return instance
+
+
+class MovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ["title"]
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ["content"]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["nickname"]
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    liked_movies = MovieSerializer(many=True, read_only=True)
+    reviews = ReviewSerializer(many=True, read_only=True)
+    followings = UserSerializer(many=True)
+    followings_count = serializers.IntegerField(
+        source="followings.count", read_only=True
+    )
+    followers = UserSerializer(many=True)
+    followers_count = serializers.IntegerField(source="followers.count", read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "email",
+            "nickname",
+            "followings",
+            "followings_count",
+            "followers",
+            "followers_count",
+            "gender",
+            "age",
+            "bio",
+            "liked_movies",
+            "reviews",
+        ]

@@ -1,13 +1,18 @@
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 
-from .serializers import UserCreateSerializer, ChangePasswordSerializer
+from .serializers import (
+    UserCreateSerializer,
+    ChangePasswordSerializer,
+    UserProfileSerializer,
+)
 from .models import User
 
 
@@ -130,3 +135,8 @@ class UserFollowAPIView(APIView):
                 {"message": f"{user.nickname}을/를 팔로우 하였습니다"},
                 status=status.HTTP_200_OK,
             )
+
+
+class UserProfileAPIView(RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
