@@ -49,5 +49,9 @@ class User(AbstractUser):
     age = models.PositiveIntegerField(blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
 
+    followings = models.ManyToManyField(
+        to="self", related_name="followers", symmetrical=False
+    )
+
     def __str__(self):
         return self.nickname
