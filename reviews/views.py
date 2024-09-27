@@ -1,20 +1,25 @@
 from rest_framework import viewsets
 from .models import Review, Comment
 from .serializers import ReviewSerializer, CommentSerializer
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from .permissions import IsAuthorOrReadOnly
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
-    def perform_create(self, serializer):
-        # serializer.save(author=self.request.user)
-        if self.request.user.is_anonymous:
-            serializer.save(author=None)
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            permission_classes = [AllowAny]
+        elif self.action in ["create"]:
+            permission_classes = [IsAuthenticated]
         else:
-            serializer.save(author=self.request.user)
+            permission_classes = [IsAuthorOrReadOnly]
+        return [permission() for permission in permission_classes]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
