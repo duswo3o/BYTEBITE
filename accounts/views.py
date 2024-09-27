@@ -4,6 +4,7 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import UserCreateSerializer
 
@@ -35,3 +36,28 @@ class UserSigninAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class UserSignoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            return Response(
+                {"token": "refresh token이 필요합니다"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+        except:
+            return Response(
+                {"token": "유효하지 않은 token 입니다"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response({"message": "로그아웃 되었습니다"}, status=status.HTTP_200_OK)
