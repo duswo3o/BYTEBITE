@@ -11,9 +11,10 @@ from rest_framework.views import APIView
 
 # Django 기능 및 프로젝트 관련
 from django.conf import settings
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from .models import Genre, Movie, Ranking
+from .models import Genre, Movie, Ranking, Staff
 from .serializers import BoxofficeSerializer, MovieSerializer
 
 
@@ -86,7 +87,7 @@ class MovieDataBaseAPIView(APIView):
     API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
 
     def post(self, request):
-        start_count = 200
+        start_count = 0
         total_data = []
 
         while True:
@@ -126,8 +127,6 @@ class MovieDataBaseAPIView(APIView):
 
 
 def save_to_database(total_data):
-    staffs = []
-
     for item in total_data:
         movie_cd = item["movieSeq"]
         title = item["title"]
@@ -137,20 +136,6 @@ def save_to_database(total_data):
 
         genres = item["genre"].split(",")
         genre_objects = []
-
-        for director in item["directors"]["director"]:
-            staffs.append(
-                {"name_cd": director["directorId"],
-                 "name": director["directorNm"],
-                 "role": "director"}
-                )
-
-        for actor in item["actors"]["actor"]:
-            staffs.append(
-                {"name_cd": actor["actorId"],
-                 "name": actor["actorNm"],
-                 "role": "actor"}
-                )
 
         for genre_name in genres:
             genre_name = genre_name.strip()
@@ -168,4 +153,49 @@ def save_to_database(total_data):
             )
 
         movie.genre.set(genre_objects)
+
+        directors = item["directors"]["director"]
+        actors = item["actors"]["actor"]
+
+        # 스태프 로직(추후에 함수화)
+        staffs = []
+
+        for director in directors:
+            staffs.append(
+                {"name_cd": director["directorId"],
+                 "name": director["directorNm"],
+                 "role": "director"}
+                )
+
+        for actor in actors:
+            staffs.append(
+                {"name_cd": actor["actorId"],
+                 "name": actor["actorNm"],
+                 "role": "actor"}
+                )
+
+        for staff in staffs:
+            name_cd = staff.get('name_cd')
+            name_cd = int(name_cd) if name_cd else None
+
+            name = staff.get('name')
+            role = staff.get('role')
+
+            try:
+                if name_cd is not None:
+                    staff, created = Staff.objects.get_or_create(
+                        name_cd=name_cd,
+                        defaults={"name": name, "role": role}
+                        )
+                else:
+                    staff, created = Staff.objects.get_or_create(
+                        name=name,
+                        role=role
+                        )
+
+                movie.staffs.add(staff)
+
+            except IntegrityError:
+                pass
+
         movie.save()
