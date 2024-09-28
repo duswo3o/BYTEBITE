@@ -1,13 +1,22 @@
+from datetime import datetime, timedelta
+
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
+from rest_framework.decorators import api_view
 
-from .serializers import UserCreateSerializer, ChangePasswordSerializer
+from .serializers import (
+    UserCreateSerializer,
+    ChangePasswordSerializer,
+    UpdateProfileSerializer,
+    UserProfileSerializer,
+)
 from .models import User
 
 
@@ -18,6 +27,15 @@ class UserAPIView(APIView):
             return Response(
                 {"message": "현재 로그인된 상태입니다."},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        email = request.data.get("email")
+        user = User.objects.filter(email=email)
+        if user and user[0].is_active == False:
+            return Response(
+                {
+                    "message": "계정이 비활성화 상태입니다. 로그인해서 계정을 활성화 할 수 있습니다."
+                }
             )
 
         serializer = UserCreateSerializer(data=request.data)
@@ -37,16 +55,54 @@ class UserAPIView(APIView):
             )
 
         request.user.is_active = False
+        # 9시간을 더해줘야 한국 표준시가 됨
+        request.user.deactivate_time = datetime.now() + timedelta(hours=9)  # 현재시간
         request.user.save()
         return Response(
             {"message": "회원정보가 비활성화 되었습니다."}, status=status.HTTP_200_OK
         )
+
+    @permission_classes([IsAuthenticated])
+    def put(self, request):
+        user = request.user
+        serializer = UpdateProfileSerializer(
+            instance=user, data=request.data, partial=True, context=user
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+def delete_user(request):
+    deactivate_users = User.objects.filter(is_active=False)
+    now = datetime.now()
+    delete_cnt = 0
+    for user in deactivate_users:
+        # 테스트용 2분
+        if (now - user.deactivate_time.replace(tzinfo=None)).seconds > 120:
+            user.delete()
+            delete_cnt += 1
+
+    return Response(
+        {"message": f"{delete_cnt}개의 계정이 삭제되었습니다."},
+        status=status.HTTP_200_OK,
+    )
 
 
 class UserSigninAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
+
+        user = User.objects.filter(email=email)
+        message = False
+        if user and user[0].is_active == False:
+            user[0].is_active = True
+            user[0].deactivate_time = None
+            user[0].save()
+            message = "계정이 활성화되었습니다."
 
         user = authenticate(email=email, password=password)
 
@@ -57,11 +113,15 @@ class UserSigninAPIView(APIView):
             )
 
         refresh = RefreshToken.for_user(user)
+        data = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+        if message:
+            data["message"] = message
+
         return Response(
-            {
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-            },
+            data=data,
             status=status.HTTP_200_OK,
         )
 
@@ -130,3 +190,8 @@ class UserFollowAPIView(APIView):
                 {"message": f"{user.nickname}을/를 팔로우 하였습니다"},
                 status=status.HTTP_200_OK,
             )
+
+
+class UserProfileAPIView(RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer

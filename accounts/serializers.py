@@ -4,6 +4,8 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 
 from .models import User
+from movies.models import Movie
+from reviews.models import Review
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -44,9 +46,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
             )
 
         if attrs.get("age") is not None:
-            if attrs["age"] < 0:
+            if attrs["age"] < 0 or attrs["age"] > 150:
                 raise serializers.ValidationError(
-                    {"age": "나이는 0세 이상 입력 가능합니다."}
+                    {"age": "나이는 0세 이상 150세 이하로 입력 가능합니다."}
                 )
 
         return attrs
@@ -104,3 +106,66 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data["new_password"])
         instance.save()
         return instance
+
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "nickname",
+            "gender",
+            "age",
+            "bio",
+        ]
+
+    def validate_age(self, value):
+        if (value < 0) or (value > 150):
+            raise serializers.ValidationError(
+                {"error": "나이는 0세 이상 150세 이하로 입력 가능합니다."}
+            )
+        return value
+
+
+class MovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ["title"]
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ["content"]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["nickname"]
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    liked_movies = MovieSerializer(many=True, read_only=True)
+    reviews = ReviewSerializer(many=True, read_only=True)
+    followings = UserSerializer(many=True)
+    followings_count = serializers.IntegerField(
+        source="followings.count", read_only=True
+    )
+    followers = UserSerializer(many=True)
+    followers_count = serializers.IntegerField(source="followers.count", read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "email",
+            "nickname",
+            "followings",
+            "followings_count",
+            "followers",
+            "followers_count",
+            "gender",
+            "age",
+            "bio",
+            "liked_movies",
+            "reviews",
+        ]
