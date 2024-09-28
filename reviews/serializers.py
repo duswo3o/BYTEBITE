@@ -3,7 +3,7 @@ from .models import Review, Comment
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source="author.username")
+    author = serializers.ReadOnlyField(source="author.nickname")
 
     class Meta:
         model = Review
@@ -12,7 +12,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source="author.username")
+    author = serializers.ReadOnlyField(source="author.nickname")
     review = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
