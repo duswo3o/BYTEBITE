@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
@@ -51,6 +53,7 @@ class UserAPIView(APIView):
             )
 
         request.user.is_active = False
+        request.user.deactivate_time = datetime.now()  # 현재시간
         request.user.save()
         return Response(
             {"message": "회원정보가 비활성화 되었습니다."}, status=status.HTTP_200_OK
@@ -66,6 +69,7 @@ class UserSigninAPIView(APIView):
         message = False
         if user and user[0].is_active == False:
             user[0].is_active = True
+            user[0].deactivate_time = None
             user[0].save()
             message = "계정이 활성화되었습니다."
 
