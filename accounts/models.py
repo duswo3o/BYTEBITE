@@ -52,6 +52,8 @@ class User(AbstractUser):
     followings = models.ManyToManyField(
         to="self", related_name="followers", symmetrical=False
     )
+    # 비활성화된 시점을 저장하여 일정 기간동안만 해당 유저의 정보를 보관하기위햐 필드 추가
+    deactivate_time = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.nickname
