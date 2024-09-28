@@ -115,6 +115,7 @@ DATABASES = {
 
 # API 키 설정
 KMDB_API_KEY = env("KMDB_API_KEY")
+KOFIC_API_KEY = env("KOFIC_API_KEY")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
