@@ -2,11 +2,17 @@ from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from .views import ReviewViewSet, CommentViewSet
 
-router = DefaultRouter()
-router.register(r"", ReviewViewSet, basename="review")
-
 urlpatterns = [
-    path("", include(router.urls)),
+    path(
+        "<int:movie_pk>/",
+        ReviewViewSet.as_view({"get": "list","post": "create"}),  # 리뷰 생성
+        name="reviews-create",
+    ),
+    path(
+        "detail/<int:pk>/",
+        ReviewViewSet.as_view({ "get": "retrieve","put": "update", "delete": "destroy"}),  # 특정 리뷰 조회, 수정, 삭제
+        name="reviews-detail",
+    ),
     path(
         "<int:review_pk>/comments/",
         CommentViewSet.as_view({"get": "list", "post": "create"}),

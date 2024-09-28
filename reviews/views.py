@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import Review, Comment
 from .serializers import ReviewSerializer, CommentSerializer
 from .permissions import IsAuthorOrReadOnly
+from movies.models import Movie
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -13,21 +14,35 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["retrieve", "list"]:
             permission_classes = [AllowAny]
-        elif self.action in ["create"]:
+        elif self.action == "create":
             permission_classes = [IsAuthenticated]
         else:
             permission_classes = [IsAuthorOrReadOnly]
         return [permission() for permission in permission_classes]
 
+    def get_queryset(self):
+        if self.action in ["retrieve", "update", "destroy"]:
+            review_id = self.kwargs.get("pk")
+            return self.queryset.filter(id=review_id)
+
+        movie_id = self.kwargs.get("movie_pk")
+        if movie_id:
+            return self.queryset.filter(movie_id=movie_id)
+
+        return self.queryset
+
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        movie_id = self.kwargs.get("movie_pk")
+        movie = Movie.objects.get(pk=movie_id)
+        serializer.save(author=self.request.user, movie=movie)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
