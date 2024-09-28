@@ -77,7 +77,7 @@ def base_boxoffice():
         print("============= fin =============")
 
 
-# base_boxoffice()
+base_boxoffice()
 # 오래된 순위 10개의 데이터
 # old_data = Ranking.objects.filter(crawling_date="2024-09-25")
 # print(old_data)
@@ -119,7 +119,7 @@ def boxoffice_rank():
         Ranking.objects.create(title=title, rank=rank, crawling_date=crawling_date)
 
 
-# boxoffice_rank()
+boxoffice_rank()
 
 # # step3.실행 주기 설정
 # schedule.every().day.at("12:00:00").do(boxoffice_rank)  # 매일 오후 12시에 실행
