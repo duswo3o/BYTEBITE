@@ -68,19 +68,38 @@ class LikeViewSet(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     permission_classes = [permissions.IsAuthenticated]
 
-    def create(self, request, review_id=None):
-        try:
-            review = Review.objects.get(id=review_id)  # URL에서 리뷰를 가져옴
-        except Review.DoesNotExist:
-            return Response({'error': 'Review not found.'}, status=status.HTTP_404_NOT_FOUND)
+    def create(self, request, *args, **kwargs):
+        review_id = kwargs.get('review_id')
+        comment_id = kwargs.get('comment_id')
 
-        # 이미 좋아요가 존재하는지 확인
-        existing_like = Like.objects.filter(user=request.user, review=review).first()
-        if existing_like:
-            existing_like.delete()  # 이미 좋아요가 있으면 삭제
-            return Response({'message': 'Like removed.'}, status=status.HTTP_204_NO_CONTENT)
+        if review_id:
+            try:
+                review = Review.objects.get(id=review_id)
+            except Review.DoesNotExist:
+                return Response({'error': '리뷰를 찾을 수 없습니다'}, status=status.HTTP_404_NOT_FOUND)
 
-        # 좋아요 객체 생성
-        like = Like.objects.create(user=request.user, review=review)
-        serializer = LikeSerializer(like)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            existing_like = Like.objects.filter(user=request.user, review=review).first()
+            if existing_like:
+                existing_like.delete()
+                return Response({'message': '좋아요 취소'}, status=status.HTTP_204_NO_CONTENT)
+
+            like = Like.objects.create(user=request.user, review=review)
+            serializer = LikeSerializer(like)
+            return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
+
+        elif comment_id:
+            try:
+                comment = Comment.objects.get(id=comment_id)
+            except Comment.DoesNotExist:
+                return Response({'error': '코멘트를 찾을 수 없습니다'}, status=status.HTTP_404_NOT_FOUND)
+
+            existing_like = Like.objects.filter(user=request.user, comment=comment).first()
+            if existing_like:
+                existing_like.delete()
+                return Response({'message': '좋아요 취소'}, status=status.HTTP_204_NO_CONTENT)
+
+            like = Like.objects.create(user=request.user, comment=comment)
+            serializer = LikeSerializer(like)
+            return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
+
+        return Response({'error': '리뷰 또는 코멘트 ID가 필요합니다.'}, status=status.HTTP_400_BAD_REQUEST)
