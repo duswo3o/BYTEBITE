@@ -8,5 +8,5 @@ urlpatterns = [
     path("password/", views.UserChangePasswordAPIView().as_view()),
     path("<int:pk>/", views.UserProfileAPIView().as_view()),
     path("<int:user_pk>/follow/", views.UserFollowAPIView().as_view()),
-    # path("withdraw/", views.UserAPIView.as_view()),
+    path("delete_user/", views.delete_user),
 ]
