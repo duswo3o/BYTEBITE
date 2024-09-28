@@ -46,9 +46,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
             )
 
         if attrs.get("age") is not None:
-            if attrs["age"] < 0:
+            if attrs["age"] < 0 or attrs["age"] > 150:
                 raise serializers.ValidationError(
-                    {"age": "나이는 0세 이상 입력 가능합니다."}
+                    {"age": "나이는 0세 이상 150세 이하로 입력 가능합니다."}
                 )
 
         return attrs
