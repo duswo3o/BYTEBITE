@@ -32,3 +32,13 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.content[:20]
+
+
+class Like(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, null=True, blank=True)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
+
+
+    class Meta:
+        unique_together = ('user', 'review', "comment")

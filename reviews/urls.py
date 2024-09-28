@@ -1,6 +1,6 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from .views import ReviewViewSet, CommentViewSet
+from .views import ReviewViewSet, CommentViewSet, LikeViewSet
 
 urlpatterns = [
     path(
@@ -25,4 +25,6 @@ urlpatterns = [
         ),
         name="comments-detail",
     ),
+    path('likes/review/<int:review_id>/', LikeViewSet.as_view({'post': 'create'}), name='like-review-create'),
+    path('likes/comment/<int:comment_id>/', LikeViewSet.as_view({'post': 'create'}), name='like-comment-create'),
 ]
