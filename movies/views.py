@@ -26,7 +26,7 @@ class MovieListApiView(APIView):
         return Response(serializer.data)
 
 
-class MovieAPIView(APIView):
+class MovieDetailAPIView(APIView):
     def get_object(self, pk):
         return get_object_or_404(Movie, pk=pk)
 
@@ -182,7 +182,6 @@ def save_to_database(total_data):
         directors = item["directors"]["director"]
         actors = item["actors"]["actor"]
 
-        # 스태프 로직(추후에 함수화)
         create_staff(movie, directors, actors)
 
         movie.save()
