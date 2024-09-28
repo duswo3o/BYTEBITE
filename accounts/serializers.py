@@ -118,17 +118,10 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "bio",
         ]
 
-    def validate_nickname(self, value):
-        # print("222222222222222222")
-        if User.objects.filter(nickname=value):
-            raise serializers.ValidationError({"error": "이미 사용중인 닉네임 입니다."})
-        return value
-
     def validate_age(self, value):
-        # print("33333333333333333333")
-        if value < 0:
+        if (value < 0) or (value > 150):
             raise serializers.ValidationError(
-                {"error": "나이는 0세 이상 입력 가능합니다."}
+                {"error": "나이는 0세 이상 150세 이하로 입력 가능합니다."}
             )
         return value
 
