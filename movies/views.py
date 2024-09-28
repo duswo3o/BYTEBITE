@@ -31,23 +31,23 @@ class MovieListApiView(APIView):
 
         # 평균 평점 순 출력
         graded_movies = Movie.objects.annotate(
-            average_grade=Avg('ratings__score')
-            ).order_by('-average_grade')[:10]
+            average_grade=Avg("ratings__score")
+            ).order_by("-average_grade")[:10]
         graded_serializer = AverageGradeSerializer(graded_movies, many=True)
 
         # 좋아요 많은 순 출력
         liked_movies = Movie.objects.annotate(
-            like_count=models.Count('like_users'),
-            dislike_count=models.Count('dislike_users')
+            like_count=models.Count("like_users"),
+            dislike_count=models.Count("dislike_users")
         ).annotate(
-            like=models.F('like_count') - models.F('dislike_count')
-        ).order_by('-like')[:10]
+            like=models.F("like_count") - models.F("dislike_count")
+        ).order_by("-like")[:10]
         liked_serializer = LikeSerializer(liked_movies, many=True)
 
         response_data = {
-            'boxoffice_movies': boxoffice_serializer.data,
-            'graded_movies': graded_serializer.data,
-            'liked_movies': liked_serializer.data,
+            "boxoffice_movies": boxoffice_serializer.data,
+            "graded_movies": graded_serializer.data,
+            "liked_movies": liked_serializer.data,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
@@ -110,7 +110,7 @@ class MovieScoreAPIView(APIView):
 
     def post(self, request, movie_pk):
         movie = get_object_or_404(Movie, pk=movie_pk)
-        score = request.data.get('evaluate')
+        score = request.data.get("evaluate")
 
         Rating.objects.filter(user=request.user, movie=movie).delete()
 
