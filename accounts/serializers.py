@@ -108,6 +108,24 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         return instance
 
 
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "nickname",
+            "gender",
+            "age",
+            "bio",
+        ]
+
+    def validate_age(self, value):
+        if (value < 0) or (value > 150):
+            raise serializers.ValidationError(
+                {"error": "나이는 0세 이상 150세 이하로 입력 가능합니다."}
+            )
+        return value
+
+
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie

@@ -14,6 +14,7 @@ from rest_framework.decorators import api_view
 from .serializers import (
     UserCreateSerializer,
     ChangePasswordSerializer,
+    UpdateProfileSerializer,
     UserProfileSerializer,
 )
 from .models import User
@@ -60,6 +61,17 @@ class UserAPIView(APIView):
         return Response(
             {"message": "회원정보가 비활성화 되었습니다."}, status=status.HTTP_200_OK
         )
+
+    @permission_classes([IsAuthenticated])
+    def put(self, request):
+        user = request.user
+        serializer = UpdateProfileSerializer(
+            instance=user, data=request.data, partial=True, context=user
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
