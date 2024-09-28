@@ -8,30 +8,46 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Django 기능 및 프로젝트 관련
+from django.db import models
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from .models import Movie, Ranking, Rating
-from .serializers import BoxofficeSerializer, MovieSerializer
+from .serializers import (
+    AverageGradeSerializer,
+    BoxofficeSerializer,
+    LikeSerializer,
+    MovieSerializer,
+    )
 
 
 # 메인페이지
 class MovieListApiView(APIView):
     def get(self, request):
-        # 박스오피스순 출력
+        # 박스오피스 순 출력
         today_movie = Ranking.objects.last().crawling_date
         movies = Ranking.objects.filter(crawling_date=today_movie)
         boxoffice_serializer = BoxofficeSerializer(movies, many=True)
 
-        # 평균 평점순 출력
+        # 평균 평점 순 출력
         graded_movies = Movie.objects.annotate(
             average_grade=Avg('ratings__score')
             ).order_by('-average_grade')[:10]
-        graded_serializer = MovieSerializer(graded_movies, many=True)
+        graded_serializer = AverageGradeSerializer(graded_movies, many=True)
+
+        # 좋아요 많은 순 출력
+        liked_movies = Movie.objects.annotate(
+            like_count=models.Count('like_users'),
+            dislike_count=models.Count('dislike_users')
+        ).annotate(
+            like=models.F('like_count') - models.F('dislike_count')
+        ).order_by('-like')[:10]
+        liked_serializer = LikeSerializer(liked_movies, many=True)
 
         response_data = {
             'boxoffice_movies': boxoffice_serializer.data,
             'graded_movies': graded_serializer.data,
+            'liked_movies': liked_serializer.data,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
