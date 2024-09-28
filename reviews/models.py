@@ -14,6 +14,9 @@ class Review(models.Model):
     def __str__(self):
         return self.content[:20]
 
+    def like_count(self):
+        return self.like_set.count()
+
 
 class Comment(models.Model):
     review = models.ForeignKey(
@@ -32,6 +35,9 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.content[:20]
+
+    def like_count(self):
+        return self.like_set.count()
 
 
 class Like(models.Model):
