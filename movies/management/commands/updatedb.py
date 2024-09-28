@@ -12,7 +12,7 @@ from movies.models import Genre, Movie, Staff
 
 
 class Command(BaseCommand):
-    help = 'API에서 최신 데이터를 가져와 영화 데이터베이스를 업데이트합니다.'
+    help = "API에서 최신 데이터를 가져와 영화 데이터베이스를 업데이트합니다."
 
     API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
 

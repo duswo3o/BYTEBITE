@@ -86,7 +86,7 @@ class Rating(models.Model):
     score = models.FloatField()
 
     class Meta:
-        unique_together = ('user', 'movie')
+        unique_together = ("user", "movie")
 
     def __str__(self):
         return f"{self.user} rated {self.movie} as {self.score}"

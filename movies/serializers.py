@@ -19,7 +19,7 @@ class AverageGradeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ['title', 'average_grade']  # 영화 제목과 평균 점수
+        fields = ["title", "average_grade"]  # 영화 제목과 평균 점수
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -27,4 +27,4 @@ class LikeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ['title', 'like']
+        fields = ["title", "like"]
