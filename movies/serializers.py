@@ -1,5 +1,9 @@
+# 서드파티 라이브러리
 from rest_framework import serializers
-from .models import Ranking, Movie
+
+# Django 기능 및 프로젝트 관련
+from django.contrib.auth import get_user_model
+from .models import Movie, Ranking, Staff
 
 
 class BoxofficeSerializer(serializers.ModelSerializer):
@@ -28,3 +32,23 @@ class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ["title", "like"]
+
+
+class FilmographySerializer(MovieSerializer):
+    class Meta:
+        model = Movie
+        fields = ['title']
+
+
+class StaffSerializer(serializers.ModelSerializer):
+    filmographys = FilmographySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Staff
+        fields = fields = ['name', 'role', 'filmographys']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['nickname', 'bio']

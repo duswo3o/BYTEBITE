@@ -1,5 +1,3 @@
-# 표준 라이브러리
-
 # 서드파티 라이브러리
 from rest_framework import status
 from rest_framework.decorators import permission_classes
@@ -8,16 +6,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Django 기능 및 프로젝트 관련
+from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from .models import Movie, Ranking, Rating
+from .models import Movie, Ranking, Rating, Staff
 from .serializers import (
     AverageGradeSerializer,
     BoxofficeSerializer,
     LikeSerializer,
     MovieSerializer,
+    StaffSerializer,
+    UserSerializer,
     )
 
 
@@ -27,12 +28,14 @@ class MovieListApiView(APIView):
         # 박스오피스 순 출력
         today_movie = Ranking.objects.last().crawling_date
         movies = Ranking.objects.filter(crawling_date=today_movie)
+
         boxoffice_serializer = BoxofficeSerializer(movies, many=True)
 
         # 평균 평점 순 출력
         graded_movies = Movie.objects.annotate(
             average_grade=Avg("ratings__score")
             ).order_by("-average_grade")[:10]
+
         graded_serializer = AverageGradeSerializer(graded_movies, many=True)
 
         # 좋아요 많은 순 출력
@@ -42,6 +45,7 @@ class MovieListApiView(APIView):
         ).annotate(
             like=models.F("like_count") - models.F("dislike_count")
         ).order_by("-like")[:10]
+
         liked_serializer = LikeSerializer(liked_movies, many=True)
 
         response_data = {
@@ -51,6 +55,43 @@ class MovieListApiView(APIView):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class MovieSearchAPIView(APIView):
+    # 검색
+    def get(self, request):
+        # 검색할 데이터 종류(영화, 영화인, 회원)
+        search_type = request.data.get("search_type")
+        # 검색 키워드
+        search_keyword = request.data.get("search_keyword")
+
+        # 영화 검색(제목, 장르, 줄거리)
+        if search_type == 'movies':
+            search_data = Movie.objects.filter(
+                Q(title__icontains=search_keyword) |
+                Q(genre__name__icontains=search_keyword) |
+                Q(plot__icontains=search_keyword)
+                ).distinct()
+
+            serializer_class = MovieSerializer
+
+        # 영화인 검색(이름)
+        elif search_type == 'staff':
+            search_data = Staff.objects.filter(name__icontains=search_keyword)
+
+            serializer_class = StaffSerializer
+
+        # 회원 검색(닉네임)
+        else:
+            search_data = get_user_model().objects.filter(
+                nickname__icontains=search_keyword
+                )
+
+            serializer_class = UserSerializer
+
+        serializer = serializer_class(search_data, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class MovieDetailAPIView(APIView):
