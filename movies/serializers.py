@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Ranking, Movie
+from .models import Movie, Ranking, Staff
 
 
 class BoxofficeSerializer(serializers.ModelSerializer):
@@ -28,3 +28,17 @@ class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ["title", "like"]
+
+
+class FilmographySerializer(MovieSerializer):
+    class Meta:
+        model = Movie
+        fields = ['title']
+
+
+class StaffSerializer(serializers.ModelSerializer):
+    filmographys = FilmographySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Staff
+        fields = fields = ['name', 'role', 'filmographys']
