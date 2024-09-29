@@ -1,5 +1,3 @@
-# 표준 라이브러리
-
 # 서드파티 라이브러리
 from rest_framework import status
 from rest_framework.decorators import permission_classes
@@ -78,6 +76,12 @@ class MovieSearchAPIView(APIView):
         # 영화인 검색(이름)
         elif search_type == 'staff':
             search_data = Staff.objects.filter(name=search_keyword)
+
+            if not search_data.exists():
+                return Response(
+                    {"message": "데이터가 없습니다."},
+                    status=status.HTTP_404_NOT_FOUND
+                    )
 
             serializer_class = StaffSerializer
 

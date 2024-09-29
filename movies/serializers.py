@@ -1,4 +1,8 @@
+# 서드파티 라이브러리
 from rest_framework import serializers
+
+# Django 기능 및 프로젝트 관련
+from django.contrib.auth import get_user_model
 from .models import Movie, Ranking, Staff
 
 
@@ -42,3 +46,9 @@ class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = fields = ['name', 'role', 'filmographys']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['nickname', 'bio']
