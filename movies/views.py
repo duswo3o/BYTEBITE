@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Django 기능 및 프로젝트 관련
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
@@ -17,6 +18,7 @@ from .serializers import (
     LikeSerializer,
     MovieSerializer,
     StaffSerializer,
+    UserSerializer,
     )
 
 
@@ -75,19 +77,17 @@ class MovieSearchAPIView(APIView):
 
         # 영화인 검색(이름)
         elif search_type == 'staff':
-            search_data = Staff.objects.filter(name=search_keyword)
-
-            if not search_data.exists():
-                return Response(
-                    {"message": "데이터가 없습니다."},
-                    status=status.HTTP_404_NOT_FOUND
-                    )
+            search_data = Staff.objects.filter(name__icontains=search_keyword)
 
             serializer_class = StaffSerializer
 
         # 회원 검색(닉네임)
         else:
-            pass
+            search_data = get_user_model().objects.filter(
+                nickname__icontains=search_keyword
+                )
+
+            serializer_class = UserSerializer
 
         serializer = serializer_class(search_data, many=True)
 
