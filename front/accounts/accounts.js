@@ -3,7 +3,8 @@
 const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
 
 const signupBtn = document.getElementById("signup-btn");
-const signinBtn = document.getElementById("signin-btn")
+const signinBtn = document.getElementById("signin-btn");
+const profileBtn = document.getElementById("calluesrbtn");
 
 
 // 토큰 저장 및 관리 함수
@@ -121,6 +122,26 @@ const signinUser = () => {
         })
 }
 
+const userProfile = () => {
+    axios.get(`${API_BASE_URL}/accounts/6/`)
+        .then(response => {
+            console.log(response)
+            console.log(document)
+            document.getElementById("nickname").innerText = response.data.nickname
+            document.getElementById("email").innerText = response.data.email
+            document.getElementById("followers").innerText = response.data.followers_count
+            document.getElementById("followings").innerText = response.data.followings_count
+            document.getElementById("wannawatch").innerText = response.data.liked_movies.length
+        })
+        .catch(error => {
+            console.log(error)
+        })
+
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    userProfile(); // 페이지가 로드되면 userProfile 함수 호출
+});
 
 
 
@@ -132,3 +153,7 @@ if (signupBtn) {
 if (signinBtn) {
     signinBtn.addEventListener('click', signinUser)
 }
+
+// if (profileBtn) {
+//     profileBtn.addEventListener('click', userProfile)
+// }
