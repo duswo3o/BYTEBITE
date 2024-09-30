@@ -51,7 +51,6 @@ axios.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // 토큰이 만료되었을 때 처리
         if (error.response && error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
@@ -81,7 +80,6 @@ async function login(email, password) {
         alert('로그인 실패');
     }
 }
-
 
 // 로그아웃 함수
 function logout() {
@@ -116,10 +114,37 @@ function displayReviews(reviews) {
             <div class="content">${review.content}</div>
             <div class="review-footer">
                 <span class="like-count">좋아요: ${review.like_count}</span>
+                <button class="like-btn" data-review-id="${review.id}">좋아요</button>
             </div>
         `;
         responseDiv.appendChild(reviewDiv); // 리뷰 추가
     });
+
+    // 좋아요 버튼에 이벤트 리스너 추가
+    const likeButtons = document.querySelectorAll('.like-btn');
+    likeButtons.forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const reviewId = event.target.getAttribute('data-review-id');
+            await toggleLike(reviewId);
+        });
+    });
+}
+
+// 좋아요 토글 함수
+async function toggleLike(reviewId) {
+    try {
+        const response = await axios.post(`${API_BASE_URL}reviews/likes/review/${reviewId}/`);
+        console.log(response.data.message);
+        alert(response.data.message);
+
+        // 좋아요 변경 후 리뷰 목록 다시 가져오기
+        const moviePk = document.getElementById('moviePkInput').value;
+        const reviews = await getReviews(moviePk);
+        displayReviews(reviews); // 리뷰를 화면에 표시하는 함수 호출
+    } catch (error) {
+        console.error('좋아요 처리 실패:', error.response ? error.response.data : error.message);
+        alert('좋아요 처리 실패');
+    }
 }
 
 // 리뷰 작성하기 함수
@@ -152,22 +177,7 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 document.getElementById('getReviewsBtn').addEventListener('click', async () => {
     const moviePk = document.getElementById('moviePkInput').value;
     const reviews = await getReviews(moviePk);
-    const responseDiv = document.getElementById('response');
-    responseDiv.innerHTML = ''; // 기존 결과 초기화
-    reviews.forEach(review => {
-        const reviewDiv = document.createElement('div');
-        reviewDiv.innerHTML = `
-            <div class="review-header">
-                <span class="author">${review.author}</span>
-                <span class="date">${new Date(review.created_at).toLocaleString()}</span>
-            </div>
-            <div class="content">${review.content}</div>
-            <div class="review-footer">
-                <span class="like-count">좋아요: ${review.like_count}</span>
-            </div>
-        `;
-        responseDiv.appendChild(reviewDiv); // 리뷰 추가
-    });
+    displayReviews(reviews); // 리뷰를 화면에 표시하는 함수 호출
 });
 
 document.getElementById('postReviewBtn').addEventListener('click', () => {
