@@ -22,7 +22,7 @@ urlpatterns = [
         "<int:review_pk>/comments/<int:pk>/",
         CommentViewSet.as_view(
             {"get": "retrieve", "put": "update", "delete": "destroy"}
-        ),
+        ), 
         name="comments-detail",
     ),
     path('likes/review/<int:review_id>/', LikeViewSet.as_view({'post': 'create'}), name='like-review-create'),
