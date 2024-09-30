@@ -126,12 +126,25 @@ const userProfile = () => {
     axios.get(`${API_BASE_URL}/accounts/6/`)
         .then(response => {
             console.log(response)
-            console.log(document)
+            var myReviews = response.data.reviews;
+            var myReviewList = document.getElementById("my-movie-reviews");
+            myReviews.forEach(myReview => {
+                var li = document.createElement("li");
+                li.textContent = `MovieID : ${myReview.movie}  content : ${myReview.content}`;
+                myReviewList.appendChild(li)
+
+            });
+
+            // console.log(document)
             document.getElementById("nickname").innerText = response.data.nickname
             document.getElementById("email").innerText = response.data.email
             document.getElementById("followers").innerText = response.data.followers_count
             document.getElementById("followings").innerText = response.data.followings_count
             document.getElementById("wannawatch").innerText = response.data.liked_movies.length
+            document.getElementById("likedreview").innerText = response.data.liked_reviews.length
+            document.getElementById("ratedmovie").innerText = response.data.rated_movie.length
+            document.getElementById("myreview").innerText = response.data.reviews.length
+            document.getElementById("testreview").innerText = response.data.reviews.length
         })
         .catch(error => {
             console.log(error)
