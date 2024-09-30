@@ -79,17 +79,17 @@ const signupUser = () => {
     // 선택필드에 빈 값이 들어가는 경우
     // 나이의 경우 숫자형으로 들어가야하는데 빈 값일때 빈문자열을 반환해서 null값으로 처리
     var age = document.getElementById('InputAge').value
-    if (!age){
+    if (!age) {
         age = null
     }
     axios.post(`${API_BASE_URL}/accounts/`, {
-        email : document.getElementById('InputEmail').value,
-        password : document.getElementById('InputPassword').value,
-        confirm_password : document.getElementById('confirmInputPassword').value,
-        nickname : document.getElementById('InputNickname').value,
-        gender : document.getElementById('inputGender').value,
-        age : age,
-        bio : document.getElementById('InputBio').value,
+        email: document.getElementById('InputEmail').value,
+        password: document.getElementById('InputPassword').value,
+        confirm_password: document.getElementById('confirmInputPassword').value,
+        nickname: document.getElementById('InputNickname').value,
+        gender: document.getElementById('inputGender').value,
+        age: age,
+        bio: document.getElementById('InputBio').value,
     })
         .then(response => {
             console.log(response);
@@ -106,8 +106,8 @@ const signupUser = () => {
 // 로그인
 const signinUser = () => {
     axios.post(`${API_BASE_URL}/accounts/signin/`, {
-        email : document.getElementById("signinEmail").value,
-        password : document.getElementById("signinPassword").value
+        email: document.getElementById("signinEmail").value,
+        password: document.getElementById("signinPassword").value
     })
         .then(response => {
             // 로그인 성공 시 토큰 저장
@@ -115,11 +115,20 @@ const signinUser = () => {
             console.log(response)
             // 이동할 페이지
             // window.location.href = ""
-            })
+        })
         .catch(error => {
             console.log(error)
         })
 }
 
-// signupBtn.addEventListener('click', signupUser)
-signinBtn.addEventListener('click', signinUser)
+
+
+
+// 버튼 확인
+if (signupBtn) {
+    signupBtn.addEventListener('click', signupUser)
+}
+
+if (signinBtn) {
+    signinBtn.addEventListener('click', signinUser)
+}
