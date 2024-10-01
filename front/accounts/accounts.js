@@ -265,7 +265,7 @@ const userProfile = () => {
 //     userProfile(); // 페이지가 로드되면 userProfile 함수 호출
 // });
 
-
+// 팔로우
 const followUser = (event) => {
     event.preventDefault();  // 기본 동작 방지 (페이지 새로고침 방지)
     var userPK = document.getElementById("userpk").value
@@ -282,6 +282,34 @@ const followUser = (event) => {
         })
 
     return false; // 기본 동작 방지
+}
+
+
+// 프로필 수정
+const updateProfileBtn = document.getElementById("update-profile-btn")
+const updateProfile = () => {
+    // 선택필드에 빈 값이 들어가는 경우
+    // 나이의 경우 숫자형으로 들어가야하는데 빈 값일때 빈문자열을 반환해서 null값으로 처리
+    var age = document.getElementById('InputAge').value
+    if (!age) {
+        age = null
+    }
+
+    axios.put(`${API_BASE_URL}/accounts/`, {
+        nickname: document.getElementById('InputNickname').value,
+        gender: document.getElementById('inputGender').value,
+        age: age,
+        bio: document.getElementById('InputBio').value,
+    })
+    .then(response => {
+        console.log(response)
+        window.location.href = "profile.html"
+
+    })
+    .catch(error => {
+        console.log(error)
+        alert("수정 실패")
+    })
 }
 
 
@@ -305,4 +333,8 @@ if (profileBtn) {
 
 if (followBtn) {
     followBtn.addEventListener('click', followUser)
+}
+
+if (updateProfileBtn) {
+    updateProfileBtn.addEventListener('click', updateProfile)
 }
