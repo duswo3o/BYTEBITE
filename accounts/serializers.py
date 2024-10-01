@@ -147,7 +147,7 @@ class CommentSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["nickname"]
+        fields = ["id", "nickname"]
 
 
 class RatingSerializer(serializers.ModelSerializer):
@@ -200,8 +200,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         source="followings.count", read_only=True
     )
     followers = UserSerializer(many=True)
-    followers_count = serializers.IntegerField(
-        source="followers.count", read_only=True)
+    followers_count = serializers.IntegerField(source="followers.count", read_only=True)
     rated_movie = RatingSerializer(many=True, read_only=True, source="ratings")
     liked_reviews = serializers.SerializerMethodField()
     liked_comments = serializers.SerializerMethodField()

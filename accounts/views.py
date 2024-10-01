@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -117,6 +117,15 @@ class UserSigninAPIView(APIView):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         }
+
+        user = get_user_model().objects.get(email=email)
+        data["id"] = user.id
+        data["email"] = user.email
+        data["nickname"] = user.nickname
+        data["gender"] = user.gender
+        data["age"] = user.age
+        data["bio"] = user.bio
+
         if message:
             data["message"] = message
 
