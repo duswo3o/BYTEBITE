@@ -23,99 +23,47 @@
         <div class="row row-cols-1 row-cols-md-3 g-4">
             <div class="col">
                 <div class="card h-100">
-                    <div>
+                    <div class="card">
                         <p>nickname : <span id="nickname"></span></p>
                     </div>
-                    <div>
+                    <div class="card">
                         <p>email : <span id="email"></span></p>
                     </div>
-                    <div>
-                        <p>followers : <span id="followers"></span></p>
+                    <div class="card">
+                        <p>gender : <span id="gender"></span></p>
                     </div>
-                    <div>
-                        <p>followings : <span id="followings"></span></p>
+                    <div class="card">
+                        <p>age : <span id="age"></span></p>
+                    </div>
+                    <div class="card">
+                        <p>bio : <span id="bio"></span></p>
                     </div>
 
 
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-                    <!-- <div>
-                        <p>want to watch <br><span id="wannawatch"></span></p>
-                    </div> -->
-
-                
-
-
-                <!-- Button trigger modal -->
-                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                    want to watch <br> <span id="wannawatch"></span>
-                </button>
-
-                <!-- Modal -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="wnat-to-watch">
-                                    
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary"
-                                    data-bs-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-primary">Save changes</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
 
 
 
-
-
-
-
-
-
-
-
-
-                    <div>
-                        <p>liked review <br><span id="likedreview"></span></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-
-
+                    <!-- 팔로워 -->
                     <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        rated movie <br> <span id="ratedmovie"></span>
+                    <button type="button" class="btn btn-light" data-bs-toggle="modal"
+                        data-bs-target="#followerModal">
+                        followers <br> <span id="followers"></span>
                     </button>
 
                     <!-- Modal -->
-                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                    <div class="modal fade" id="followerModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                         aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">팔로워</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <div id="my-rated-movie">
-                                        
+                                    <div id="follower-users">
+
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -128,24 +76,199 @@
                     </div>
 
 
+                    
+                    <!-- 팔로잉 -->
                     <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        my review <br> <span id="myreview"></span>
+                    <button type="button" class="btn btn-light" data-bs-toggle="modal"
+                        data-bs-target="#followingModal">
+                        followings <br> <span id="followings"></span>
                     </button>
 
                     <!-- Modal -->
-                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                    <div class="modal fade" id="followingModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                         aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">팔로잉</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="following-users">
+
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+                    <!-- <div>
+                        <p>followers : <span id="followers"></span></p>
+                    </div> -->
+
+
+
+
+
+
+<!-- 
+
+                    <div>
+                        <p>followings : <span id="followings"></span></p>
+                    </div> -->
+
+
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <!-- <div>
+                        <p>want to watch <br><span id="wannawatch"></span></p>
+                    </div> -->
+
+
+
+                    <!-- 보고싶어요 영화 -->
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal"
+                        data-bs-target="#wishMovieModal">
+                        want to watch <br> <span id="wannawatch"></span>
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="wishMovieModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">보고싶어요 영화</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="wnat-to-watch">
+
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                    <!-- 좋아요한 리뷰 -->
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal"
+                        data-bs-target="#LikeReviewModal">
+                        Liked Review <br> <span id="likedreview"></span>
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="LikeReviewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">좋아요한 리뷰</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="liked-review">
+
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                        <!-- <div>
+                            <p>liked review <br><span id="likedreview"></span></p>
+                        </div> -->
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+
+                    <!-- 평가한 영화 -->
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal"
+                        data-bs-target="#retedMovieModal">
+                        rated movie <br> <span id="ratedmovie"></span>
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="retedMovieModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">평가한 영화</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="my-rated-movie">
+
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- 내가 작성한 리뷰 -->
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal"
+                        data-bs-target="#myReviewModal">
+                        my review <br> <span id="myreview"></span>
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="myReviewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">내가 작성한 리뷰</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="my-movie-reviews">
-                                        
+
                                     </div>
                                 </div>
                                 <div class="modal-footer">

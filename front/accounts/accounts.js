@@ -136,6 +136,9 @@ const userProfile = () => {
             // console.log(document)
             document.getElementById("nickname").innerText = response.data.nickname
             document.getElementById("email").innerText = response.data.email
+            document.getElementById("gender").innerText = response.data.gender
+            document.getElementById("age").innerText = response.data.age
+            document.getElementById("bio").innerText = response.data.bio
             document.getElementById("followers").innerText = response.data.followers_count
             document.getElementById("followings").innerText = response.data.followings_count
             document.getElementById("wannawatch").innerText = response.data.liked_movies.length
@@ -145,43 +148,87 @@ const userProfile = () => {
             // document.getElementById("testreview").innerText = response.data.reviews.length
 
 
-            var wishMovies = response.data.liked_movies;
-            var wishMovieList = document.getElementById("wnat-to-watch");
+            // 팔로워
+            const followUsers = response.data.followers;
+            const followUserList = document.getElementById("follower-users");
+            followUsers.forEach(followUser => {
+                const followUserdiv = document.createElement("div");
+                followUserdiv.innerHTML = `
+                    <div class="card">
+                        <p>username : <span class="movieID">${followUser.nickname}</span></p>
+                    </div>
+                `;
+                followUserList.appendChild(followUserdiv);
+            });
+
+            // 팔로워
+            const followingUsers = response.data.followings;
+            const followingUserList = document.getElementById("following-users");
+            followingUsers.forEach(followingUser => {
+                const followingUserdiv = document.createElement("div");
+                followingUserdiv.innerHTML = `
+                    <div class="card">
+                        <p>username : <span class="movieID">${followingUser.nickname}</span></p>
+                    </div>
+                `;
+                followingUserList.appendChild(followingUserdiv);
+            });
+
+
+            // 보고싶어요 영화
+            const wishMovies = response.data.liked_movies;
+            const wishMovieList = document.getElementById("wnat-to-watch");
             wishMovies.forEach(wishMovie => {
-                var wishMoviediv = document.createElement("div");
+                const wishMoviediv = document.createElement("div");
                 wishMoviediv.innerHTML = `
                     <div class="card">
-                        <p>MovieID : <span calss="movieID">${wishMovie.title}</span></p>
+                        <p>Movie Title : <span class="movieID">${wishMovie.title}</span></p>
                     </div>
                 `;
                 wishMovieList.appendChild(wishMoviediv);
-            })
+            });
 
-            var myReviews = response.data.reviews;
-            var myReviewList = document.getElementById("my-movie-reviews");
+            // 좋아요 한 리뷰
+            const likedReviews = response.data.liked_reviews;
+            const likedReviewList = document.getElementById("liked-review");
+            likedReviews.forEach(likedReview => {
+                const likedReviewdiv = document.createElement("div");
+                likedReviewdiv.innerHTML = `
+                    <div class="card">
+                        <p>Movie ID : <span class="movieID">${likedReview.review.movie}</span></p>
+                        <p>Movie review : <span class="review">${likedReview.review.content}</span></p>
+                    </div>
+                `;
+                likedReviewList.appendChild(likedReviewdiv);
+            });
+
+            // 작성한 리뷰
+            const myReviews = response.data.reviews;
+            const myReviewList = document.getElementById("my-movie-reviews");
             myReviews.forEach(myReview => {
-                var reviewdiv = document.createElement("div");
+                const reviewdiv = document.createElement("div");
                 reviewdiv.innerHTML = `
                     <div class="card">
-                        <p>MovieID : <span calss="movieID">${myReview.movie}</span></p>
+                        <p>MovieID : <span class="movieID">${myReview.movie}</span></p>
                         <p>review : <span class="myReview">${myReview.content}</span></p>
                     </div>
                 `;
                 myReviewList.appendChild(reviewdiv);
-            })
+            });
 
-            var myRatings = response.data.rated_movie;
-            var myRatingList = document.getElementById("my-rated-movie");
+            // 평가한 영화
+            const myRatings = response.data.rated_movie;
+            const myRatingList = document.getElementById("my-rated-movie");
             myRatings.forEach(myRating => {
-                var ratingdiv = document.createElement("div");
+                const ratingdiv = document.createElement("div");
                 ratingdiv.innerHTML = `
                 <div class="card">
-                    <p>MovieID : <span calss="movieID">${myRating.movie}</span></p>
+                    <p>MovieID : <span class="movieID">${myRating.movie}</span></p>
                     <p>score : <span class="myReview">${myRating.score}</span></p>
                 </div>
             `;
                 myRatingList.appendChild(ratingdiv);
-            })
+            });
 
 
         })
