@@ -2,33 +2,10 @@ from rest_framework import serializers
 from .models import Review, Comment, Like
 
 
-class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source="author.nickname")
-    comment_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Review
-        fields = [
-            "id",
-            "author",
-            "movie",
-            "content",
-            "created_at",
-            "like_count",
-            "comment_count",
-        ]
-        read_only_fields = ["author", "movie", "created_at"]
-
-    def get_like_count(self, obj):
-        return obj.review_likes.count()
-
-    def get_comment_count(self, obj):
-        return obj.comment_count()
-
-
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source="author.nickname")
     review = serializers.PrimaryKeyRelatedField(read_only=True)
+    like_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -43,7 +20,34 @@ class CommentSerializer(serializers.ModelSerializer):
         ]
 
     def get_like_count(self, obj):
-        return obj.comment_likes.count()
+        return Like.objects.filter(comment=obj).count()
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source="author.nickname")
+    comment_count = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
+    # comments = CommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "author",
+            "movie",
+            "content",
+            # "comments",
+            "created_at",
+            "like_count",
+            "comment_count",
+        ]
+        read_only_fields = ["author", "movie", "created_at"]
+
+    def get_like_count(self, obj):
+        return Like.objects.filter(review=obj).count()
+
+    def get_comment_count(self, obj):
+        return Comment.objects.filter(review=obj).count()
 
 
 class LikeSerializer(serializers.ModelSerializer):
