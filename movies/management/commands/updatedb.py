@@ -22,11 +22,11 @@ class Command(BaseCommand):
 
         while True:
             params = {
-                    "ServiceKey": settings.KMDB_API_KEY,
-                    "listCount": 100,
-                    "startCount": start_count,
-                    "detail": "N",
-                }
+                "ServiceKey": settings.KMDB_API_KEY,
+                "listCount": 100,
+                "startCount": start_count,
+                "detail": "N",
+            }
 
             response = requests.get(self.API_URL, params=params)
 
@@ -72,8 +72,8 @@ class Command(BaseCommand):
                     "runtime": runtime,
                     "grade": rating,
                     "plot": plot,
-                    }
-                )
+                },
+            )
 
             movie.genre.set(genre_objects)
 
@@ -89,17 +89,17 @@ class Command(BaseCommand):
 
         for director in directors:
             staffs.append(
-                {"name_cd": director["directorId"],
+                {
+                    "name_cd": director["directorId"],
                     "name": director["directorNm"],
-                    "role": "director"}
-                )
+                    "role": "director",
+                }
+            )
 
         for actor in actors:
             staffs.append(
-                {"name_cd": actor["actorId"],
-                    "name": actor["actorNm"],
-                    "role": "actor"}
-                )
+                {"name_cd": actor["actorId"], "name": actor["actorNm"], "role": "actor"}
+            )
 
         for staff in staffs:
             name_cd = staff.get("name_cd")
@@ -111,14 +111,10 @@ class Command(BaseCommand):
             try:
                 if name_cd is not None:
                     staff, created = Staff.objects.get_or_create(
-                        name_cd=name_cd,
-                        defaults={"name": name, "role": role}
-                        )
+                        name_cd=name_cd, defaults={"name": name, "role": role}
+                    )
                 else:
-                    staff, created = Staff.objects.get_or_create(
-                        name=name,
-                        role=role
-                        )
+                    staff, created = Staff.objects.get_or_create(name=name, role=role)
 
                 movie.staffs.add(staff)
 

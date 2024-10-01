@@ -18,6 +18,9 @@ Including another URLconf
 # popcorngeek/urls.py
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+
+# from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -25,3 +28,8 @@ urlpatterns = [
     path("api/v1/movies/", include("movies.urls")),
     path("api/v1/reviews/", include("reviews.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path("__debug__/", include("debug_toolbar.urls")),
+    ]

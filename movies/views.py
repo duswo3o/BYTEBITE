@@ -19,7 +19,7 @@ from .serializers import (
     MovieSerializer,
     StaffSerializer,
     UserSerializer,
-    )
+)
 
 
 # 메인페이지
@@ -34,17 +34,19 @@ class MovieListApiView(APIView):
         # 평균 평점 순 출력
         graded_movies = Movie.objects.annotate(
             average_grade=Avg("ratings__score")
-            ).order_by("-average_grade")[:10]
+        ).order_by("-average_grade")[:10]
 
         graded_serializer = AverageGradeSerializer(graded_movies, many=True)
 
         # 좋아요 많은 순 출력
-        liked_movies = Movie.objects.annotate(
-            like_count=models.Count("like_users"),
-            dislike_count=models.Count("dislike_users")
-        ).annotate(
-            like=models.F("like_count") - models.F("dislike_count")
-        ).order_by("-like")[:10]
+        liked_movies = (
+            Movie.objects.annotate(
+                like_count=models.Count("like_users"),
+                dislike_count=models.Count("dislike_users"),
+            )
+            .annotate(like=models.F("like_count") - models.F("dislike_count"))
+            .order_by("-like")[:10]
+        )
 
         liked_serializer = LikeSerializer(liked_movies, many=True)
 
@@ -61,22 +63,28 @@ class MovieSearchAPIView(APIView):
     # 검색
     def get(self, request):
         # 검색할 데이터 종류(영화, 영화인, 회원)
-        search_type = request.data.get("search_type")
+        search_type = request.GET.get("search_type")
         # 검색 키워드
-        search_keyword = request.data.get("search_keyword")
+        search_keyword = request.GET.get("search_keyword")
+
+        if not search_keyword:
+            return Response(
+                {"error": "검색어를 제공해야 합니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # 영화 검색(제목, 장르, 줄거리)
-        if search_type == 'movies':
+        if search_type == "movies":
             search_data = Movie.objects.filter(
-                Q(title__icontains=search_keyword) |
-                Q(genre__name__icontains=search_keyword) |
-                Q(plot__icontains=search_keyword)
-                ).distinct()
+                Q(title__icontains=search_keyword)
+                | Q(genre__name__icontains=search_keyword)
+                | Q(plot__icontains=search_keyword)
+            ).distinct()
 
             serializer_class = MovieSerializer
 
         # 영화인 검색(이름)
-        elif search_type == 'staff':
+        elif search_type == "staff":
             search_data = Staff.objects.filter(name__icontains=search_keyword)
 
             serializer_class = StaffSerializer
@@ -85,7 +93,7 @@ class MovieSearchAPIView(APIView):
         else:
             search_data = get_user_model().objects.filter(
                 nickname__icontains=search_keyword
-                )
+            )
 
             serializer_class = UserSerializer
 
@@ -116,16 +124,14 @@ class MovieDetailAPIView(APIView):
             if movie.like_users.filter(pk=request.user.pk).exists():
                 movie.like_users.remove(request.user)
                 return Response(
-                    {"detail": "보고싶어요를 해제합니다."},
-                    status=status.HTTP_200_OK
-                    )
+                    {"detail": "보고싶어요를 해제합니다."}, status=status.HTTP_200_OK
+                )
             else:
                 movie.like_users.add(request.user)
                 movie.save()
                 return Response(
-                    {"detail": "이 영화가 보고싶어요."},
-                    status=status.HTTP_200_OK
-                    )
+                    {"detail": "이 영화가 보고싶어요."}, status=status.HTTP_200_OK
+                )
         # 관심없어요
         else:
             movie.like_users.remove(request.user)
@@ -133,16 +139,14 @@ class MovieDetailAPIView(APIView):
             if movie.dislike_users.filter(pk=request.user.pk).exists():
                 movie.dislike_users.remove(request.user)
                 return Response(
-                    {"detail": "관심없어요를 해제합니다."},
-                    status=status.HTTP_200_OK
-                    )
+                    {"detail": "관심없어요를 해제합니다."}, status=status.HTTP_200_OK
+                )
             else:
                 movie.dislike_users.add(request.user)
                 movie.save()
                 return Response(
-                    {"detail": "이 영화가 관심없어요."},
-                    status=status.HTTP_200_OK
-                    )
+                    {"detail": "이 영화가 관심없어요."}, status=status.HTTP_200_OK
+                )
 
 
 # 평점
@@ -157,14 +161,13 @@ class MovieScoreAPIView(APIView):
 
         if score == 0 or score > 5:
             return Response(
-                {"detail": "이 영화의 평가를 취소합니다."},
-                status=status.HTTP_200_OK
-                )
+                {"detail": "이 영화의 평가를 취소합니다."}, status=status.HTTP_200_OK
+            )
         else:
             score = int(score * 10) / 10
             Rating.objects.create(user=request.user, movie=movie, score=score)
 
             return Response(
                 {"detail": f"이 영화의 점수를 {score}로 평가합니다."},
-                status=status.HTTP_200_OK
-                )
+                status=status.HTTP_200_OK,
+            )
