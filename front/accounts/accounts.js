@@ -266,7 +266,8 @@ const userProfile = () => {
 // });
 
 
-const followUser = () => {
+const followUser = (event) => {
+    event.preventDefault();  // 기본 동작 방지 (페이지 새로고침 방지)
     var userPK = document.getElementById("userpk").value
 
     axios.post(`${API_BASE_URL}/accounts/${userPK}/follow/`, {
@@ -279,6 +280,8 @@ const followUser = () => {
             console.log(error)
             alert(error.response.data.message)
         })
+
+    return false; // 기본 동작 방지
 }
 
 
