@@ -81,4 +81,17 @@ if (searchKeyword) {
         });
 }
 
-// 
+// 상세 페이지
+const pk = urlParams.get('pk');
+
+axios.get(`http://127.0.0.1:8000/api/v1/movies/${pk}/`)
+    .then(response => {
+        const movie = response.data;
+
+        document.getElementById('movie-title').textContent = movie.title;
+        document.getElementById('movie-genre').textContent = movie.genre;
+        document.getElementById('movie-plot').textContent = movie.plot;
+    })
+    .catch(error => {
+        console.error('영화 정보를 가져오는 중 오류 발생:', error);
+    });
