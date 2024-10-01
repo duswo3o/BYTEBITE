@@ -5,6 +5,7 @@ const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
 const signupBtn = document.getElementById("signup-btn");
 const signinBtn = document.getElementById("signin-btn");
 // const profileBtn = document.getElementById("calluesrbtn");
+const followBtn = document.getElementById("followUserBtn");
 
 
 // 토큰 저장 및 관리 함수
@@ -265,6 +266,25 @@ const userProfile = () => {
 // });
 
 
+const followUser = (event) => {
+    event.preventDefault();  // 기본 동작 방지 (페이지 새로고침 방지)
+    var userPK = document.getElementById("userpk").value
+
+    axios.post(`${API_BASE_URL}/accounts/${userPK}/follow/`, {
+    })
+        .then(response => {
+            console.log(response)
+            alert(response.data.message)
+        })
+        .catch(error => {
+            console.log(error)
+            alert(error.response.data.message)
+        })
+
+    return false; // 기본 동작 방지
+}
+
+
 
 // 버튼 확인
 if (signupBtn) {
@@ -281,4 +301,8 @@ if (signoutBtn) {
 
 if (profileBtn) {
     profileBtn.addEventListener('click', userProfile)
+}
+
+if (followBtn) {
+    followBtn.addEventListener('click', followUser)
 }
