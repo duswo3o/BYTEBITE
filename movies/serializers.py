@@ -15,7 +15,7 @@ class BoxofficeSerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ['name']
+        fields = ["name"]
 
 
 class MovieSerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class AverageGradeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ["title", "average_grade"]
+        fields = ["id", "title", "average_grade"]
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -39,7 +39,7 @@ class LikeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ["title", "like"]
+        fields = ["id", "title", "like"]
 
 
 class FilmographySerializer(MovieSerializer):
