@@ -37,7 +37,7 @@ class LikeSerializer(serializers.ModelSerializer):
 class FilmographySerializer(MovieSerializer):
     class Meta:
         model = Movie
-        fields = ['title']
+        fields = ["title"]
 
 
 class StaffSerializer(serializers.ModelSerializer):
@@ -45,10 +45,10 @@ class StaffSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Staff
-        fields = fields = ['name', 'role', 'filmographys']
+        fields = fields = ["name", "role", "filmographys"]
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['nickname', 'bio']
+        fields = ["nickname", "bio"]
