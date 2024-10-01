@@ -132,14 +132,6 @@ const userProfile = () => {
     axios.get(`${API_BASE_URL}/accounts/${userPK}/`)
         .then(response => {
             console.log(response)
-            var myReviews = response.data.reviews;
-            var myReviewList = document.getElementById("my-movie-reviews");
-            myReviews.forEach(myReview => {
-                var li = document.createElement("li");
-                li.textContent = `MovieID : ${myReview.movie}  content : ${myReview.content}`;
-                myReviewList.appendChild(li)
-
-            });
 
             // console.log(document)
             document.getElementById("nickname").innerText = response.data.nickname
@@ -150,17 +142,59 @@ const userProfile = () => {
             document.getElementById("likedreview").innerText = response.data.liked_reviews.length
             document.getElementById("ratedmovie").innerText = response.data.rated_movie.length
             document.getElementById("myreview").innerText = response.data.reviews.length
-            document.getElementById("testreview").innerText = response.data.reviews.length
+            // document.getElementById("testreview").innerText = response.data.reviews.length
+
+
+            var wishMovies = response.data.liked_movies;
+            var wishMovieList = document.getElementById("wnat-to-watch");
+            wishMovies.forEach(wishMovie => {
+                var wishMoviediv = document.createElement("div");
+                wishMoviediv.innerHTML = `
+                    <div class="card">
+                        <p>MovieID : <span calss="movieID">${wishMovie.title}</span></p>
+                    </div>
+                `;
+                wishMovieList.appendChild(wishMoviediv);
+            })
+
+            var myReviews = response.data.reviews;
+            var myReviewList = document.getElementById("my-movie-reviews");
+            myReviews.forEach(myReview => {
+                var reviewdiv = document.createElement("div");
+                reviewdiv.innerHTML = `
+                    <div class="card">
+                        <p>MovieID : <span calss="movieID">${myReview.movie}</span></p>
+                        <p>review : <span class="myReview">${myReview.content}</span></p>
+                    </div>
+                `;
+                myReviewList.appendChild(reviewdiv);
+            })
+
+            var myRatings = response.data.rated_movie;
+            var myRatingList = document.getElementById("my-rated-movie");
+            myRatings.forEach(myRating => {
+                var ratingdiv = document.createElement("div");
+                ratingdiv.innerHTML = `
+                <div class="card">
+                    <p>MovieID : <span calss="movieID">${myRating.movie}</span></p>
+                    <p>score : <span class="myReview">${myRating.score}</span></p>
+                </div>
+            `;
+                myRatingList.appendChild(ratingdiv);
+            })
+
+
         })
         .catch(error => {
             console.log(error)
+            alert("없는 회원입니다")
         })
 
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    userProfile(); // 페이지가 로드되면 userProfile 함수 호출
-});
+// document.addEventListener("DOMContentLoaded", () => {
+//     userProfile(); // 페이지가 로드되면 userProfile 함수 호출
+// });
 
 
 

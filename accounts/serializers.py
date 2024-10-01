@@ -200,10 +200,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         source="followings.count", read_only=True
     )
     followers = UserSerializer(many=True)
-    followers_count = serializers.IntegerField(source="followers.count", read_only=True)
+    followers_count = serializers.IntegerField(
+        source="followers.count", read_only=True)
     rated_movie = RatingSerializer(many=True, read_only=True, source="ratings")
-    # liked_reviews = LikedReviewSerializer(many=True, read_only=True, source="likes")
-    # liked_comments = LikedCommentSerializer(many=True, read_only=True, source="likes")
     liked_reviews = serializers.SerializerMethodField()
     liked_comments = serializers.SerializerMethodField()
 
@@ -229,7 +228,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_liked_reviews(self, obj):
         # LikedReviewSerializer로 직렬화한 후 유효한 데이터만 필터링
         reviews = LikedReviewSerializer(
-            obj.likes.filter(review__isnull=False), many=True
+            obj.likes_given.filter(review__isnull=False), many=True
         ).data
         return [
             review for review in reviews if review
@@ -238,7 +237,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_liked_comments(self, obj):
         # LikedCommentSerializer로 직렬화한 후 유효한 데이터만 필터링
         comments = LikedCommentSerializer(
-            obj.likes.filter(comment__isnull=False), many=True
+            obj.likes_given.filter(comment__isnull=False), many=True
         ).data
         return [
             comment for comment in comments if comment

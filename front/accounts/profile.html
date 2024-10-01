@@ -41,9 +41,54 @@
             </div>
             <div class="col">
                 <div class="card h-100">
-                    <div>
+                    <!-- <div>
                         <p>want to watch <br><span id="wannawatch"></span></p>
+                    </div> -->
+
+                
+
+
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    want to watch <br> <span id="wannawatch"></span>
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="wnat-to-watch">
+                                    
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
                     <div>
                         <p>liked review <br><span id="likedreview"></span></p>
                     </div>
@@ -51,13 +96,11 @@
             </div>
             <div class="col">
                 <div class="card h-100">
-                    <div>
-                        <p>rated movie <br><span id="ratedmovie"></span></p>
-                    </div>
+
 
                     <!-- Button trigger modal -->
                     <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        my review <br> <span id="testreview"></span>
+                        rated movie <br> <span id="ratedmovie"></span>
                     </button>
 
                     <!-- Modal -->
@@ -71,12 +114,8 @@
                                         aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <div>
-                                        <ul id="my-movie-reviews"></ul>
-                                        <div class="card">
-                                            <p>MovieID : <span calss="movieID"></span></p>
-                                            <p>review : <span class="myReview"></span></p>
-                                        </div>
+                                    <div id="my-rated-movie">
+                                        
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -89,10 +128,34 @@
                     </div>
 
 
-                    <div>
-                        <p>review <br><span id="myreview"></span></p>
-                    </div>
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        my review <br> <span id="myreview"></span>
+                    </button>
 
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="my-movie-reviews">
+                                        
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
