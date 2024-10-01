@@ -112,6 +112,7 @@ function displayReviews(reviews) {
             <div class="content">${review.content}</div>
             <div class="footer">
                 <span class="like-count">좋아요: ${review.like_count}</span>
+                <span class="comment_count">댓글수: ${review.comment_count}</span>
                 <button class="like-btn" data-review-id="${review.id}">좋아요</button>
             </div>
         `;

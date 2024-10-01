@@ -17,6 +17,9 @@ class Review(models.Model):
     def like_count(self):
         return self.review_likes.count()
 
+    def comment_count(self):
+        return self.comments.all().count()
+
 
 class Comment(models.Model):
     review = models.ForeignKey(
