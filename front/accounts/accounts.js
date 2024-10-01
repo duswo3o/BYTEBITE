@@ -4,7 +4,7 @@ const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
 
 const signupBtn = document.getElementById("signup-btn");
 const signinBtn = document.getElementById("signin-btn");
-const profileBtn = document.getElementById("calluesrbtn");
+// const profileBtn = document.getElementById("calluesrbtn");
 
 
 // 토큰 저장 및 관리 함수
@@ -122,8 +122,14 @@ const signinUser = () => {
         })
 }
 
+
+// 프로필 조회
+const profileBtn = document.getElementById("searchUserBtn")
+
 const userProfile = () => {
-    axios.get(`${API_BASE_URL}/accounts/6/`)
+    var userPK = document.getElementById("userpk").value
+
+    axios.get(`${API_BASE_URL}/accounts/${userPK}/`)
         .then(response => {
             console.log(response)
             var myReviews = response.data.reviews;
@@ -167,6 +173,6 @@ if (signinBtn) {
     signinBtn.addEventListener('click', signinUser)
 }
 
-// if (profileBtn) {
-//     profileBtn.addEventListener('click', userProfile)
-// }
+if (profileBtn) {
+    profileBtn.addEventListener('click', userProfile)
+}
