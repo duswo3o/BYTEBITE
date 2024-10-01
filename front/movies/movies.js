@@ -34,10 +34,10 @@ const searchForm = document.getElementById('searchForm');
 
 if (searchForm) {
     searchForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // 기본 폼 제출 방지
+        event.preventDefault();
 
-        const searchKeyword = document.getElementById('search_keyword').value.trim(); // 검색어
-        const searchType = document.getElementById('lang').value; // 검색 타입
+        const searchKeyword = document.getElementById('search_keyword').value.trim();
+        const searchType = document.getElementById('lang').value;
 
         // 검색어가 비어있을 경우 경고
         if (!searchKeyword) {
@@ -67,7 +67,8 @@ if (searchKeyword) {
             response.data.forEach(item => {
                 const li = document.createElement('li');
                 if (searchType === 'movies') {
-                    li.textContent = `제목: ${item.title}, 장르: ${item.genre}, 줄거리: ${item.plot}`;
+                    const genreNames = item.genre.map(genre => genre.name).join(', ');
+                    li.textContent = `제목: ${item.title}, 장르: ${genreNames}`;
                 } else if (searchType === 'staff') {
                     li.textContent = `이름: ${item.name}`;
                 } else if (searchType === 'member') {
@@ -89,7 +90,9 @@ axios.get(`http://127.0.0.1:8000/api/v1/movies/${pk}/`)
         const movie = response.data;
 
         document.getElementById('movie-title').textContent = movie.title;
-        document.getElementById('movie-genre').textContent = movie.genre;
+
+        const genreNames = movie.genre.map(genre => genre.name).join(', ');
+        document.getElementById('movie-genre').textContent = genreNames;
         document.getElementById('movie-plot').textContent = movie.plot;
     })
     .catch(error => {
