@@ -114,6 +114,7 @@ const signinUser = () => {
         .then(response => {
             // 로그인 성공 시 토큰 저장
             tokenManager.setTokens(response.data);
+            
             console.log(response)
             // alert("로그인 성공")
             // 이동할 페이지
@@ -135,6 +136,8 @@ const signoutUser = () => {
         refresh: localStorage.getItem("jwtRefreshToken")
     })
         .then(response => {
+            localStorage.removeItem('jwtAccessToken');
+            localStorage.removeItem('jwtRefreshToken');
             console.log(response)
             alert("로그아웃 되었습니다")
         })
@@ -301,15 +304,15 @@ const updateProfile = () => {
         age: age,
         bio: document.getElementById('InputBio').value,
     })
-    .then(response => {
-        console.log(response)
-        window.location.href = "profile.html"
+        .then(response => {
+            console.log(response)
+            window.location.href = "profile.html"
 
-    })
-    .catch(error => {
-        console.log(error)
-        alert("수정 실패")
-    })
+        })
+        .catch(error => {
+            console.log(error)
+            alert("수정 실패")
+        })
 }
 
 
