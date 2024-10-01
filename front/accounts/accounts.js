@@ -339,7 +339,7 @@ const updateProfile = () => {
 
             localStorage.setItem('nickname', response.data.nickname)
             localStorage.setItem('gender', response.data.gender)
-            localStorage.setItem('age', response.data.age)
+            localStorage.setItem('age', age)
             localStorage.setItem('bio', response.data.bio)
 
             window.location.href = "profile.html"
