@@ -5,6 +5,7 @@ const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
 const signupBtn = document.getElementById("signup-btn");
 const signinBtn = document.getElementById("signin-btn");
 // const profileBtn = document.getElementById("calluesrbtn");
+const followBtn = document.getElementById("followUserBtn");
 
 
 // 토큰 저장 및 관리 함수
@@ -95,7 +96,7 @@ const signupUser = () => {
         .then(response => {
             console.log(response);
             // 이동할 페이지
-            // window.location.href = ""
+            window.location.href = "profile.html"
         })
         .catch(error => {
             console.log(error)
@@ -115,7 +116,7 @@ const signinUser = () => {
             tokenManager.setTokens(response.data);
             console.log(response)
             // 이동할 페이지
-            // window.location.href = ""
+            window.location.href = "profile.html"
         })
         .catch(error => {
             console.log(error)
@@ -244,6 +245,22 @@ const userProfile = () => {
 // });
 
 
+const followUser = () => {
+    var userPK = document.getElementById("userpk").value
+
+    axios.post(`${API_BASE_URL}/accounts/${userPK}/follow/`, {
+    })
+        .then(response => {
+            console.log(response)
+            alert(response.data.message)
+        })
+        .catch(error => {
+            console.log(error)
+            alert(error.response.data.message)
+        })
+}
+
+
 
 // 버튼 확인
 if (signupBtn) {
@@ -256,4 +273,8 @@ if (signinBtn) {
 
 if (profileBtn) {
     profileBtn.addEventListener('click', userProfile)
+}
+
+if (followBtn) {
+    followBtn.addEventListener('click', followUser)
 }
