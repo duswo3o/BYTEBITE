@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 # Django 기능 및 프로젝트 관련
 from django.contrib.auth import get_user_model
-from .models import Movie, Ranking, Staff
+from .models import Genre, Movie, Ranking, Staff
 
 
 class BoxofficeSerializer(serializers.ModelSerializer):
@@ -12,7 +12,15 @@ class BoxofficeSerializer(serializers.ModelSerializer):
         fields = ["title", "rank"]
 
 
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ["name"]
+
+
 class MovieSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True)
+
     class Meta:
         model = Movie
         fields = "__all__"
@@ -23,7 +31,7 @@ class AverageGradeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ["title", "average_grade"]  # 영화 제목과 평균 점수
+        fields = ["id", "title", "average_grade"]
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -31,7 +39,7 @@ class LikeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ["title", "like"]
+        fields = ["id", "title", "like"]
 
 
 class FilmographySerializer(MovieSerializer):
