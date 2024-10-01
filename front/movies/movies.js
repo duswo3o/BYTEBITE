@@ -51,24 +51,37 @@ if (searchForm) {
     });
 }
 
-// search.html에서 검색 결과 처리
+// url주소에서 데이터 추출
 const urlParams = new URLSearchParams(window.location.search);
+
+// search.html에서 검색 결과 처리
 const searchKeyword = urlParams.get('search_keyword');
 const searchType = urlParams.get('search_type');
 
 if (searchKeyword) {
-    // 수정된 API 호출 URL
     axios.get(`http://127.0.0.1:8000/api/v1/movies/search/?search_type=${searchType}&search_keyword=${encodeURIComponent(searchKeyword)}`)
         .then(response => {
             const resultsList = document.getElementById('searchresults');
-            resultsList.innerHTML = ''; // 기존 결과 초기화
+            resultsList.innerHTML = '';
 
-            // 검색 결과를 동적으로 추가
+            // 검색 결과를 출력
             response.data.forEach(item => {
                 const li = document.createElement('li');
+
                 if (searchType === 'movies') {
                     const genreNames = item.genre.map(genre => genre.name).join(', ');
-                    li.textContent = `제목: ${item.title}, 장르: ${genreNames}`;
+
+                    const link = document.createElement('a');
+                    link.href = `http://127.0.0.1:5501/front/movies/details.html?pk=${item.id}`;
+                    link.textContent = item.title;
+
+                    li.appendChild(link);
+
+                    li.appendChild(document.createTextNode(`, 장르: ${genreNames}`));
+                    
+                    console.log(link.href);
+                    console.log(link);
+
                 } else if (searchType === 'staff') {
                     li.textContent = `이름: ${item.name}`;
                 } else if (searchType === 'member') {
