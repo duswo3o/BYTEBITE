@@ -4,8 +4,8 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 
 from .models import User
-from movies.models import Movie
-from reviews.models import Review
+from movies.models import Movie, Rating
+from reviews.models import Review, Comment, Like
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -135,13 +135,61 @@ class MovieSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ["content"]
+        fields = ["movie", "content"]
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ["review", "content"]
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["nickname"]
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ["movie", "score"]
+
+
+class LikedReviewSerializer(serializers.ModelSerializer):
+    review = ReviewSerializer(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ["review"]
+
+    def to_representation(self, instance):
+        # 부모 클래스의 to_representation() 호출
+        representation = super().to_representation(instance)
+
+        # review가 None이거나 직렬화 결과가 비어 있으면 빈 딕셔너리 반환 방지
+        if not representation.get("review"):
+            return None  # 빈 객체가 아닌 None을 반환하여 리스트에서 제거되도록 처리
+
+        return representation
+
+
+class LikedCommentSerializer(serializers.ModelSerializer):
+    comment = CommentSerializer(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ["comment"]
+
+    def to_representation(self, instance):
+        # 부모 클래스의 to_representation() 호출
+        representation = super().to_representation(instance)
+
+        # comment가 None이거나 직렬화 결과가 비어 있으면 빈 딕셔너리 반환 방지
+        if not representation.get("comment"):
+            return None  # 빈 객체가 아닌 None을 반환하여 리스트에서 제거되도록 처리
+
+        return representation
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -152,7 +200,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         source="followings.count", read_only=True
     )
     followers = UserSerializer(many=True)
-    followers_count = serializers.IntegerField(source="followers.count", read_only=True)
+    followers_count = serializers.IntegerField(
+        source="followers.count", read_only=True)
+    rated_movie = RatingSerializer(many=True, read_only=True, source="ratings")
+    liked_reviews = serializers.SerializerMethodField()
+    liked_comments = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -166,6 +218,27 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "gender",
             "age",
             "bio",
+            "rated_movie",
             "liked_movies",
             "reviews",
+            "liked_reviews",
+            "liked_comments",
         ]
+
+    def get_liked_reviews(self, obj):
+        # LikedReviewSerializer로 직렬화한 후 유효한 데이터만 필터링
+        reviews = LikedReviewSerializer(
+            obj.likes_given.filter(review__isnull=False), many=True
+        ).data
+        return [
+            review for review in reviews if review
+        ]  # None 값이 아닌 유효한 리뷰만 반환
+
+    def get_liked_comments(self, obj):
+        # LikedCommentSerializer로 직렬화한 후 유효한 데이터만 필터링
+        comments = LikedCommentSerializer(
+            obj.likes_given.filter(comment__isnull=False), many=True
+        ).data
+        return [
+            comment for comment in comments if comment
+        ]  # None 값이 아닌 유효한 댓글만 반환
