@@ -61,9 +61,15 @@ class MovieSearchAPIView(APIView):
     # 검색
     def get(self, request):
         # 검색할 데이터 종류(영화, 영화인, 회원)
-        search_type = request.data.get("search_type")
+        search_type = request.GET.get("search_type")
         # 검색 키워드
-        search_keyword = request.data.get("search_keyword")
+        search_keyword = request.GET.get("search_keyword")
+
+        if not search_keyword:
+            return Response(
+                {'error': '검색어를 제공해야 합니다.'},
+                status=status.HTTP_400_BAD_REQUEST
+                )
 
         # 영화 검색(제목, 장르, 줄거리)
         if search_type == 'movies':
