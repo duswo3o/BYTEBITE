@@ -85,93 +85,93 @@ function logout() {
     alert('로그아웃 성공');
 }
 
-// 리뷰 가져오기 함수
-async function getReviews(moviePk) {
+// 코멘트 가져오기 함수
+async function getComments(reviewPk) {
     try {
-        const response = await axios.get(`${API_BASE_URL}reviews/${moviePk}/`);
-        const reviews = response.data;
-        console.log('리뷰 가져오기 성공:', reviews);
-        return reviews;
+        const response = await axios.get(`${API_BASE_URL}reviews/${reviewPk}/comments/`);
+        const comments = response.data;
+        console.log('코멘트 가져오기 성공:', comments);
+        return comments;
     } catch (error) {
-        console.error('리뷰 가져오기 실패:', error);
+        console.error('코멘트 가져오기 실패:', error);
         throw error;
     }
 }
 
-// 리뷰 표시 함수
-function displayReviews(reviews) {
+// 코멘트 표시 함수
+function displayComments(comments) {
     const responseDiv = document.getElementById('response');
     responseDiv.innerHTML = ''; // 기존 결과 초기화
-    reviews.forEach(review => {
-        const reviewDiv = document.createElement('div');
-        reviewDiv.innerHTML = `
+    comments.forEach(comment => {
+        const commentDiv = document.createElement('div');
+        commentDiv.innerHTML = `
             <div class="header">
-                <span class="author">${review.author}</span>
-                <span class="date">${new Date(review.created_at).toLocaleString()}</span>
+                <span class="author">${comment.author}</span>
+                <span class="date">${new Date(comment.created_at).toLocaleString()}</span>
             </div>
-            <div class="content">${review.content}</div>
+            <div class="content">${comment.content}</div>
             <div class="footer">
-                <span class="like-count">좋아요: ${review.like_count}</span>
-                <button class="like-btn" data-review-id="${review.id}">좋아요</button>
+                <span class="like-count">좋아요: ${comment.like_count}</span>
+                <button class="like-btn" data-comment-id="${comment.id}">좋아요</button>
             </div>
         `;
-        responseDiv.appendChild(reviewDiv); // 리뷰 추가
+        responseDiv.appendChild(commentDiv); // 코멘트 추가
     });
 
     // 좋아요 버튼에 이벤트 리스너 추가
     const likeButtons = document.querySelectorAll('.like-btn');
     likeButtons.forEach(button => {
         button.addEventListener('click', async (event) => {
-            const reviewId = event.target.getAttribute('data-review-id');
-            await toggleLike(reviewId);
+            const commentId = event.target.getAttribute('data-comment-id');
+            await toggleLike(commentId);
         });
     });
 }
 
 // 좋아요 토글 함수
-async function toggleLike(reviewId) {
+async function toggleLike(commentId) {
     try {
-        const response = await axios.post(`${API_BASE_URL}reviews/likes/review/${reviewId}/`);
+        const response = await axios.post(`${API_BASE_URL}reviews/likes/comment/${commentId}/`);
         console.log(response.data.message);
         alert(response.data.message);
 
-        // 좋아요 변경 후 리뷰 목록 다시 가져오기
-        const moviePk = document.getElementById('moviePkInput').value;
-        const reviews = await getReviews(moviePk);
-        displayReviews(reviews); // 리뷰를 화면에 표시하는 함수 호출
+        // 좋아요 변경 후 코멘트 목록 다시 가져오기
+        const reviewPK = document.getElementById('commentPkInput').value;
+        const comments = await getComments(reviewPK);
+        displayComments(comments); // 코멘트를 화면에 표시하는 함수 호출
     } catch (error) {
         console.error('좋아요 처리 실패:', error.response ? error.response.data : error.message);
         alert('좋아요 처리 실패');
     }
 }
 
-
-// 리뷰 작성하기 함수
-async function postReview(moviePk, content) {
+// 코멘트 작성하기 함수
+async function postComment(reviewPk, content) {
     if (!content.trim()) {
-        alert('리뷰 내용을 입력해주세요.'); // 비어 있는 경우 경고
+        alert('코멘트 내용을 입력해주세요.'); // 비어 있는 경우 경고
         return;
     }
 
     try {
-        await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { content });
-        console.log('리뷰 작성 성공');
-        alert('리뷰 작성 성공');
+        await axios.post(`${API_BASE_URL}reviews/${reviewPk}/comments/`, { content });
+        console.log('코멘트 작성 성공');
+        alert('코멘트 작성 성공');
 
-        // 리뷰 작성 후 리뷰 목록 다시 가져오기
-        await refreshReviews(moviePk); // 전체 리뷰 목록 갱신
+        // 코멘트 작성 후 코멘트 목록 다시 가져오기
+        await refreshComments(reviewPk); // 전체 코멘트 목록 갱신
     } catch (error) {
-        console.error('리뷰 작성 실패:', error.response ? error.response.data : error.message);
-        alert('리뷰 작성 실패');
+        console.error('코멘트 작성 실패:', error.response ? error.response.data : error.message);
+        alert('코멘트 작성 실패');
     }
 }
-// 리뷰 목록 갱신 함수
-async function refreshReviews(moviePk) {
+
+// 코멘트 목록 갱신 함수
+async function refreshComments(reviewPk) {
     try {
-        const reviews = await getReviews(moviePk); // 리뷰 목록 가져오기
-        displayReviews(reviews); // 화면에 리뷰 표시
+        const comments = await getComments(reviewPk); // 코멘트 목록 가져오기
+        displayComments(comments); // 화면에 코멘트 표시
     } catch (error) {
-        console.error('리뷰 목록 갱신 실패:', error);
+        console.error('코멘트 목록 갱신 실패:', error);
     }
 }
 
@@ -186,14 +186,14 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
     logout();
 });
 
-document.getElementById('getReviewsBtn').addEventListener('click', async () => {
-    const moviePk = document.getElementById('moviePkInput').value;
-    const reviews = await getReviews(moviePk);
-    displayReviews(reviews); // 리뷰를 화면에 표시하는 함수 호출
+document.getElementById('getCommentsBtn').addEventListener('click', async () => {
+    const reviewPk = document.getElementById('commentPkInput').value;
+    const comments = await getComments(reviewPk);
+    displayComments(comments); // 코멘트를 화면에 표시하는 함수 호출
 });
 
-document.getElementById('postReviewBtn').addEventListener('click', () => {
-    const moviePk = document.getElementById('moviePkInput').value;
-    const content = document.getElementById('reviewContent').value;
-    postReview(moviePk, content);
+document.getElementById('postBtn').addEventListener('click', () => {
+    const reviewPk = document.getElementById('commentPkInput').value;
+    const content = document.getElementById('commentContent').value;
+    postComment(reviewPk, content);
 });
