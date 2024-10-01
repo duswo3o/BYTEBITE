@@ -98,6 +98,7 @@ async function getReviews(moviePk) {
     }
 }
 
+
 // 리뷰 표시 함수
 function displayReviews(reviews) {
     const responseDiv = document.getElementById('response');
@@ -105,14 +106,19 @@ function displayReviews(reviews) {
     reviews.forEach(review => {
         const reviewDiv = document.createElement('div');
         reviewDiv.innerHTML = `
-            <div class="review-header">
+            <div class="header">
                 <span class="author">${review.author}</span>
                 <span class="date">${new Date(review.created_at).toLocaleString()}</span>
             </div>
-            <div class="content">${review.content}</div>
-            <div class="review-footer">
+            <div class="content" id="review-content-${review.id}">${review.content}</div>
+            <div class="footer">
                 <span class="like-count">좋아요: ${review.like_count}</span>
+                <span class="comment_count">댓글수: ${review.comment_count}</span>
                 <button class="like-btn" data-review-id="${review.id}">좋아요</button>
+                <button class="edit-btn" data-review-id="${review.id}">수정</button>
+                <button class="delete-btn" data-review-id="${review.id}">삭제</button>
+                <textarea id="edit-content-${review.id}" style="display:none;"></textarea>
+                <button class="save-btn" data-review-id="${review.id}" style="display:none;">수정 완료</button>
             </div>
         `;
         responseDiv.appendChild(reviewDiv); // 리뷰 추가
@@ -126,7 +132,84 @@ function displayReviews(reviews) {
             await toggleLike(reviewId);
         });
     });
+
+    // 수정 버튼에 이벤트 리스너 추가
+    const editButtons = document.querySelectorAll('.edit-btn');
+    editButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            const reviewId = event.target.getAttribute('data-review-id');
+            const contentDiv = document.getElementById(`review-content-${reviewId}`);
+            const editTextArea = document.getElementById(`edit-content-${reviewId}`);
+            const saveButton = document.querySelector(`.save-btn[data-review-id="${reviewId}"]`);
+
+            // 수정할 내용으로 텍스트 영역 채우기
+            editTextArea.value = contentDiv.innerText;
+            contentDiv.style.display = 'none'; // 기존 내용 숨기기
+            editTextArea.style.display = 'block'; // 텍스트 영역 보이기
+            saveButton.style.display = 'inline'; // 저장 버튼 보이기
+        });
+    });
+
+    // 수정 완료 버튼에 이벤트 리스너 추가
+    const saveButtons = document.querySelectorAll('.save-btn');
+    saveButtons.forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const reviewId = event.target.getAttribute('data-review-id');
+            const editTextArea = document.getElementById(`edit-content-${reviewId}`);
+            const newContent = editTextArea.value;
+
+            await updateReview(reviewId, newContent);
+        });
+    });
+
+    // 삭제 버튼에 이벤트 리스너 추가
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const reviewId = event.target.getAttribute('data-review-id');
+            await deleteReview(reviewId); // 리뷰 삭제 함수 호출
+        });
+    });
 }
+
+// 리뷰 수정하기 함수
+async function updateReview(reviewId, content) {
+    if (!content.trim()) {
+        alert('수정할 내용을 입력해주세요.'); // 비어 있는 경우 경고
+        return;
+    }
+
+    try {
+        await axios.put(`${API_BASE_URL}reviews/detail/${reviewId}/`, { content });
+        console.log('리뷰 수정 성공');
+        alert('리뷰 수정 성공');
+
+        // 수정 후 리뷰 목록 다시 가져오기
+        const moviePk = document.getElementById('moviePkInput').value;
+        await refreshReviews(moviePk); // 전체 리뷰 목록 갱신
+    } catch (error) {
+        console.error('리뷰 수정 실패:', error.response ? error.response.data : error.message);
+        alert('작성자 본인만 수정 할 수 있습니다.');
+    }
+}
+
+// 리뷰 삭제하기 함수
+async function deleteReview(reviewId) {
+    try {
+        await axios.delete(`${API_BASE_URL}reviews/detail/${reviewId}/`);
+        console.log('리뷰 삭제 성공');
+        alert('리뷰 삭제 성공');
+
+        // 삭제 후 리뷰 목록 다시 가져오기
+        const moviePk = document.getElementById('moviePkInput').value;
+        await refreshReviews(moviePk); // 전체 리뷰 목록 갱신
+    } catch (error) {
+        console.error('리뷰 삭제 실패:', error.response ? error.response.data : error.message);
+        alert('작성자 본인만 삭제 할 수 있습니다.');
+    }
+}
+
+
 
 // 좋아요 토글 함수
 async function toggleLike(reviewId) {
@@ -174,6 +257,7 @@ async function refreshReviews(moviePk) {
         console.error('리뷰 목록 갱신 실패:', error);
     }
 }
+
 
 // 버튼 이벤트 리스너 설정
 document.getElementById('loginBtn').addEventListener('click', () => {

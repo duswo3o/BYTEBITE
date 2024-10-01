@@ -49,7 +49,7 @@ button:hover {
     background-color: #4cae4c;
 }
 
-.review-container {
+.container {
     background: #fff;
     padding: 20px;
     border-radius: 5px;
@@ -65,12 +65,12 @@ button:hover {
     border-bottom: none;
 }
 
-.review-header {
+.header {
     font-weight: bold;
     display: flex;
     justify-content: space-between;
 }
 
-.review-footer {
+.footer {
     color: #e05a79;
 }
