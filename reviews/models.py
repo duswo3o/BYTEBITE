@@ -41,10 +41,25 @@ class Comment(models.Model):
 
 
 class Like(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, null=True, blank=True)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
-
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="likes_given",
+    )
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="review_likes",
+    )
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="comment_likes",
+    )
 
     class Meta:
-        unique_together = ('user', 'review', "comment")
+        unique_together = ("user", "review", "comment")
