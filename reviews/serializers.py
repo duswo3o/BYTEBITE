@@ -13,13 +13,22 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_like_count(self, obj):
         return obj.like_count()
 
+
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source="author.nickname")
     review = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Comment
-        fields = ["id", "review", "content", "author", "created_at", "updated_at", "like_count"]
+        fields = [
+            "id",
+            "review",
+            "content",
+            "author",
+            "created_at",
+            "updated_at",
+            "like_count",
+        ]
 
     def get_like_count(self, obj):
         return obj.like_count()
@@ -27,6 +36,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class LikeSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source="author.nickname")
+
     class Meta:
         model = Like
-        fields = ['id', 'user', 'review',]
+        fields = [
+            "id",
+            "user",
+            "review",
+        ]
