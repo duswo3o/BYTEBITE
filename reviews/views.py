@@ -85,13 +85,11 @@ class LikeViewSet(viewsets.ModelViewSet):
             ).first()
             if existing_like:
                 existing_like.delete()
-                return Response(
-                    {"message": "좋아요 취소"}, status=status.HTTP_204_NO_CONTENT
-                )
+                return Response({"message": "좋아요 취소"}, status=status.HTTP_200_OK)
 
             like = Like.objects.create(user=request.user, review=review)
             serializer = LikeSerializer(like)
-            return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "좋아요!"}, status=status.HTTP_201_CREATED)
 
         elif comment_id:
             try:
@@ -107,13 +105,11 @@ class LikeViewSet(viewsets.ModelViewSet):
             ).first()
             if existing_like:
                 existing_like.delete()
-                return Response(
-                    {"message": "좋아요 취소"}, status=status.HTTP_204_NO_CONTENT
-                )
+                return Response({"message": "좋아요 취소"}, status=status.HTTP_200_OK)
 
             like = Like.objects.create(user=request.user, comment=comment)
             serializer = LikeSerializer(like)
-            return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "좋아요!"}, status=status.HTTP_201_CREATED)
 
         return Response(
             {"error": "리뷰 또는 코멘트 ID가 필요합니다."},

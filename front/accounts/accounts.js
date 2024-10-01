@@ -115,11 +115,32 @@ const signinUser = () => {
             // 로그인 성공 시 토큰 저장
             tokenManager.setTokens(response.data);
             console.log(response)
+            // alert("로그인 성공")
             // 이동할 페이지
             window.location.href = "profile.html"
         })
         .catch(error => {
             console.log(error)
+        })
+}
+
+
+
+// 로그아웃
+
+const signoutBtn = document.getElementById("signoutBtn")
+
+const signoutUser = () => {
+    axios.post(`${API_BASE_URL}/accounts/signout/`, {
+        refresh: localStorage.getItem("jwtRefreshToken")
+    })
+        .then(response => {
+            console.log(response)
+            alert("로그아웃 되었습니다")
+        })
+        .catch(error => {
+            console.log(error)
+            alert("로그아웃 실패")
         })
 }
 
@@ -269,6 +290,10 @@ if (signupBtn) {
 
 if (signinBtn) {
     signinBtn.addEventListener('click', signinUser)
+}
+
+if (signoutBtn) {
+    signoutBtn.addEventListener('click', signoutUser)
 }
 
 if (profileBtn) {

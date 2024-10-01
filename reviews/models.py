@@ -15,7 +15,10 @@ class Review(models.Model):
         return self.content[:20]
 
     def like_count(self):
-        return self.like_set.count()
+        return self.review_likes.count()
+
+    def comment_count(self):
+        return self.comments.all().count()
 
 
 class Comment(models.Model):
@@ -37,7 +40,7 @@ class Comment(models.Model):
         return self.content[:20]
 
     def like_count(self):
-        return self.like_set.count()
+        return self.comment_likes.count()
 
 
 class Like(models.Model):
