@@ -132,25 +132,58 @@ axios.get(`${API_BASE_URL}/movies/${moviepk}/`)
         handleReaction(dislikeButton, moviepk, 'dislike');
 
         // 평점
-        const cancelButton = document.getElementById('cancelscore');
+        const scoreButton = document.getElementById('score-button');
+        const scoreInput = document.getElementById('score-input');
+        const cancelButton = document.getElementById('cancel-score');
+
+        // 평가하기
+        scoreButton.addEventListener('click', (event) => {
+            event.preventDefault();
+
+            const scoreValue = parseFloat(scoreInput.value);
+
+            const scoreData = {
+                evaluate: scoreValue
+            };
+        
+            axios.post(`${API_BASE_URL}/movies/${moviepk}/score/`, scoreData, {
+                headers: {
+                    Authorization: `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
+                }
+            })
+            .then(response => {
+                console.log('성공적으로 전송되었습니다:', response.data);
+            })
+            .catch(error => {
+                console.error('전송 중 오류가 발생했습니다:', error);
+            });
+        });
 
         // 취소하기
         cancelButton.addEventListener('click', () => {
             const scoreData = {
-                dislike: "dislike"
+                evaluate: 0
             };
-            sendscoreReaction(moviepk, scoreData);
+
+            axios.post(`${API_BASE_URL}/movies/${moviepk}/score/`, scoreData, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                console.log('성공적으로 전송되었습니다:', response.data);
+            })
+            .catch(error => {
+                console.error('전송 중 오류가 발생했습니다:', error);
+            });
         });
-    })
-    .catch(error => {
-        console.error('영화 정보를 가져오는 중 오류 발생:', error);
     });
 
 // 데이터 전송
-function sendlikeReaction(moviepk, movieData) {
+function sendReaction(moviepk, movieData) {
     axios.post(`${API_BASE_URL}/movies/${moviepk}/`, movieData, {
         headers: {
-            Authorization: `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
+            Authorization: `Bearer ${token}`
         }
     })
     .then(response => {
@@ -166,6 +199,6 @@ function handleReaction(button, moviepk, reactionType) {
     button.addEventListener('click', () => {
         const movieData = {};
         movieData[reactionType] = reactionType;
-        sendlikeReaction(moviepk, movieData);
+        sendReaction(moviepk, movieData);
     });
 }
