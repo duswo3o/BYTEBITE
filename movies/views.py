@@ -44,8 +44,8 @@ class MovieListApiView(APIView):
                 like_count=models.Count("like_users"),
                 dislike_count=models.Count("dislike_users"),
             )
-            .annotate(like=models.F("like_count") - models.F("dislike_count"))  # like 계산
-            .order_by("-like")[:10]  # 가장 높은 like 값을 기준으로 정렬
+            .annotate(like=models.F("like_count") - models.F("dislike_count"))
+            .order_by("-like")[:10]
         )
 
         liked_serializer = LikeSerializer(liked_movies, many=True)
