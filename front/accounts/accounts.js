@@ -114,6 +114,17 @@ const signinUser = () => {
         .then(response => {
             // 로그인 성공 시 토큰 저장
             tokenManager.setTokens(response.data);
+            // localStorage.setItem('jwtAccessToken', access);
+            // localStorage.setItem('jwtRefreshToken', refresh);
+
+            // 회원정보 스토리지에 저장
+            localStorage.setItem('id', response.data.id)
+            localStorage.setItem('email', response.data.email)
+            localStorage.setItem('nickname', response.data.nickname)
+            localStorage.setItem('gender', response.data.gender)
+            localStorage.setItem('age', response.data.age)
+            localStorage.setItem('bio', response.data.bio)
+
             console.log(response)
             // alert("로그인 성공")
             // 이동할 페이지
@@ -135,6 +146,8 @@ const signoutUser = () => {
         refresh: localStorage.getItem("jwtRefreshToken")
     })
         .then(response => {
+            localStorage.removeItem('jwtAccessToken');
+            localStorage.removeItem('jwtRefreshToken');
             console.log(response)
             alert("로그아웃 되었습니다")
         })
@@ -265,7 +278,7 @@ const userProfile = () => {
 //     userProfile(); // 페이지가 로드되면 userProfile 함수 호출
 // });
 
-
+// 팔로우
 const followUser = (event) => {
     event.preventDefault();  // 기본 동작 방지 (페이지 새로고침 방지)
     var userPK = document.getElementById("userpk").value
@@ -282,6 +295,60 @@ const followUser = (event) => {
         })
 
     return false; // 기본 동작 방지
+}
+
+
+// 프로필 수정
+const updateProfileBtn = document.getElementById("update-profile-btn")
+
+const updateNickname = document.getElementById("updateNickname")
+if (updateNickname) {
+    updateNickname.value = localStorage.getItem('nickname')
+};
+const updateGender = document.getElementById("updateGender")
+if (updateGender) {
+    updateGender.value = localStorage.getItem('gender')
+};
+const updateAge = document.getElementById("updateAge")
+if (updateAge) {
+    updateAge.value = localStorage.getItem('age')
+};
+const updateBio = document.getElementById("updateBio")
+if (updateBio) {
+    updateBio.value = localStorage.getItem('bio')
+};
+
+
+const updateProfile = () => {
+    // 선택필드에 빈 값이 들어가는 경우
+    // 나이의 경우 숫자형으로 들어가야하는데 빈 값일때 빈문자열을 반환해서 null값으로 처리
+    var age = document.getElementById('updateAge').value
+    if (!age) {
+        age = null
+    }
+
+
+    axios.put(`${API_BASE_URL}/accounts/`, {
+        nickname: document.getElementById('updateNickname').value,
+        gender: document.getElementById('updateGender').value,
+        age: age,
+        bio: document.getElementById('updateBio').value,
+    })
+        .then(response => {
+            console.log(response)
+
+            localStorage.setItem('nickname', response.data.nickname)
+            localStorage.setItem('gender', response.data.gender)
+            localStorage.setItem('age', age)
+            localStorage.setItem('bio', response.data.bio)
+
+            window.location.href = "profile.html"
+
+        })
+        .catch(error => {
+            console.log(error)
+            alert("수정 실패")
+        })
 }
 
 
@@ -305,4 +372,8 @@ if (profileBtn) {
 
 if (followBtn) {
     followBtn.addEventListener('click', followUser)
+}
+
+if (updateProfileBtn) {
+    updateProfileBtn.addEventListener('click', updateProfile)
 }
