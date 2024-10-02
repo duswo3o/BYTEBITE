@@ -352,6 +352,32 @@ const updateProfile = () => {
 }
 
 
+// 패스워드 변경
+const changePasswordBtn = document.getElementById('change-password-btn') // 패스워드 변경 버튼
+
+const changePassword = () => {
+    // const oldPassword = document.getElementById("oldPassword")
+    // const newPassword = document.getElementById("newPassword")
+    // const confirmPassword = document.getElementById("confirmPassword")
+
+    axios.put(`${API_BASE_URL}/accounts/password/`, {
+        old_password: document.getElementById("oldPassword").value,
+        new_password: document.getElementById("newPassword").value,
+        confirm_password: document.getElementById("confirmPassword").value
+    })
+        .then(response => {
+            console.log(response)
+            // alert("패스워드 변경 완료")
+
+            // 이동할 페이지
+            window.location.href = 'profile.html'
+        })
+        .catch(error => {
+            console.log(error)
+            alert("비밀번호 변경에 실패하였습니다")
+        })
+
+}
 
 // 버튼 확인
 if (signupBtn) {
@@ -376,4 +402,8 @@ if (followBtn) {
 
 if (updateProfileBtn) {
     updateProfileBtn.addEventListener('click', updateProfile)
+}
+
+if (changePasswordBtn) {
+    changePasswordBtn.addEventListener('click', changePassword)
 }
