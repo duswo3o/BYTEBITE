@@ -26,7 +26,7 @@ const tokenManager = {
             throw new Error('No refresh token available');
         }
         try {
-            const response = await axios.post(`${API_BASE_URL}token/refresh/`, {
+            const response = await axios.post(`${API_BASE_URL}/accounts/token/refresh/`, {
                 refresh: refreshToken
             });
             this.setTokens(response.data); // 새로운 토큰 저장
@@ -51,11 +51,16 @@ axios.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Axios 응답 인터셉터 설정 (토큰 만료 시 갱신 및 재요청)
+
+// Axios 응답 인터셉터 설정
 axios.interceptors.response.use(
-    (response) => response, // 응답이 성공적일 때는 그대로 반환
+    (response) => {
+        // 정상 응답은 그대로 반환
+        return response;
+    },
     async (error) => {
         const originalRequest = error.config;
+
 
         // 토큰이 만료되었을 때 처리
         if (error.response && error.response.status === 401 && !originalRequest._retry) {
@@ -67,10 +72,17 @@ axios.interceptors.response.use(
                 return axios(originalRequest); // 원래 요청 다시 시도
             } catch (err) {
                 console.error('새로운 토큰으로 재요청 실패:', err);
+                console.log("로컬 스토리지를 삭제합니다.")
+                localStorage.clear()
+
+                alert("토큰이 만료되었습니다. 다시 로그인해주세요.")
+                window.location.href = "signin.html"
+
                 return Promise.reject(error);
             }
         }
 
+        // 기타 오류는 그대로 반환
         return Promise.reject(error);
     }
 );
@@ -142,8 +154,10 @@ const signinUser = () => {
 const signoutBtn = document.getElementById("signoutBtn")
 
 const signoutUser = () => {
+    const refreshToken = tokenManager.getRefreshToken();
+
     axios.post(`${API_BASE_URL}/accounts/signout/`, {
-        refresh: localStorage.getItem("jwtRefreshToken")
+        refresh: refreshToken
     })
         .then(response => {
             localStorage.clear()
@@ -157,7 +171,7 @@ const signoutUser = () => {
 }
 
 // 버튼 보여주기 설정
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const accessToken = localStorage.getItem('jwtAccessToken');
     // 로컬스토리지에 토큰이 있는 경우
     if (accessToken) {
