@@ -8,7 +8,7 @@ axios.get(`${API_BASE_URL}/movies/`)
         const boxofficeList = document.getElementById('boxoffice-movies-list');
         boxofficeMovies.forEach(movie => {
             const li = document.createElement('li');
-            li.textContent = `Title: ${movie.title}, Rank: ${movie.rank}`;
+            li.textContent = `${movie.rank}위: ${movie.title}`;
             boxofficeList.appendChild(li);
         });
 
@@ -39,7 +39,7 @@ axios.get(`${API_BASE_URL}/movies/`)
             likelink.textContent = movie.title;
 
             li.appendChild(likelink);
-            li.appendChild(document.createTextNode(`, Average Grade: ${movie.like || 0}`));
+            li.appendChild(document.createTextNode(`, likes: ${movie.like || 0}`));
             likedList.appendChild(li);
         });
     })
