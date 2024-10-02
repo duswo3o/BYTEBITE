@@ -141,22 +141,11 @@ axios.get(`${API_BASE_URL}/movies/${moviepk}/`)
             event.preventDefault();
 
             const scoreValue = parseFloat(scoreInput.value);
-
             const scoreData = {
                 evaluate: scoreValue
             };
         
-            axios.post(`${API_BASE_URL}/movies/${moviepk}/score/`, scoreData, {
-                headers: {
-                    Authorization: `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
-                }
-            })
-            .then(response => {
-                console.log('성공적으로 전송되었습니다:', response.data);
-            })
-            .catch(error => {
-                console.error('전송 중 오류가 발생했습니다:', error);
-            });
+            sendScoreData(moviepk, scoreData);
         });
 
         // 취소하기
@@ -165,22 +154,12 @@ axios.get(`${API_BASE_URL}/movies/${moviepk}/`)
                 evaluate: 0
             };
 
-            axios.post(`${API_BASE_URL}/movies/${moviepk}/score/`, scoreData, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            })
-            .then(response => {
-                console.log('성공적으로 전송되었습니다:', response.data);
-            })
-            .catch(error => {
-                console.error('전송 중 오류가 발생했습니다:', error);
-            });
+            sendScoreData(moviepk, scoreData);
         });
     });
 
-// 데이터 전송
-function sendReaction(moviepk, movieData) {
+// 보고싶어요, 관심없어요 데이터 전송
+function sendLikeData(moviepk, movieData) {
     axios.post(`${API_BASE_URL}/movies/${moviepk}/`, movieData, {
         headers: {
             Authorization: `Bearer ${token}`
@@ -199,6 +178,21 @@ function handleReaction(button, moviepk, reactionType) {
     button.addEventListener('click', () => {
         const movieData = {};
         movieData[reactionType] = reactionType;
-        sendReaction(moviepk, movieData);
+        sendLikeData(moviepk, movieData);
+    });
+}
+
+// 영화 평가하기 데이터 전송
+function sendScoreData(moviepk, scoreData) {
+    axios.post(`${API_BASE_URL}/movies/${moviepk}/score/`, scoreData, {
+        headers: {
+            Authorization: `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
+        }
+    })
+    .then(response => {
+        console.log('성공적으로 전송되었습니다:', response.data);
+    })
+    .catch(error => {
+        console.error('전송 중 오류가 발생했습니다:', error);
     });
 }
