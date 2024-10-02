@@ -85,12 +85,24 @@ function logout() {
     alert('로그아웃 성공');
 }
 
-// 리뷰 가져오기 함수
+// 리뷰 코맨트 가져오기 함수
 async function getReviews(moviePk) {
     try {
         const response = await axios.get(`${API_BASE_URL}reviews/${moviePk}/`);
         const reviews = response.data;
-        console.log('리뷰 가져오기 성공:', reviews);
+
+        // 각 리뷰에 대한 댓글을 동시에 가져오기 (Promise.all 활용)
+        const commentPromises = reviews.map(review => {
+            return axios.get(`${API_BASE_URL}reviews/${review.id}/comments/`);
+        });
+        const commentResponses = await Promise.all(commentPromises);
+
+        // 각 리뷰에 댓글 할당
+        reviews.forEach((review, index) => {
+            review.comments = commentResponses[index].data;
+        });
+
+        console.log('리뷰 및 댓글 가져오기 성공:', reviews);
         return reviews;
     } catch (error) {
         console.error('리뷰 가져오기 실패:', error);
@@ -98,6 +110,130 @@ async function getReviews(moviePk) {
     }
 }
 
+// 리뷰 목록 갱신 함수
+async function refreshReviews(moviePk) {
+    try {
+        const reviews = await getReviews(moviePk);
+        displayReviews(reviews);
+    } catch (error) {
+        console.error('리뷰 목록 갱신 실패:', error);
+        alert('리뷰 목록을 가져오는데 실패했습니다.');
+    }
+}
+
+// 공통 에러 처리 함수
+function handleError(action, error) {
+    console.error(`${action} 실패:`, error.response ? error.response.data : error.message);
+    alert(`${action} 실패`);
+}
+
+// 리뷰 좋아요 토글 함수
+async function toggleLike(reviewId) {
+    try {
+        const response = await axios.post(`${API_BASE_URL}reviews/likes/review/${reviewId}/`);
+        alert(response.data.message);
+        await refreshReviews(document.getElementById('moviePkInput').value);
+    } catch (error) {
+        handleError('좋아요 처리', error);
+    }
+}
+
+// 리뷰 작성하기 함수
+async function postReview(moviePk, content) {
+    if (!content.trim()) {
+        alert('리뷰 내용을 입력해주세요.');
+        return;
+    }
+
+    try {
+        await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { content });
+        alert('리뷰 작성 성공');
+        await refreshReviews(moviePk);
+    } catch (error) {
+        handleError('리뷰 작성', error);
+    }
+}
+
+// 리뷰 수정하기 함수
+async function updateReview(reviewId, content) {
+    if (!content.trim()) {
+        alert('수정할 내용을 입력해주세요.');
+        return;
+    }
+
+    try {
+        await axios.put(`${API_BASE_URL}reviews/detail/${reviewId}/`, { content });
+        alert('리뷰 수정 성공');
+        await refreshReviews(document.getElementById('moviePkInput').value);
+    } catch (error) {
+        handleError('리뷰 수정', error);
+    }
+}
+
+// 리뷰 삭제하기 함수
+async function deleteReview(reviewId) {
+    try {
+        await axios.delete(`${API_BASE_URL}reviews/detail/${reviewId}/`);
+        alert('리뷰 삭제 성공');
+        await refreshReviews(document.getElementById('moviePkInput').value);
+    } catch (error) {
+        handleError('리뷰 삭제', error);
+    }
+}
+
+// 댓글 작성하기 함수
+async function postComment(reviewId, content) {
+    if (!content.trim()) {
+        alert('댓글 내용을 입력해주세요.');
+        return;
+    }
+
+    try {
+        await axios.post(`${API_BASE_URL}reviews/${reviewId}/comments/`, { content });
+        alert('댓글 작성 성공');
+        await refreshReviews(document.getElementById('moviePkInput').value);
+    } catch (error) {
+        handleError('댓글 작성', error);
+    }
+}
+
+// 댓글 수정하기 함수
+async function updateComment(reviewId, commentId, content) {
+    if (!content.trim()) {
+        alert('수정할 댓글 내용을 입력해주세요.');
+        return;
+    }
+
+    try {
+        await axios.put(`${API_BASE_URL}reviews/${reviewId}/comments/${commentId}/`, { content });
+        alert('댓글 수정 성공');
+        await refreshReviews(document.getElementById('moviePkInput').value);
+    } catch (error) {
+        handleError('댓글 수정', error);
+    }
+}
+
+// 댓글 삭제하기 함수
+async function deleteComment(reviewId, commentId) {
+    try {
+        await axios.delete(`${API_BASE_URL}reviews/${reviewId}/comments/${commentId}/`);
+        alert('댓글 삭제 성공');
+        await refreshReviews(document.getElementById('moviePkInput').value);
+    } catch (error) {
+        handleError('댓글 삭제', error);
+    }
+}
+
+// 댓글 좋아요 토글 함수
+async function toggleCommentLike(commentId) {
+    try {
+        const response = await axios.post(`${API_BASE_URL}reviews/likes/comment/${commentId}/`);
+        alert(response.data.message);
+        await refreshReviews(document.getElementById('moviePkInput').value);
+    } catch (error) {
+        handleError('댓글 좋아요 처리', error);
+    }
+}
 
 // 리뷰 표시 함수
 function displayReviews(reviews) {
@@ -105,6 +241,8 @@ function displayReviews(reviews) {
     responseDiv.innerHTML = ''; // 기존 결과 초기화
     reviews.forEach(review => {
         const reviewDiv = document.createElement('div');
+        reviewDiv.classList.add('review');
+        reviewDiv.setAttribute('data-review-id', review.id);
         reviewDiv.innerHTML = `
             <div class="header">
                 <span class="author">${review.author}</span>
@@ -113,171 +251,165 @@ function displayReviews(reviews) {
             <div class="content" id="review-content-${review.id}">${review.content}</div>
             <div class="footer">
                 <span class="like-count">좋아요: ${review.like_count}</span>
-                <span class="comment_count">댓글수: ${review.comment_count}</span>
-                <button class="like-btn" data-review-id="${review.id}">좋아요</button>
-                <button class="edit-btn" data-review-id="${review.id}">수정</button>
-                <button class="delete-btn" data-review-id="${review.id}">삭제</button>
+                <span class="comment_count">댓글수: ${review.comments.length}</span>
+                <span class="like-text" data-review-id="${review.id}">[❤]</span>
+                <span class="edit-text" data-review-id="${review.id}">[수정]</span>
+                <span class="delete-text" data-review-id="${review.id}">[삭제]</span>
                 <textarea id="edit-content-${review.id}" style="display:none;"></textarea>
                 <button class="save-btn" data-review-id="${review.id}" style="display:none;">수정 완료</button>
-            </div>
-        `;
-        responseDiv.appendChild(reviewDiv); // 리뷰 추가
-    });
+                <span class="comment-text" data-review-id="${review.id}">[댓글 달기]</span>
+                <textarea id="comment-content-${review.id}" style="display:none;" placeholder="댓글을 입력하세요..."></textarea>
+                <button class="submit-comment-btn" data-review-id="${review.id}" style="display:none;">댓글 작성 완료</button>
+                <div class="comments" id="comments-${review.id}">
+                    ${review.comments.map(comment => `
+                        <div class="comment" id="comment-${comment.id}">
+                            <span class="comment-author">${comment.author}</span>: 
+                            <span class="comment-content" id="comment-content-${comment.id}">${comment.content}</span>
+                            <span class="comment-like-count">좋아요: ${comment.like_count}</span>
+                            <span class="comment-like-text" data-comment-id="${comment.id}">[❤]</span>
+                            <span class="comment-edit-text" data-comment-id="${comment.id}">[수정]</span>
+                            <span class="comment-delete-text" data-comment-id="${comment.id}">[삭제]</span>
+                            <textarea id="edit-comment-${comment.id}" style="display:none;"></textarea>
+                            <button class="save-comment-btn" data-comment-id="${comment.id}" style="display:none;">수정 완료</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            responseDiv.appendChild(reviewDiv);
+        });
 
-    // 좋아요 버튼에 이벤트 리스너 추가
-    const likeButtons = document.querySelectorAll('.like-btn');
-    likeButtons.forEach(button => {
+    // 이벤트 리스너 추가
+    addEventListeners();
+    }
+
+// 이벤트 리스너 추가 함수
+function addEventListeners() {
+    // 리뷰 좋아요 버튼 이벤트 리스너
+    document.querySelectorAll('.like-text').forEach(button => {
         button.addEventListener('click', async (event) => {
             const reviewId = event.target.getAttribute('data-review-id');
             await toggleLike(reviewId);
         });
     });
 
-    // 수정 버튼에 이벤트 리스너 추가
-    const editButtons = document.querySelectorAll('.edit-btn');
-    editButtons.forEach(button => {
+    // 리뷰 수정 버튼 이벤트 리스너
+    document.querySelectorAll('.edit-text').forEach(button => {
         button.addEventListener('click', (event) => {
             const reviewId = event.target.getAttribute('data-review-id');
             const contentDiv = document.getElementById(`review-content-${reviewId}`);
             const editTextArea = document.getElementById(`edit-content-${reviewId}`);
             const saveButton = document.querySelector(`.save-btn[data-review-id="${reviewId}"]`);
 
-            // 수정할 내용으로 텍스트 영역 채우기
             editTextArea.value = contentDiv.innerText;
-            contentDiv.style.display = 'none'; // 기존 내용 숨기기
-            editTextArea.style.display = 'block'; // 텍스트 영역 보이기
-            saveButton.style.display = 'inline'; // 저장 버튼 보이기
+            contentDiv.style.display = 'none';
+            editTextArea.style.display = 'block';
+            saveButton.style.display = 'inline';
         });
     });
 
-    // 수정 완료 버튼에 이벤트 리스너 추가
-    const saveButtons = document.querySelectorAll('.save-btn');
-    saveButtons.forEach(button => {
+    // 리뷰 수정 완료 버튼 이벤트 리스너
+    document.querySelectorAll('.save-btn').forEach(button => {
         button.addEventListener('click', async (event) => {
             const reviewId = event.target.getAttribute('data-review-id');
             const editTextArea = document.getElementById(`edit-content-${reviewId}`);
             const newContent = editTextArea.value;
-
             await updateReview(reviewId, newContent);
         });
     });
 
-    // 삭제 버튼에 이벤트 리스너 추가
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    deleteButtons.forEach(button => {
+    // 리뷰 삭제 버튼 이벤트 리스너
+    document.querySelectorAll('.delete-text').forEach(button => {
         button.addEventListener('click', async (event) => {
             const reviewId = event.target.getAttribute('data-review-id');
-            await deleteReview(reviewId); // 리뷰 삭제 함수 호출
+            await deleteReview(reviewId);
+        });
+    });
+
+    // 댓글 달기 버튼 이벤트 리스너
+    document.querySelectorAll('.comment-text').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const reviewId = event.target.getAttribute('data-review-id');
+            const commentTextArea = document.getElementById(`comment-content-${reviewId}`);
+            const submitButton = document.querySelector(`.submit-comment-btn[data-review-id="${reviewId}"]`);
+
+            commentTextArea.style.display = 'block';
+            submitButton.style.display = 'inline';
+        });
+    });
+
+    // 댓글 작성 완료 버튼 이벤트 리스너
+    document.querySelectorAll('.submit-comment-btn').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const reviewId = event.target.getAttribute('data-review-id');
+            const commentTextArea = document.getElementById(`comment-content-${reviewId}`);
+            const content = commentTextArea.value;
+            await postComment(reviewId, content);
+        });
+    });
+
+    // 댓글 좋아요 버튼 이벤트 리스너
+    document.querySelectorAll('.comment-like-text').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const commentId = event.target.getAttribute('data-comment-id');
+            await toggleCommentLike(commentId);
+        });
+    });
+
+    // 댓글 수정 버튼 이벤트 리스너
+    document.querySelectorAll('.comment-edit-text').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const commentId = event.target.getAttribute('data-comment-id');
+            const contentSpan = document.getElementById(`comment-content-${commentId}`);
+            const editTextArea = document.getElementById(`edit-comment-${commentId}`);
+            const saveButton = document.querySelector(`.save-comment-btn[data-comment-id="${commentId}"]`);
+
+            editTextArea.value = contentSpan.innerText;
+            contentSpan.style.display = 'none';
+            editTextArea.style.display = 'block';
+            saveButton.style.display = 'inline';
+        });
+    });
+
+    // 댓글 수정 완료 버튼 이벤트 리스너
+    document.querySelectorAll('.save-comment-btn').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const commentId = event.target.getAttribute('data-comment-id');
+            const reviewId = event.target.closest('.review').getAttribute('data-review-id');
+            const editTextArea = document.getElementById(`edit-comment-${commentId}`);
+            const newContent = editTextArea.value;
+            await updateComment(reviewId, commentId, newContent);
+        });
+    });
+
+    // 댓글 삭제 버튼 이벤트 리스너
+    document.querySelectorAll('.comment-delete-text').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const commentId = event.target.getAttribute('data-comment-id');
+            const reviewId = event.target.closest('.review').getAttribute('data-review-id');
+            await deleteComment(reviewId, commentId);
         });
     });
 }
 
-// 리뷰 수정하기 함수
-async function updateReview(reviewId, content) {
-    if (!content.trim()) {
-        alert('수정할 내용을 입력해주세요.'); // 비어 있는 경우 경고
-        return;
-    }
+// 페이지 로드 시 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        login(email, password);
+    });
 
-    try {
-        await axios.put(`${API_BASE_URL}reviews/detail/${reviewId}/`, { content });
-        console.log('리뷰 수정 성공');
-        alert('리뷰 수정 성공');
+    document.getElementById('logoutBtn').addEventListener('click', logout);
 
-        // 수정 후 리뷰 목록 다시 가져오기
-        const moviePk = document.getElementById('moviePkInput').value;
-        await refreshReviews(moviePk); // 전체 리뷰 목록 갱신
-    } catch (error) {
-        console.error('리뷰 수정 실패:', error.response ? error.response.data : error.message);
-        alert('작성자 본인만 수정 할 수 있습니다.');
-    }
-}
-
-// 리뷰 삭제하기 함수
-async function deleteReview(reviewId) {
-    try {
-        await axios.delete(`${API_BASE_URL}reviews/detail/${reviewId}/`);
-        console.log('리뷰 삭제 성공');
-        alert('리뷰 삭제 성공');
-
-        // 삭제 후 리뷰 목록 다시 가져오기
-        const moviePk = document.getElementById('moviePkInput').value;
-        await refreshReviews(moviePk); // 전체 리뷰 목록 갱신
-    } catch (error) {
-        console.error('리뷰 삭제 실패:', error.response ? error.response.data : error.message);
-        alert('작성자 본인만 삭제 할 수 있습니다.');
-    }
-}
-
-
-
-// 좋아요 토글 함수
-async function toggleLike(reviewId) {
-    try {
-        const response = await axios.post(`${API_BASE_URL}reviews/likes/review/${reviewId}/`);
-        console.log(response.data.message);
-        alert(response.data.message);
-
-        // 좋아요 변경 후 리뷰 목록 다시 가져오기
+    document.getElementById('getReviewsBtn').addEventListener('click', async () => {
         const moviePk = document.getElementById('moviePkInput').value;
         const reviews = await getReviews(moviePk);
-        displayReviews(reviews); // 리뷰를 화면에 표시하는 함수 호출
-    } catch (error) {
-        console.error('좋아요 처리 실패:', error.response ? error.response.data : error.message);
-        alert('좋아요 처리 실패');
-    }
-}
+        displayReviews(reviews);
+    });
 
-
-// 리뷰 작성하기 함수
-async function postReview(moviePk, content) {
-    if (!content.trim()) {
-        alert('리뷰 내용을 입력해주세요.'); // 비어 있는 경우 경고
-        return;
-    }
-
-    try {
-        await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { content });
-        console.log('리뷰 작성 성공');
-        alert('리뷰 작성 성공');
-
-        // 리뷰 작성 후 리뷰 목록 다시 가져오기
-        await refreshReviews(moviePk); // 전체 리뷰 목록 갱신
-    } catch (error) {
-        console.error('리뷰 작성 실패:', error.response ? error.response.data : error.message);
-        alert('리뷰 작성 실패');
-    }
-}
-// 리뷰 목록 갱신 함수
-async function refreshReviews(moviePk) {
-    try {
-        const reviews = await getReviews(moviePk); // 리뷰 목록 가져오기
-        displayReviews(reviews); // 화면에 리뷰 표시
-    } catch (error) {
-        console.error('리뷰 목록 갱신 실패:', error);
-    }
-}
-
-
-// 버튼 이벤트 리스너 설정
-document.getElementById('loginBtn').addEventListener('click', () => {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    login(email, password);
-});
-
-document.getElementById('logoutBtn').addEventListener('click', () => {
-    logout();
-});
-
-document.getElementById('getReviewsBtn').addEventListener('click', async () => {
-    const moviePk = document.getElementById('moviePkInput').value;
-    const reviews = await getReviews(moviePk);
-    displayReviews(reviews); // 리뷰를 화면에 표시하는 함수 호출
-});
-
-document.getElementById('postReviewBtn').addEventListener('click', () => {
-    const moviePk = document.getElementById('moviePkInput').value;
-    const content = document.getElementById('reviewContent').value;
-    postReview(moviePk, content);
+    document.getElementById('postReviewBtn').addEventListener('click', () => {
+        const moviePk = document.getElementById('moviePkInput').value;
+        const content = document.getElementById('reviewContent').value;
+        postReview(moviePk, content);
+    });
 });
