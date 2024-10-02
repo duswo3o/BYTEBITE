@@ -126,21 +126,20 @@ axios.get(`${API_BASE_URL}/movies/${moviepk}/`)
         // 보고싶어요,관심없어요
         const likeButton = document.getElementById('like');
         const dislikeButton = document.getElementById('dislike');
+        
+        // '보고싶어요'와 '관심없어요' 버튼에 각각 반응 추가
+        handleReaction(likeButton, moviepk, 'like');
+        handleReaction(dislikeButton, moviepk, 'dislike');
 
-        // 보고싶어요
-        likeButton.addEventListener('click', () => {
-            const movieData = {
-                like: "like"
-            };
-            sendReaction(moviepk, movieData);
-        });
+        // 평점
+        const cancelButton = document.getElementById('cancelscore');
 
-        // 관심없어요
-        dislikeButton.addEventListener('click', () => {
-            const movieData = {
+        // 취소하기
+        cancelButton.addEventListener('click', () => {
+            const scoreData = {
                 dislike: "dislike"
             };
-            sendReaction(moviepk, movieData);
+            sendscoreReaction(moviepk, scoreData);
         });
     })
     .catch(error => {
@@ -148,7 +147,7 @@ axios.get(`${API_BASE_URL}/movies/${moviepk}/`)
     });
 
 // 데이터 전송
-function sendReaction(moviepk, movieData) {
+function sendlikeReaction(moviepk, movieData) {
     axios.post(`${API_BASE_URL}/movies/${moviepk}/`, movieData, {
         headers: {
             Authorization: `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
@@ -159,5 +158,14 @@ function sendReaction(moviepk, movieData) {
     })
     .catch(error => {
         console.error('영화 정보 전송 중 오류가 발생했습니다:', error);
+    });
+}
+
+// 보고싶어요, 관심 없어요 로직 처리
+function handleReaction(button, moviepk, reactionType) {
+    button.addEventListener('click', () => {
+        const movieData = {};
+        movieData[reactionType] = reactionType;
+        sendlikeReaction(moviepk, movieData);
     });
 }
