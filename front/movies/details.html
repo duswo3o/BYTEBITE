@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POPCORNGEEK</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="movies.js"></script>
+    <script src="movies.js" defer></script> <!-- defer를 사용하여 DOMContentLoaded 후 실행 -->
 </head>
 <body>
     <h1 id="movie-title"></h1>
@@ -13,5 +13,8 @@
     <p><strong>장르:</strong> <span id="movie-genre"></span></p>
     <p><strong>줄거리:</strong> <span id="movie-plot"></span></p>
 
+    <button type="button" id="like">보고싶어요!</button>
+    <button type="button" id="dislike">관심없어요...</button>
+    
 </body>
 </html>

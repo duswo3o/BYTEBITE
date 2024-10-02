@@ -1,5 +1,7 @@
+const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
+
 // 메인페이지 영화 정보 가져오기
-axios.get('http://127.0.0.1:8000/api/v1/movies/')
+axios.get(`${API_BASE_URL}/movies/`)
     .then(response => {
         // 박스오피스 순
         const boxofficeMovies = response.data.boxoffice_movies;
@@ -37,7 +39,7 @@ axios.get('http://127.0.0.1:8000/api/v1/movies/')
             likelink.textContent = movie.title;
 
             li.appendChild(likelink);
-            li.appendChild(document.createTextNode(`, Average Grade: ${movie.average_grade || 0}`));
+            li.appendChild(document.createTextNode(`, Average Grade: ${movie.like || 0}`));
             likedList.appendChild(li);
         });
     })
@@ -75,7 +77,7 @@ const searchKeyword = urlParams.get('search_keyword');
 const searchType = urlParams.get('search_type');
 
 if (searchKeyword) {
-    axios.get(`http://127.0.0.1:8000/api/v1/movies/search/?search_type=${searchType}&search_keyword=${encodeURIComponent(searchKeyword)}`)
+    axios.get(`${API_BASE_URL}/movies/search/?search_type=${searchType}&search_keyword=${encodeURIComponent(searchKeyword)}`)
         .then(response => {
             const resultsList = document.getElementById('searchresults');
             resultsList.innerHTML = '';
@@ -108,9 +110,10 @@ if (searchKeyword) {
 }
 
 // 상세 페이지
-const pk = urlParams.get('pk');
+const moviepk = urlParams.get('pk');
+const token = localStorage.getItem('jwtAccessToken');
 
-axios.get(`http://127.0.0.1:8000/api/v1/movies/${pk}/`)
+axios.get(`${API_BASE_URL}/movies/${moviepk}/`)
     .then(response => {
         const movie = response.data;
 
@@ -119,7 +122,42 @@ axios.get(`http://127.0.0.1:8000/api/v1/movies/${pk}/`)
         const genreNames = movie.genre.map(genre => genre.name).join(', ');
         document.getElementById('movie-genre').textContent = genreNames;
         document.getElementById('movie-plot').textContent = movie.plot;
+
+        // 보고싶어요,관심없어요
+        const likeButton = document.getElementById('like');
+        const dislikeButton = document.getElementById('dislike');
+
+        // 보고싶어요
+        likeButton.addEventListener('click', () => {
+            const movieData = {
+                like: "like"
+            };
+            sendReaction(moviepk, movieData);
+        });
+
+        // 관심없어요
+        dislikeButton.addEventListener('click', () => {
+            const movieData = {
+                dislike: "dislike"
+            };
+            sendReaction(moviepk, movieData);
+        });
     })
     .catch(error => {
         console.error('영화 정보를 가져오는 중 오류 발생:', error);
     });
+
+// 데이터 전송
+function sendReaction(moviepk, movieData) {
+    axios.post(`${API_BASE_URL}/movies/${moviepk}/`, movieData, {
+        headers: {
+            Authorization: `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
+        }
+    })
+    .then(response => {
+        console.log('영화 정보가 성공적으로 전송되었습니다:', response.data);
+    })
+    .catch(error => {
+        console.error('영화 정보 전송 중 오류가 발생했습니다:', error);
+    });
+}
