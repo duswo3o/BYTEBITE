@@ -146,8 +146,7 @@ const signoutUser = () => {
         refresh: localStorage.getItem("jwtRefreshToken")
     })
         .then(response => {
-            localStorage.removeItem('jwtAccessToken');
-            localStorage.removeItem('jwtRefreshToken');
+            localStorage.clear()
             console.log(response)
             alert("로그아웃 되었습니다")
         })
@@ -156,6 +155,22 @@ const signoutUser = () => {
             alert("로그아웃 실패")
         })
 }
+
+// 버튼 보여주기 설정
+document.addEventListener('DOMContentLoaded', function() {
+    const accessToken = localStorage.getItem('jwtAccessToken');
+    // 로컬스토리지에 토큰이 있는 경우
+    if (accessToken) {
+        // 로그아웃 버튼만 보여주기
+        document.getElementById('signinBtn').style.display = 'none';
+        document.getElementById('signoutBtn').style.display = 'block';
+    }
+    // 로컬스토리지에 토큰이 없는 경우 
+    else {
+        document.getElementById('signinBtn').style.display = 'block';
+        document.getElementById('signoutBtn').style.display = 'none';
+    }
+});
 
 
 // 프로필 조회
