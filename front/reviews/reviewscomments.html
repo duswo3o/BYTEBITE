@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰 API 요청</title>
+    <link rel="stylesheet" href="style.css"> <!-- CSS 파일 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>(실제로는 영화 디테일 페이지에 들어가야 하는 기능들)</h1>
+
+    <!-- 로그인 관련 요소들 추가 -->
+    <form id="loginForm">
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="button" id="loginBtn">로그인</button>
+        <button type="button" id="logoutBtn">로그아웃</button>
+    </form>
+
+    <!-- 로그아웃 버튼 -->
+
+    <div>
+        <label for="moviePkInput">영화 ID(실제로는 영화 목록에서 클릭으로 디테일 페이지 들어오게 되지만 여기서는 직접 입력):</label>
+        <input type="number" id="moviePkInput" placeholder="영화 ID 입력">
+    </div>
+
+    <button id="getReviewsBtn">리뷰 목록 가져오기 (GET)</button>
+    <h2> 👉👉----여기에 영화 상세정보 표시-----👈👈 </h2>
+    <div>
+        <label for="reviewContent">리뷰 내용:</label>
+        <textarea id="reviewContent" placeholder="리뷰를 입력하세요"></textarea>
+    </div>
+
+    <button id="postReviewBtn">리뷰 작성하기 (POST)</button>
+
+    <!-- 결과 출력 -->
+    <div id="response" class="container"></div>
+    <script type="module" src="./script.js"></script>
+</body>
+</html>

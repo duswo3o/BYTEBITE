@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POPCORNGEEK</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="movies.js" defer></script>
+</head>
+<body>
+    <h1>POPCORNGEEK</h1>
+
+    <!-- 검색기능 -->
+    <form id="searchForm">
+        <input type="text" id="search_keyword" name="search_keyword" placeholder="검색어 입력">
+        <select name="search_type" id="lang">
+            <option value="movies">영화</option>
+            <option value="staff">영화인</option>
+            <option value="member">회원</option>
+        </select>
+    <button type="submit">검색</button>
+    </form>
+
+    <h2>박스오피스 순위</h2>
+    <ul id="boxoffice-movies-list"></ul>
+
+    <h2>POPCORNGEEK 선정 TOP10</h2>
+    <ul id="graded-movies-list"></ul>
+
+    <h2>다른 이용자들이 좋아하는 영화</h2>
+    <ul id="liked-movies-list"></ul>
+
+</body>
+</html>
