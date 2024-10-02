@@ -19,7 +19,7 @@ axios.get(`${API_BASE_URL}/movies/`)
             const li = document.createElement('li');
 
             const gradelink = document.createElement('a');
-            gradelink.href = `http://127.0.0.1:5501/front/movies/details.html?pk=${movie.id}`;
+            gradelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
             gradelink.textContent = movie.title;
 
             li.appendChild(gradelink);
@@ -35,7 +35,7 @@ axios.get(`${API_BASE_URL}/movies/`)
             const li = document.createElement('li');
 
             const likelink = document.createElement('a');
-            likelink.href = `http://127.0.0.1:5501/front/movies/details.html?pk=${movie.id}`;
+            likelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
             likelink.textContent = movie.title;
 
             li.appendChild(likelink);
@@ -90,7 +90,7 @@ if (searchKeyword) {
                     const genreNames = item.genre.map(genre => genre.name).join(', ');
 
                     const searchlink = document.createElement('a');
-                    searchlink.href = `http://127.0.0.1:5501/front/movies/details.html?pk=${item.id}`;
+                    searchlink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${item.id}`;
                     searchlink.textContent = item.title;
 
                     li.appendChild(searchlink);
