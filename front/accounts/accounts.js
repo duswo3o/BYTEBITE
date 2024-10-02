@@ -408,6 +408,29 @@ const changePassword = () => {
 
 }
 
+
+// 회원탈퇴
+const withdrawBtn = document.getElementById('withdrawUser')
+const withdrawUser = () => {
+    axios({
+        method: "delete",
+        url: `${API_BASE_URL}/accounts/`,
+        data: {
+            password: document.getElementById("withdrawPassword").value
+        }
+    })
+        .then(response => {
+            console.log(response)
+            localStorage.clear()
+            window.location.href = 'profile.html'
+        })
+        .catch(error => {
+            console.log(error)
+            console.log(document.getElementById("withdrawPassword").value)
+            alert("error : 탈퇴에 실패하였습니다")
+        })
+}
+
 // 버튼 확인
 if (signupBtn) {
     signupBtn.addEventListener('click', signupUser)
@@ -435,4 +458,8 @@ if (updateProfileBtn) {
 
 if (changePasswordBtn) {
     changePasswordBtn.addEventListener('click', changePassword)
+}
+
+if (withdrawBtn) {
+    withdrawBtn.addEventListener('click', withdrawUser)
 }
