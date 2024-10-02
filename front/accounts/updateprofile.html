@@ -17,12 +17,23 @@
         <div class="container mb-4">
             <h3>프로필 수정</h3>
         </div>
+
+        <!-- 패스워드 수정 버튼 -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="button" class="btn btn-outline-warning" onclick="location.href='password.html'">change
+                password</button>
+        </div>
         <div class="container mb-4">
+
+            <!-- 프로필 수정 -->
             <form>
+                <!-- 닉네임 수정 -->
                 <div class="mb-3">
                     <label for="updateNickname" class="form-label">nickname</label>
                     <input type="text" class="form-control" id="updateNickname">
                 </div>
+
+                <!-- gender 수정 -->
                 <div class="mb-3">
                     <label for="updateGender" class="form-label">Gender</label>
                     <select class="form-select" aria-label="Default select example" id="updateGender">
@@ -31,15 +42,20 @@
                         <option value="F">Female</option>
                     </select>
                 </div>
+
+                <!-- age 수정 -->
                 <div class="mb-3">
                     <label for="updateAge" class="form-label">Age</label>
                     <input type="number" class="form-control" id="updateAge" value="">
                 </div>
+
+                <!-- 자기소개 수정 -->
                 <div class="mb-3">
                     <label for="updateBio" class="form-label">Bio</label>
                     <input type="text" class="form-control" id="updateBio">
                 </div>
 
+                <!-- 수정완료 버튼 -->
                 <button type="button" class="btn btn-primary" id="update-profile-btn">Submit</button>
             </form>
 
