@@ -1,6 +1,6 @@
 // import axios from "axios";
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
+const API_BASE_URL = 'http://43.201.150.34/api/v1'
 
 const signupBtn = document.getElementById("signup-btn");
 const signinBtn = document.getElementById("signin-btn");
