@@ -1,5 +1,71 @@
 const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
 
+// 토큰 저장 및 관리 함수
+const tokenManager = {
+    getAccessToken: () => localStorage.getItem('jwtAccessToken'),
+    getRefreshToken: () => localStorage.getItem('jwtRefreshToken'),
+    setTokens: ({ access, refresh }) => {
+        localStorage.setItem('jwtAccessToken', access);
+        localStorage.setItem('jwtRefreshToken', refresh);
+    },
+    clearTokens: () => {
+        localStorage.removeItem('jwtAccessToken');
+        localStorage.removeItem('jwtRefreshToken');
+    },
+    async refreshAccessToken() {
+        const refreshToken = this.getRefreshToken();
+        if (!refreshToken) {
+            throw new Error('No refresh token available');
+        }
+        try {
+            const response = await axios.post(`${API_BASE_URL}token/refresh/`, {
+                refresh: refreshToken
+            });
+            this.setTokens(response.data); // 새로운 토큰 저장
+            console.log('토큰이 갱신되었습니다:', response.data.access);
+        } catch (error) {
+            console.error('토큰 갱신 실패:', error.response ? error.response.data : error.message);
+            this.clearTokens(); // 실패 시 토큰 제거
+            throw error;
+        }
+    }
+};
+
+// Axios 요청 인터셉터 설정
+axios.interceptors.request.use(
+    async (config) => {
+        let token = tokenManager.getAccessToken(); // access token 가져오기
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`; // 헤더에 토큰 추가
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// Axios 응답 인터셉터 설정 (토큰 만료 시 갱신 및 재요청)
+axios.interceptors.response.use(
+    (response) => response, // 응답이 성공적일 때는 그대로 반환
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            try {
+                await tokenManager.refreshAccessToken(); // 토큰 갱신
+                const newAccessToken = tokenManager.getAccessToken(); // 갱신된 토큰 가져오기
+                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`; // 새로운 토큰 설정
+                return axios(originalRequest); // 원래 요청 다시 시도
+            } catch (err) {
+                console.error('새로운 토큰으로 재요청 실패:', err);
+                return Promise.reject(error);
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
 // 메인페이지 영화 정보 가져오기
 axios.get(`${API_BASE_URL}/movies/`)
     .then(response => {
@@ -57,7 +123,7 @@ if (searchForm) {
         const searchKeyword = document.getElementById('search_keyword').value.trim();
         const searchType = document.getElementById('lang').value;
 
-        // 검색어가 비어있을 경우 경고
+        // 검색어가 비어있을 경우
         if (!searchKeyword) {
             alert('검색어를 입력하세요.');
             return;
@@ -160,11 +226,7 @@ axios.get(`${API_BASE_URL}/movies/${moviepk}/`)
 
 // 보고싶어요, 관심없어요 데이터 전송
 function sendLikeData(moviepk, movieData) {
-    axios.post(`${API_BASE_URL}/movies/${moviepk}/`, movieData, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    })
+    axios.post(`${API_BASE_URL}/movies/${moviepk}/`, movieData)
     .then(response => {
         console.log('영화 정보가 성공적으로 전송되었습니다:', response.data);
     })
@@ -184,11 +246,7 @@ function handleReaction(button, moviepk, reactionType) {
 
 // 영화 평가하기 데이터 전송
 function sendScoreData(moviepk, scoreData) {
-    axios.post(`${API_BASE_URL}/movies/${moviepk}/score/`, scoreData, {
-        headers: {
-            Authorization: `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
-        }
-    })
+    axios.post(`${API_BASE_URL}/movies/${moviepk}/score/`, scoreData)
     .then(response => {
         console.log('성공적으로 전송되었습니다:', response.data);
     })
