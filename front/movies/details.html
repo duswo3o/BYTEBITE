@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POPCORNGEEK</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="movies.js" defer></script> <!-- defer를 사용하여 DOMContentLoaded 후 실행 -->
 </head>
@@ -22,5 +23,15 @@
         <button type="button" id="score-button">평가하기</button>
     </form>
     <button type="button" id="cancel-score">평가 취소하기</button>
+
+    <div>
+        <label for="reviewContent">리뷰 내용:</label>
+        <textarea id="reviewContent" placeholder="리뷰를 입력하세요"></textarea>
+    </div>
+
+    <button id="postReviewBtn">리뷰 작성하기 (POST)</button>
+
+    <!-- 결과 출력 -->
+    <div id="response" class="container"></div>
 </body>
 </html>
