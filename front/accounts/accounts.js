@@ -191,6 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
 const profileBtn = document.getElementById("searchUserBtn")
 
 const userProfile = () => {
+
     var userPK = document.getElementById("userpk").value
 
     axios.get(`${API_BASE_URL}/accounts/${userPK}/`)
@@ -215,6 +216,7 @@ const userProfile = () => {
             // 팔로워
             const followUsers = response.data.followers;
             const followUserList = document.getElementById("follower-users");
+            followUserList.innerHTML = ""
             followUsers.forEach(followUser => {
                 const followUserdiv = document.createElement("div");
                 followUserdiv.innerHTML = `
@@ -228,6 +230,7 @@ const userProfile = () => {
             // 팔로워
             const followingUsers = response.data.followings;
             const followingUserList = document.getElementById("following-users");
+            followingUserList.innerHTML = ""
             followingUsers.forEach(followingUser => {
                 const followingUserdiv = document.createElement("div");
                 followingUserdiv.innerHTML = `
@@ -242,6 +245,7 @@ const userProfile = () => {
             // 보고싶어요 영화
             const wishMovies = response.data.liked_movies;
             const wishMovieList = document.getElementById("wnat-to-watch");
+            wishMovieList.innerHTML = ""
             wishMovies.forEach(wishMovie => {
                 const wishMoviediv = document.createElement("div");
                 wishMoviediv.innerHTML = `
@@ -255,6 +259,7 @@ const userProfile = () => {
             // 좋아요 한 리뷰
             const likedReviews = response.data.liked_reviews;
             const likedReviewList = document.getElementById("liked-review");
+            likedReviewList.innerHTML = ""
             likedReviews.forEach(likedReview => {
                 const likedReviewdiv = document.createElement("div");
                 likedReviewdiv.innerHTML = `
@@ -269,6 +274,7 @@ const userProfile = () => {
             // 작성한 리뷰
             const myReviews = response.data.reviews;
             const myReviewList = document.getElementById("my-movie-reviews");
+            myReviewList.innerHTML = ""
             myReviews.forEach(myReview => {
                 const reviewdiv = document.createElement("div");
                 reviewdiv.innerHTML = `
@@ -283,6 +289,7 @@ const userProfile = () => {
             // 평가한 영화
             const myRatings = response.data.rated_movie;
             const myRatingList = document.getElementById("my-rated-movie");
+            myRatingList.innerHTML = ""
             myRatings.forEach(myRating => {
                 const ratingdiv = document.createElement("div");
                 ratingdiv.innerHTML = `
