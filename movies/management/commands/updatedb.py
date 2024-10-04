@@ -1,4 +1,5 @@
 # 표준 라이브러리
+from datetime import datetime, timedelta
 import time
 
 # 서드파티 라이브러리
@@ -16,9 +17,11 @@ class Command(BaseCommand):
 
     API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
 
+    UPDATE_DATE = datetime.today() + timedelta(days=8)
+
     def handle(self, *args, **options):
         # 시작할 순번 선택
-        start_count = 0
+        start_count = 100
         total_data = []
 
         while True:
@@ -49,9 +52,30 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
                 return
 
+        params = {
+            "ServiceKey": settings.KMDB_API_KEY,
+            # 가져올 영화의 수 선택
+            "listCount": 100,
+            "detail": "N",
+            "releaseDts": self.UPDATE_DATE.strftime("%Y%m%d"),
+            "releaseDte": self.UPDATE_DATE.strftime("%Y%m%d"),
+        }
+
+        response = requests.get(self.API_URL, params=params)
+
+        if response.status_code == 200:
+            data = response.json()["Data"][0]
+
+        else:
+            self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
+            return
+
         self.save_to_database(total_data)
 
-    def save_to_database(self, total_data):
+        if data["Count"] != 0:
+            self.save_to_database(data["Result"], 1)
+
+    def save_to_database(self, total_data, coming=0):
         for item in total_data:
             movie_cd = item["movieSeq"]
             title = item["title"].strip()
@@ -65,6 +89,11 @@ class Command(BaseCommand):
                 prodyear = int(prodyear)
             except (ValueError, TypeError):
                 prodyear = None
+
+            if coming == 1:
+                release_date = self.UPDATE_DATE.strftime("%Y-%m-%d")
+            else:
+                release_date = None
 
             genres = item["genre"].split(",")
             genre_objects = []
@@ -82,6 +111,7 @@ class Command(BaseCommand):
                     "grade": rating,
                     "plot": plot,
                     "prodyear": prodyear,
+                    "release_date": release_date,
                 },
             )
 
