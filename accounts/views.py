@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 
 from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_decode
+from django.template.loader import render_to_string
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -18,6 +20,7 @@ from .serializers import (
     ChangePasswordSerializer,
     UpdateProfileSerializer,
     UserProfileSerializer,
+    UserSigninSerializer,
 )
 from .models import User
 
@@ -117,48 +120,72 @@ def delete_user(request):
     )
 
 
+# class UserSigninAPIView(APIView):
+#     def post(self, request):
+#         email = request.data.get("email")
+#         password = request.data.get("password")
+#
+#         user_db = User.objects.filter(email=email).first()
+#         user = authenticate(email=email, password=password)
+#         # print(user)
+#
+#         if user_db:
+#             if not user_db.is_active:
+#                 serializer = SigninSerializer(data=request.data)
+#                 if serializer.is_valid():
+#                     return Response(
+#                         {
+#                             "message": "계정이 비활성화 상태입니다.\n 이메일 인증을 통해 계정을 활성화해주세요"
+#                         },
+#                         status=status.HTTP_200_OK,
+#                     )
+#             return Response({"message": "이메일 혹은 패스워드가 일치하지 않습니다."})
+#
+#         refresh = RefreshToken.for_user(user)
+#         data = {
+#             "refresh": str(refresh),
+#             "access": str(refresh.access_token),
+#         }
+#
+#         user = get_user_model().objects.get(email=email)
+#         data["id"] = user.id
+#         data["email"] = user.email
+#         data["nickname"] = user.nickname
+#         data["gender"] = user.gender
+#         data["age"] = user.age
+#         data["bio"] = user.bio
+#
+#         return Response(
+#             data=data,
+#             status=status.HTTP_200_OK,
+#         )
+
+
 class UserSigninAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
+        serializer = UserSigninSerializer(data=request.data)
+        if serializer.is_valid():
+            # 로그인 성공 후의 추가 작업 (예: JWT 토큰 생성 등)
+            user = authenticate(email=email, password=password)
+            refresh = RefreshToken.for_user(user)
+            data = {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+            signin_user = get_user_model().objects.get(email=email)
+            print("\n\n\n", signin_user)
+            data["id"] = signin_user.id
+            data["email"] = signin_user.email
+            data["nickname"] = signin_user.nickname
+            data["gender"] = signin_user.gender
+            data["age"] = signin_user.age
+            data["bio"] = signin_user.bio
 
-        user = User.objects.filter(email=email)
-        message = False
-        if user and user[0].is_active == False:
-            user[0].is_active = True
-            user[0].deactivate_time = None
-            user[0].save()
-            message = "계정이 활성화되었습니다."
+            return Response(data=data, status=status.HTTP_200_OK)
 
-        user = authenticate(email=email, password=password)
-
-        if not user:
-            return Response(
-                {"error": "이메일 혹은 패스워드가 일치하지 않습니다."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        refresh = RefreshToken.for_user(user)
-        data = {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }
-
-        user = get_user_model().objects.get(email=email)
-        data["id"] = user.id
-        data["email"] = user.email
-        data["nickname"] = user.nickname
-        data["gender"] = user.gender
-        data["age"] = user.age
-        data["bio"] = user.bio
-
-        if message:
-            data["message"] = message
-
-        return Response(
-            data=data,
-            status=status.HTTP_200_OK,
-        )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserSignoutAPIView(APIView):

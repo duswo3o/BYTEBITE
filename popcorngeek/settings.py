@@ -85,7 +85,7 @@ TEMPLATES = [
             ],
         },
     },
-]ㅗ
+]
 
 WSGI_APPLICATION = "popcorngeek.wsgi.application"
 

@@ -1,6 +1,7 @@
 import re
 
 from rest_framework import serializers
+from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.template.loader import render_to_string
@@ -12,6 +13,7 @@ from django.conf import settings
 from .models import User
 from movies.models import Movie, Rating
 from reviews.models import Review, Comment, Like
+from .token import account_activation_token
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -97,6 +99,67 @@ class UserCreateSerializer(serializers.ModelSerializer):
         self.send_verification_email(user, uid, token)
 
         return user
+
+
+class UserSigninSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ["email", "password"]
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        # 사용자가 존재하는지 확인
+        user = User.objects.filter(email=email).first()
+        if user is None:
+            raise serializers.ValidationError(
+                "이메일 혹은 패스워드가 일치하지 않습니다."
+            )
+
+        # 비활성화된 계정일 경우
+        if not user.is_active:
+            self.send_activation_email(user)
+            raise serializers.ValidationError(
+                "계정이 비활성화 상태입니다. 이메일 인증을 통해 계정을 활성화해주세요."
+            )
+
+        # 사용자 인증
+        if not user.check_password(password):
+            raise serializers.ValidationError(
+                "이메일 혹은 패스워드가 일치하지 않습니다."
+            )
+
+        return attrs
+
+    def send_activation_email(self, user):
+
+        # 이메일 전송을 위한 토큰 생성
+        token_generator = PasswordResetTokenGenerator()
+        token = token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        subject = 'Activate Your Account'
+        message = render_to_string(
+            'accounts/account_active_email.html',  # 이메일 템플릿 경로
+            {
+                'user': user,
+                'domain': '127.0.0.1:8000',  # 도메인 설정
+                'uid': uid,  # 사용자 ID 인코딩
+                'token': token,  # 활성화 토큰 생성
+            }
+        )
+
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,  # 발신자 이메일
+            [user.email],  # 수신자 이메일
+            fail_silently=False,
+        )
 
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
