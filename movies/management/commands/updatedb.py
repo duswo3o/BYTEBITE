@@ -60,7 +60,7 @@ class Command(BaseCommand):
             plot = item["plots"]["plot"][0]["plotText"]
 
             prodyear = item["prodYear"]
-            
+
             try:
                 prodyear = int(prodyear)
             except (ValueError, TypeError):
