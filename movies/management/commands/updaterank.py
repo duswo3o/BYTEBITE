@@ -18,8 +18,12 @@ class Command(BaseCommand):
     API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json"
 
     yesterday = (datetime.now() - timedelta(days=1))
+    date_to_delete = datetime.now() - timedelta(days=7)
 
     def handle(self, *args, **options):
+        Ranking.objects.filter(crawling_date__lt=self.date_to_delete.date()).delete()
+        Ranking.objects.filter(crawling_date__lt=datetime.now().date()).delete()
+
         params = {
             'key': settings.KOFIC_API_KEY,
             'targetDt': self.yesterday.strftime("%Y%m%d"),
