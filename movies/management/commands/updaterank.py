@@ -1,7 +1,5 @@
 # 표준 라이브러리
-import time
 from datetime import datetime, timedelta
-import pprint
 
 # 서드파티 라이브러리
 import requests
@@ -17,7 +15,7 @@ class Command(BaseCommand):
 
     API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json"
 
-    yesterday = (datetime.now() - timedelta(days=1))
+    yesterday = datetime.now() - timedelta(days=1)
     date_to_delete = datetime.now() - timedelta(days=7)
 
     def handle(self, *args, **options):
@@ -25,14 +23,14 @@ class Command(BaseCommand):
         Ranking.objects.filter(crawling_date__lt=datetime.now().date()).delete()
 
         params = {
-            'key': settings.KOFIC_API_KEY,
-            'targetDt': self.yesterday.strftime("%Y%m%d"),
-            }
+            "key": settings.KOFIC_API_KEY,
+            "targetDt": self.yesterday.strftime("%Y%m%d"),
+        }
 
         response = requests.get(self.API_URL, params=params)
 
         if response.status_code == 200:
-            data = response.json()['boxOfficeResult']['dailyBoxOfficeList']
+            data = response.json()["boxOfficeResult"]["dailyBoxOfficeList"]
 
         else:
             self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
@@ -46,7 +44,7 @@ class Command(BaseCommand):
             rank = item["rank"]
             crawling_date = self.yesterday.strftime("%Y-%m-%d")
 
-            movie = Movie.objects.filter(title=title).order_by('-prodyear').first()
+            movie = Movie.objects.filter(title=title).order_by("-prodyear").first()
             movie_pk = movie.pk if movie else None
 
             Ranking.objects.create(
@@ -54,4 +52,4 @@ class Command(BaseCommand):
                 rank=rank,
                 crawling_date=crawling_date,
                 movie_pk=movie_pk,
-                )
+            )
