@@ -1,7 +1,5 @@
 # 표준 라이브러리
-import time
 from datetime import datetime, timedelta
-import pprint
 
 # 서드파티 라이브러리
 import requests

@@ -69,6 +69,7 @@ class Movie(models.Model):
         blank=True,
     )
     prodyear = models.IntegerField(null=True, blank=True)
+    release_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.title
