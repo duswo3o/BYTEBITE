@@ -2,6 +2,12 @@ import re
 
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.conf import settings
 
 from .models import User
 from movies.models import Movie, Rating
@@ -53,6 +59,23 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def send_verification_email(self, user, uid, token):
+        message = render_to_string(
+            "accounts/account_active_email.html",
+            {
+                "user": user,
+                "domain": "127.0.0.1:8000",  # 실제 도메인으로 교체
+                "uid": uid,
+                "token": token,
+            },
+        )
+        send_mail(
+            subject="Activate your account",
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+        )
+
     def create(self, validated_data):
         user = User.objects.create_user(
             email=validated_data["email"],
@@ -62,6 +85,16 @@ class UserCreateSerializer(serializers.ModelSerializer):
             age=validated_data.get("age"),
             bio=validated_data.get("bio"),
         )
+        user.is_active = False  # 이메일 인증 전에는 계정 비활성화
+        user.save()
+
+        # 이메일 전송을 위한 토큰 생성
+        token_generator = PasswordResetTokenGenerator()
+        token = token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))  # .decode("utf-8")
+
+        # 이메일 전송
+        self.send_verification_email(user, uid, token)
 
         return user
 

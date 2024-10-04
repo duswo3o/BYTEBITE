@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_decode
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -30,7 +32,9 @@ class UserAPIView(APIView):
             )
 
         email = request.data.get("email")
-        user = User.objects.filter(email=email)
+        user = User.objects.filter(email=email).first()
+
+        # 이미 존재하는 사용자가 있고, 그 사용자가 비활성화된 상태인 경우
         if user and user[0].is_active == False:
             return Response(
                 {
@@ -72,6 +76,28 @@ class UserAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserActivate(APIView):
+    def get(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = urlsafe_base64_decode(uidb64)  # .decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        token_generator = PasswordResetTokenGenerator()
+        if user is not None and token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            return Response(
+                {"message": "계정이 활성화되었습니다."}, status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"message": "링크가 유효하지 않거나 이미 사용되었습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 @api_view(["POST"])
