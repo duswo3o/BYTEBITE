@@ -1,7 +1,6 @@
 import re
 
 from rest_framework import serializers
-from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.template.loader import render_to_string
@@ -13,7 +12,6 @@ from django.conf import settings
 from .models import User
 from movies.models import Movie, Rating
 from reviews.models import Review, Comment, Like
-from .token import account_activation_token
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -142,15 +140,15 @@ class UserSigninSerializer(serializers.ModelSerializer):
         token = token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-        subject = 'Activate Your Account'
+        subject = "Activate Your Account"
         message = render_to_string(
-            'accounts/account_active_email.html',  # 이메일 템플릿 경로
+            "accounts/account_active_email.html",  # 이메일 템플릿 경로
             {
-                'user': user,
-                'domain': '127.0.0.1:8000',  # 도메인 설정
-                'uid': uid,  # 사용자 ID 인코딩
-                'token': token,  # 활성화 토큰 생성
-            }
+                "user": user,
+                "domain": "127.0.0.1:8000",  # 도메인 설정
+                "uid": uid,  # 사용자 ID 인코딩
+                "token": token,  # 활성화 토큰 생성
+            },
         )
 
         send_mail(
