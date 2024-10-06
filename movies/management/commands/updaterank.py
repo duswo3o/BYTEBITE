@@ -40,7 +40,7 @@ class Command(BaseCommand):
 
     def save_to_database(self, data):
         for item in data:
-            title = item["movieNm"].strip()
+            title = item["movieNm"].strip().upper()
             rank = item["rank"]
             crawling_date = self.yesterday.strftime("%Y-%m-%d")
 

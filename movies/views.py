@@ -1,3 +1,7 @@
+# 표준 라이브러리
+from datetime import datetime, timedelta
+from itertools import groupby
+
 # 서드파티 라이브러리
 from rest_framework import status
 from rest_framework.decorators import permission_classes
@@ -15,6 +19,7 @@ from .models import Movie, Ranking, Rating, Staff
 from .serializers import (
     AverageGradeSerializer,
     BoxofficeSerializer,
+    ComingSerializer,
     LikeSerializer,
     MovieSerializer,
     StaffSerializer,
@@ -40,7 +45,8 @@ class MovieListApiView(APIView):
 
         # 좋아요 많은 순 출력
         liked_movies = (
-            Movie.objects.annotate(
+            Movie.objects
+            .annotate(
                 like_count=models.Count("like_users"),
                 dislike_count=models.Count("dislike_users"),
             )
@@ -50,10 +56,37 @@ class MovieListApiView(APIView):
 
         liked_serializer = LikeSerializer(liked_movies, many=True)
 
+        # 개봉예정작 출력
+        start_date = datetime.now() + timedelta(days=1)
+        end_date = datetime.now() + timedelta(days=7)
+
+        coming_movies = (
+            Movie.objects.filter(release_date__range=[start_date, end_date])
+            .annotate(
+                like_count=models.Count("like_users"),
+                dislike_count=models.Count("dislike_users"),
+            )
+            .annotate(like=models.F("like_count") - models.F("dislike_count"))
+            .order_by('release_date', '-like')
+            )
+
+        coming_liked_movies = []
+        for date, group in groupby(coming_movies, key=lambda x: x.release_date):
+            top_movie = next(group)
+            coming_liked_movies.append({
+                "id": top_movie.id,
+                "release_date": top_movie.release_date,
+                "title": top_movie.title,
+                "like": top_movie.like,
+                })
+
+        coming_serializer = ComingSerializer(coming_liked_movies, many=True)
+
         response_data = {
             "boxoffice_movies": boxoffice_serializer.data,
             "graded_movies": graded_serializer.data,
             "liked_movies": liked_serializer.data,
+            "coming_serializer": coming_serializer.data,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)

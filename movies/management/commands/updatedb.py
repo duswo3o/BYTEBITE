@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
     API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
 
-    UPDATE_DATE = datetime.today() + timedelta(days=8)
+    UPDATE_DATE = datetime.today() - timedelta(days=11)
 
     def handle(self, *args, **options):
         # 시작할 순번 선택
@@ -28,7 +28,7 @@ class Command(BaseCommand):
             params = {
                 "ServiceKey": settings.KMDB_API_KEY,
                 # 가져올 영화의 수 선택
-                "listCount": 100,
+                "listCount": 1,
                 "startCount": start_count,
                 "detail": "N",
             }
@@ -78,7 +78,7 @@ class Command(BaseCommand):
     def save_to_database(self, total_data, coming=0):
         for item in total_data:
             movie_cd = item["movieSeq"]
-            title = item["title"].strip()
+            title = item["title"].strip().upper()
             runtime = item["runtime"] if item["runtime"] else None
             rating = item["rating"] if item["rating"] else None
             plot = item["plots"]["plot"][0]["plotText"]
