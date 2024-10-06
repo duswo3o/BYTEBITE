@@ -11,20 +11,26 @@ from movies.models import Movie, Ranking
 
 
 class Command(BaseCommand):
-    help = "박스오피스의 데이터 베이스를 업데이트합니다. 일주일이 지난 데이터는 삭제합니다."
+    help = "개봉예정인 영화와 작일의 박스오피스 순위를 업데이트합니다."
 
     API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json"
 
-    yesterday = datetime.now() - timedelta(days=4)
-    date_to_delete = datetime.now() - timedelta(days=7)
+    YESTERDAY = datetime.now() - timedelta(days=1)
+    DELETE_DATE = datetime.now() - timedelta(days=8)
 
     def handle(self, *args, **options):
-        Ranking.objects.filter(crawling_date__lt=self.date_to_delete.date()).delete()
-        Ranking.objects.filter(crawling_date=self.yesterday.date()).delete()
+        # 8일 이전의 박스오피스 순위 삭제
+        Ranking.objects.filter(crawling_date__lt=self.DELETE_DATE.date()).delete()
+        # 작일 박스오피스 순위 삭제(중복 실행 시 오류 방지)
+        Ranking.objects.filter(crawling_date=self.YESTERDAY.date()).delete()
 
+        # 작일 기준 박스오피스 순위 업데이트
+        self.save_to_database()
+
+    def save_to_database(self):
         params = {
             "key": settings.KOFIC_API_KEY,
-            "targetDt": self.yesterday.strftime("%Y%m%d"),
+            "targetDt": self.YESTERDAY.strftime("%Y%m%d"),
         }
 
         response = requests.get(self.API_URL, params=params)
@@ -36,13 +42,10 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
             return
 
-        self.save_to_database(data)
-
-    def save_to_database(self, data):
         for item in data:
             title = item["movieNm"].strip().upper()
             rank = item["rank"]
-            crawling_date = self.yesterday.strftime("%Y-%m-%d")
+            crawling_date = self.YESTERDAY.strftime("%Y-%m-%d")
 
             movie = Movie.objects.filter(title=title).order_by("-prodyear").first()
             movie_pk = movie.pk if movie else None
