@@ -1,7 +1,6 @@
 # 표준 라이브러리
 from datetime import datetime, timedelta
 import time
-from pprint import pprint
 
 # 서드파티 라이브러리
 import requests
@@ -11,7 +10,7 @@ from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
-from movies.models import Genre, Movie, Staff
+from movies.models import Genre, Movie, Ranking, Staff
 
 
 class Command(BaseCommand):
@@ -28,12 +27,16 @@ class Command(BaseCommand):
         # total_data = self.database_initial_setup()
 
         # 테스트 데이터를 입력하는 함수(배포시 주석처리)
-        # total_data = self.test_setup()
+        total_data = self.test_setup()
 
-        # self.save_to_database(total_data)
+        self.save_to_database(total_data)
 
+        # 앞으로 7일간 개봉할 영화의 개봉일 입력
         release_data = self.initial_release_date()
         self.save_to_database(release_data, 1)
+
+        # 이전 7일간의 박스오피스 순위 입력
+        self.save_to_rank_database()
 
     def database_initial_setup(self):
         total_data = []
@@ -107,7 +110,7 @@ class Command(BaseCommand):
                     data = response.json()["Data"][0]["Result"]
 
                     for d in data:
-                        d['release_date'] = update_date.strftime("%Y-%m-%d")
+                        d["release_date"] = update_date.strftime("%Y-%m-%d")
                     release_data.extend(data)
 
             else:
@@ -132,7 +135,7 @@ class Command(BaseCommand):
                 prodyear = None
 
             if coming == 1:
-                release_date = item['release_date']
+                release_date = item["release_date"]
             else:
                 release_date = None
 
@@ -198,7 +201,9 @@ class Command(BaseCommand):
                         name_cd=name_cd, defaults={"name": name, "role": role}
                     )
                 else:
-                    staff_obj, created = Staff.objects.get_or_create(name=name, role=role)
+                    staff_obj, created = Staff.objects.get_or_create(
+                        name=name, role=role
+                    )
 
                 movie.staffs.add(staff)
 
@@ -207,3 +212,39 @@ class Command(BaseCommand):
 
             except IntegrityError:
                 pass
+
+    def save_to_rank_database(self):
+        for date in range(1, 8):
+            update_date = self.TODAY - timedelta(days=date)
+
+            params = {
+                "key": settings.KOFIC_API_KEY,
+                "targetDt": update_date.strftime("%Y%m%d"),
+            }
+
+            response = requests.get(self.RANK_API_URL, params=params)
+
+            if response.status_code == 200:
+                data = response.json()["boxOfficeResult"]["dailyBoxOfficeList"]
+
+                for item in data:
+                    title = item["movieNm"].strip().upper()
+                    rank = item["rank"]
+                    crawling_date = update_date.strftime("%Y-%m-%d")
+
+                    movie = (
+                        Movie.objects.filter(title=title).order_by("-prodyear").first()
+                    )
+
+                    movie_pk = movie.pk if movie else None
+
+                    Ranking.objects.create(
+                        title=title,
+                        rank=rank,
+                        crawling_date=crawling_date,
+                        movie_pk=movie_pk,
+                    )
+
+            else:
+                self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
+                return
