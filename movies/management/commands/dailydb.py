@@ -14,8 +14,8 @@ from movies.models import Genre, Movie, Ranking, Staff
 class Command(BaseCommand):
     help = "개봉예정인 영화와 작일의 박스오피스 순위를 업데이트합니다."
 
-    API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
     RANK_API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json"
+    API_URL = "http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_json2.jsp?collection=kmdb_new2"
 
     YESTERDAY = datetime.now() - timedelta(days=1)
     DEFAULT_UPDATE_DATE = datetime.now() + timedelta(days=8)
@@ -41,13 +41,13 @@ class Command(BaseCommand):
         else:
             self.UPDATE_DATE = self.DEFAULT_UPDATE_DATE
 
-            # 8일 이전의 박스오피스 순위 삭제
-            Ranking.objects.filter(crawling_date__lt=self.DELETE_DATE.date()).delete()
-            # 작일 박스오피스 순위 삭제(중복 실행 시 오류 방지)
-            Ranking.objects.filter(crawling_date=self.YESTERDAY.date()).delete()
+        # 8일 이전의 박스오피스 순위 삭제
+        Ranking.objects.filter(crawling_date__lt=self.DELETE_DATE.date()).delete()
+        # 작일 박스오피스 순위 삭제(중복 실행 시 오류 방지)
+        Ranking.objects.filter(crawling_date=self.YESTERDAY.date()).delete()
 
-            # 작일 기준 박스오피스 순위 업데이트
-            self.update_ranking()
+        # 작일 기준 박스오피스 순위 업데이트
+        self.update_ranking()
 
         # 8일 후 개봉 예정 영화의 정보 입력
         self.update_date()
