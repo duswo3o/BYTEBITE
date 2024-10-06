@@ -1,6 +1,7 @@
 # 표준 라이브러리
 from datetime import datetime, timedelta
 import time
+from pprint import pprint
 
 # 서드파티 라이브러리
 import requests
@@ -25,21 +26,24 @@ class Command(BaseCommand):
 
         # 전체 데이터 베이스를 입력하는 함수(배포시 주석해제)
         # total_data = self.database_initial_setup()
-        # 테스트 데이터를 입력하는 함수(배포시 주석)
-        total_data = self.test_setup()
 
-        self.save_to_database(total_data)
+        # 테스트 데이터를 입력하는 함수(배포시 주석처리)
+        # total_data = self.test_setup()
+
+        # self.save_to_database(total_data)
+
+        release_data = self.initial_release_date()
+        self.save_to_database(release_data, 1)
 
     def database_initial_setup(self):
-        # 시작할 순번 선택
-        start_count = 100
         total_data = []
 
         while True:
+            start_count = 80000
+
             params = {
                 "ServiceKey": settings.KMDB_API_KEY,
-                # 가져올 영화의 수 선택
-                "listCount": 1,
+                "listCount": 1000,
                 "startCount": start_count,
                 "detail": "N",
             }
@@ -52,8 +56,6 @@ class Command(BaseCommand):
 
                 if len(data) < 1000:
                     break
-                # 아래의 break문을 주석처리 하면 KMDb의 모든 데이터를 가져오게 됩니다.
-                break
 
                 start_count += 1000
 
@@ -66,13 +68,10 @@ class Command(BaseCommand):
         return total_data
 
     def test_setup(self):
-        # 시작할 순번 선택
         start_count = 107000
-        total_data = []
 
         params = {
             "ServiceKey": settings.KMDB_API_KEY,
-            # 가져올 영화의 수 선택
             "listCount": 1000,
             "startCount": start_count,
             "detail": "N",
@@ -81,14 +80,41 @@ class Command(BaseCommand):
         response = requests.get(self.API_URL, params=params)
 
         if response.status_code == 200:
-            data = response.json()["Data"][0]["Result"]
-            total_data.extend(data)
+            return response.json()["Data"][0]["Result"]
 
         else:
             self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
             return
 
-        return total_data
+    def initial_release_date(self):
+        release_data = []
+
+        for date in range(1, 8):
+            update_date = self.TODAY + timedelta(days=date)
+
+            params = {
+                "ServiceKey": settings.KMDB_API_KEY,
+                "listCount": 100,
+                "detail": "N",
+                "releaseDts": update_date.strftime("%Y%m%d"),
+                "releaseDte": update_date.strftime("%Y%m%d"),
+            }
+
+            response = requests.get(self.API_URL, params=params)
+
+            if response.status_code == 200:
+                if response.json()["Data"][0]["Count"] != 0:
+                    data = response.json()["Data"][0]["Result"]
+
+                    for d in data:
+                        d['release_date'] = update_date.strftime("%Y-%m-%d")
+                    release_data.extend(data)
+
+            else:
+                self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
+                return
+
+        return release_data
 
     def save_to_database(self, total_data, coming=0):
         for item in total_data:
@@ -106,7 +132,7 @@ class Command(BaseCommand):
                 prodyear = None
 
             if coming == 1:
-                release_date = self.UPDATE_DATE.strftime("%Y-%m-%d")
+                release_date = item['release_date']
             else:
                 release_date = None
 
