@@ -15,12 +15,12 @@ class Command(BaseCommand):
 
     API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json"
 
-    yesterday = datetime.now() - timedelta(days=1)
+    yesterday = datetime.now() - timedelta(days=4)
     date_to_delete = datetime.now() - timedelta(days=7)
 
     def handle(self, *args, **options):
         Ranking.objects.filter(crawling_date__lt=self.date_to_delete.date()).delete()
-        Ranking.objects.filter(crawling_date__lt=datetime.now().date()).delete()
+        Ranking.objects.filter(crawling_date=self.yesterday.date()).delete()
 
         params = {
             "key": settings.KOFIC_API_KEY,
@@ -40,7 +40,7 @@ class Command(BaseCommand):
 
     def save_to_database(self, data):
         for item in data:
-            title = item["movieNm"].strip()
+            title = item["movieNm"].strip().upper()
             rank = item["rank"]
             crawling_date = self.yesterday.strftime("%Y-%m-%d")
 
