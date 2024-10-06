@@ -9,7 +9,7 @@ from .models import Genre, Movie, Ranking, Staff
 class BoxofficeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ranking
-        fields = ["title", "rank"]
+        fields = ["title", "rank", "movie_pk"]
 
 
 class GenreSerializer(serializers.ModelSerializer):
