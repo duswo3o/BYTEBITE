@@ -41,13 +41,70 @@ class Command(BaseCommand):
     def database_initial_setup(self):
         total_data = []
 
+        # 0 ~ 40000까지 입력
+        first_count = 0
         while True:
-            start_count = 80000
-
             params = {
+                # 다른 api키 필요
                 "ServiceKey": settings.KMDB_API_KEY,
                 "listCount": 1000,
-                "startCount": start_count,
+                "startCount": first_count,
+                "detail": "N",
+            }
+
+            response = requests.get(self.API_URL, params=params)
+
+            if response.status_code == 200:
+                data = response.json()["Data"][0]["Result"]
+                total_data.extend(data)
+
+                if first_count == 40000:
+                    break
+
+                first_count += 1000
+
+                time.sleep(3)
+
+            else:
+                self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
+                return
+
+        # 40000 ~ 80000까지 입력
+        second_count = 40000
+        while True:
+            params = {
+                # 다른 api키 필요
+                "ServiceKey": settings.KMDB_API_KEY,
+                "listCount": 1000,
+                "startCount": second_count,
+                "detail": "N",
+            }
+
+            response = requests.get(self.API_URL, params=params)
+
+            if response.status_code == 200:
+                data = response.json()["Data"][0]["Result"]
+                total_data.extend(data)
+
+                if second_count == 80000:
+                    break
+
+                second_count += 1000
+
+                time.sleep(3)
+
+            else:
+                self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
+                return
+
+        # 80000 ~ 입력
+        last_count = 80000
+        while True:
+            params = {
+                # 다른 api키 필요
+                "ServiceKey": settings.KMDB_API_KEY,
+                "listCount": 1000,
+                "startCount": last_count,
                 "detail": "N",
             }
 
@@ -60,7 +117,7 @@ class Command(BaseCommand):
                 if len(data) < 1000:
                     break
 
-                start_count += 1000
+                last_count += 1000
 
                 time.sleep(3)
 
