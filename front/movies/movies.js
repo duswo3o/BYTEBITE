@@ -72,15 +72,25 @@ axios.get(`${API_BASE_URL}movies/`)
         // 박스오피스 순
         const boxofficeMovies = response.data.boxoffice_movies;
         const boxofficeList = document.getElementById('boxoffice-movies-list');
+
         boxofficeMovies.forEach(movie => {
             const li = document.createElement('li');
-            li.textContent = `${movie.rank}위: ${movie.title}`;
+
+            const boxofficelink = document.createElement('a');
+            boxofficelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.movie_pk}`;
+            boxofficelink.textContent = movie.title;
+
+
+            li.appendChild(document.createTextNode(`${movie.rank}위: `));
+            li.appendChild(boxofficelink);
+
             boxofficeList.appendChild(li);
         });
 
         // 평균 평점 순
         const gradedMovies = response.data.graded_movies;
         const gradedList = document.getElementById('graded-movies-list');
+
         gradedMovies.forEach(movie => {
             const li = document.createElement('li');
 
@@ -97,6 +107,7 @@ axios.get(`${API_BASE_URL}movies/`)
         // 좋아요 순
         const likedMovies = response.data.liked_movies;
         const likedList = document.getElementById('liked-movies-list');
+
         likedMovies.forEach(movie => {
             const li = document.createElement('li');
 
@@ -112,6 +123,7 @@ axios.get(`${API_BASE_URL}movies/`)
         // 개봉예정작
         const comingMovies = response.data.coming_serializer;
         const comingList = document.getElementById('coming-movies-list');
+
         comingMovies.forEach(movie => {
             const li = document.createElement('li');
 
