@@ -22,15 +22,15 @@ class Command(BaseCommand):
     DELETE_DATE = datetime.now() - timedelta(days=8)
 
     def handle(self, *args, **options):
-        # # 8일 이전의 박스오피스 순위 삭제
-        # Ranking.objects.filter(crawling_date__lt=self.DELETE_DATE.date()).delete()
-        # # 작일 박스오피스 순위 삭제(중복 실행 시 오류 방지)
-        # Ranking.objects.filter(crawling_date=self.YESTERDAY.date()).delete()
+        # 8일 이전의 박스오피스 순위 삭제
+        Ranking.objects.filter(crawling_date__lt=self.DELETE_DATE.date()).delete()
+        # 작일 박스오피스 순위 삭제(중복 실행 시 오류 방지)
+        Ranking.objects.filter(crawling_date=self.YESTERDAY.date()).delete()
 
-        # # 작일 기준 박스오피스 순위 업데이트
-        # self.update_ranking()
-        # 8일 후 개봉 예정 영화의 개봉일 입력
-        self.update_release_date()
+        # 작일 기준 박스오피스 순위 업데이트
+        self.update_ranking()
+        # 8일 후 개봉 예정 영화의 정보 입력
+        self.update_date()
 
     def update_ranking(self):
         params = {
@@ -62,7 +62,7 @@ class Command(BaseCommand):
                 movie_pk=movie_pk,
             )
 
-    def update_release_date(self):
+    def update_date(self):
         params = {
             "ServiceKey": settings.KMDB_API_KEY,
             "listCount": 100,
