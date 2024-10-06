@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://43.201.150.34/api/v1/'
+const API_BASE_URL = 'https://popcorngeek.store/api/v1/'
 
 // 토큰 저장 및 관리 함수
 const tokenManager = {
@@ -85,7 +85,7 @@ axios.get(`${API_BASE_URL}movies/`)
             const li = document.createElement('li');
 
             const gradelink = document.createElement('a');
-            gradelink.href = `https://43.201.150.34/front/movies/details.html?pk=${movie.id}`;
+            gradelink.href = `https://popcorngeek.store/front/movies/details.html?pk=${movie.id}`;
             gradelink.textContent = movie.title;
 
             li.appendChild(gradelink);
@@ -101,7 +101,7 @@ axios.get(`${API_BASE_URL}movies/`)
             const li = document.createElement('li');
 
             const likelink = document.createElement('a');
-            likelink.href = `https://43.201.150.34/front/movies/details.html?pk=${movie.id}`;
+            likelink.href = `https://popcorngeek.store/front/movies/details.html?pk=${movie.id}`;
             likelink.textContent = movie.title;
 
             li.appendChild(likelink);
@@ -156,7 +156,7 @@ if (searchKeyword) {
                     const genreNames = item.genre.map(genre => genre.name).join(', ');
 
                     const searchlink = document.createElement('a');
-                    searchlink.href = `https://43.201.150.34/front/movies/details.html?pk=${item.id}`;
+                    searchlink.href = `https://popcorngeek.store/front/movies/details.html?pk=${item.id}`;
                     searchlink.textContent = item.title;
 
                     li.appendChild(searchlink);
