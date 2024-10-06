@@ -1,28 +1,28 @@
 from datetime import datetime, timedelta
 
-from django.shortcuts import get_object_or_404
-from django.core.mail import send_mail
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.shortcuts import get_object_or_404
 from django.utils.http import urlsafe_base64_decode
-from django.template.loader import render_to_string
-from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView
-from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import (
-    UserCreateSerializer,
     ChangePasswordSerializer,
     UpdateProfileSerializer,
+    UserCreateSerializer,
     UserProfileSerializer,
     UserSigninSerializer,
 )
-from .models import User
+
+
+User = get_user_model()
 
 
 # Create your views here
@@ -94,7 +94,8 @@ class UserActivate(APIView):
             user.is_active = True
             user.save()
             return Response(
-                {"message": "계정이 활성화되었습니다."}, status=status.HTTP_200_OK
+                {"message": "계정이 활성화되었습니다. 다시 로그인을 시도해주세요."},
+                status=status.HTTP_200_OK,
             )
         else:
             return Response(
@@ -120,47 +121,6 @@ def delete_user(request):
     )
 
 
-# class UserSigninAPIView(APIView):
-#     def post(self, request):
-#         email = request.data.get("email")
-#         password = request.data.get("password")
-#
-#         user_db = User.objects.filter(email=email).first()
-#         user = authenticate(email=email, password=password)
-#         # print(user)
-#
-#         if user_db:
-#             if not user_db.is_active:
-#                 serializer = SigninSerializer(data=request.data)
-#                 if serializer.is_valid():
-#                     return Response(
-#                         {
-#                             "message": "계정이 비활성화 상태입니다.\n 이메일 인증을 통해 계정을 활성화해주세요"
-#                         },
-#                         status=status.HTTP_200_OK,
-#                     )
-#             return Response({"message": "이메일 혹은 패스워드가 일치하지 않습니다."})
-#
-#         refresh = RefreshToken.for_user(user)
-#         data = {
-#             "refresh": str(refresh),
-#             "access": str(refresh.access_token),
-#         }
-#
-#         user = get_user_model().objects.get(email=email)
-#         data["id"] = user.id
-#         data["email"] = user.email
-#         data["nickname"] = user.nickname
-#         data["gender"] = user.gender
-#         data["age"] = user.age
-#         data["bio"] = user.bio
-#
-#         return Response(
-#             data=data,
-#             status=status.HTTP_200_OK,
-#         )
-
-
 class UserSigninAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
@@ -174,8 +134,7 @@ class UserSigninAPIView(APIView):
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
             }
-            signin_user = get_user_model().objects.get(email=email)
-            print("\n\n\n", signin_user)
+            signin_user = User.objects.get(email=email)
             data["id"] = signin_user.id
             data["email"] = signin_user.email
             data["nickname"] = signin_user.nickname

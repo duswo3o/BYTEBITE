@@ -1,17 +1,19 @@
 import re
 
-from rest_framework import serializers
+from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
 from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from rest_framework import serializers
 
-from .models import User
 from movies.models import Movie, Rating
 from reviews.models import Review, Comment, Like
+
+User = get_user_model()
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
