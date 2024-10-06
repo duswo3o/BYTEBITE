@@ -132,7 +132,8 @@ class Command(BaseCommand):
 
         params = {
             "ServiceKey": settings.KMDB_API_KEY,
-            "listCount": 1000,
+            # 입력할 테스트 케이스의 갯수 조절(1 ~ 1000)
+            "listCount": 100,
             "startCount": start_count,
             "detail": "N",
         }
