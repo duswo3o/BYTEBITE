@@ -18,17 +18,37 @@ class Command(BaseCommand):
     RANK_API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json"
 
     YESTERDAY = datetime.now() - timedelta(days=1)
-    UPDATE_DATE = datetime.now() + timedelta(days=8)
+    DEFAULT_UPDATE_DATE = datetime.now() + timedelta(days=8)
     DELETE_DATE = datetime.now() - timedelta(days=8)
 
-    def handle(self, *args, **options):
-        # 8일 이전의 박스오피스 순위 삭제
-        Ranking.objects.filter(crawling_date__lt=self.DELETE_DATE.date()).delete()
-        # 작일 박스오피스 순위 삭제(중복 실행 시 오류 방지)
-        Ranking.objects.filter(crawling_date=self.YESTERDAY.date()).delete()
+    def add_arguments(self, parser):
+        # 오직 UPDATE_DATE만 인자로 받도록 설정
+        parser.add_argument(
+            '--update-date',
+            type=str,
+            help='--update-date는 YYYY-MM-DD 형식 (선택)'
+        )
 
-        # 작일 기준 박스오피스 순위 업데이트
-        self.update_ranking()
+    def handle(self, *args, **options):
+        update_date_str = options.get('update_date')
+
+        if update_date_str:
+            try:
+                self.UPDATE_DATE = datetime.strptime(update_date_str, '%Y-%m-%d')
+            except ValueError:
+                self.stdout.write(self.style.ERROR('Invalid update date format. Use YYYY-MM-DD.'))
+                return
+        else:
+            self.UPDATE_DATE = self.DEFAULT_UPDATE_DATE
+
+            # 8일 이전의 박스오피스 순위 삭제
+            Ranking.objects.filter(crawling_date__lt=self.DELETE_DATE.date()).delete()
+            # 작일 박스오피스 순위 삭제(중복 실행 시 오류 방지)
+            Ranking.objects.filter(crawling_date=self.YESTERDAY.date()).delete()
+
+            # 작일 기준 박스오피스 순위 업데이트
+            self.update_ranking()
+
         # 8일 후 개봉 예정 영화의 정보 입력
         self.update_date()
 
