@@ -31,10 +31,13 @@ from .serializers import (
 class MovieListApiView(APIView):
     def get(self, request):
         # 박스오피스 순 출력
-        today_movie = Ranking.objects.last().crawling_date
-        movies = Ranking.objects.filter(crawling_date=today_movie)
+        yesterday = datetime.now() - timedelta(days=1)
 
-        boxoffice_serializer = BoxofficeSerializer(movies, many=True)
+        boxoffice_movies = Ranking.objects.filter(
+            crawling_date=yesterday.date()
+        ).order_by("rank")
+
+        boxoffice_serializer = BoxofficeSerializer(boxoffice_movies, many=True)
 
         # 평균 평점 순 출력
         graded_movies = Movie.objects.annotate(
@@ -45,8 +48,7 @@ class MovieListApiView(APIView):
 
         # 좋아요 많은 순 출력
         liked_movies = (
-            Movie.objects
-            .annotate(
+            Movie.objects.annotate(
                 like_count=models.Count("like_users"),
                 dislike_count=models.Count("dislike_users"),
             )
@@ -67,18 +69,20 @@ class MovieListApiView(APIView):
                 dislike_count=models.Count("dislike_users"),
             )
             .annotate(like=models.F("like_count") - models.F("dislike_count"))
-            .order_by('release_date', '-like')
-            )
+            .order_by("release_date", "-like")
+        )
 
         coming_liked_movies = []
         for date, group in groupby(coming_movies, key=lambda x: x.release_date):
             top_movie = next(group)
-            coming_liked_movies.append({
-                "id": top_movie.id,
-                "release_date": top_movie.release_date,
-                "title": top_movie.title,
-                "like": top_movie.like,
-                })
+            coming_liked_movies.append(
+                {
+                    "id": top_movie.id,
+                    "release_date": top_movie.release_date,
+                    "title": top_movie.title,
+                    "like": top_movie.like,
+                }
+            )
 
         coming_serializer = ComingSerializer(coming_liked_movies, many=True)
 
