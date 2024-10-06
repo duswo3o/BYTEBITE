@@ -42,6 +42,14 @@ class LikeSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "like"]
 
 
+class ComingSerializer(serializers.ModelSerializer):
+    like = serializers.IntegerField()
+
+    class Meta:
+        model = Movie
+        fields = ["id", "title", "like", "release_date"]
+
+
 class FilmographySerializer(MovieSerializer):
     class Meta:
         model = Movie

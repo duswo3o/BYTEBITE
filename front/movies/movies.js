@@ -108,6 +108,21 @@ axios.get(`${API_BASE_URL}movies/`)
             li.appendChild(document.createTextNode(`, likes: ${movie.like || 0}`));
             likedList.appendChild(li);
         });
+
+        // 개봉예정작
+        const comingMovies = response.data.coming_serializer;
+        const comingList = document.getElementById('coming-movies-list');
+        comingMovies.forEach(movie => {
+            const li = document.createElement('li');
+
+            const cominglink = document.createElement('a');
+            cominglink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
+            cominglink.textContent = movie.title;
+
+            li.appendChild(cominglink);
+            li.appendChild(document.createTextNode(`, likes: ${movie.like || 0}, coming: ${movie.release_date}`));
+            comingList.appendChild(li);
+        });
     })
     .catch(error => {
         console.error('Error fetching movies:', error);
