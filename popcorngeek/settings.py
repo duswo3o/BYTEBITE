@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # third-party
+    "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
@@ -162,7 +163,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -183,3 +184,15 @@ if DEBUG:
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
+
+
+# 이메일 인증 관련 설정
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"  # 메일 호스트 서버
+EMAIL_PORT = 587  # gamil과 통신하는 포트
+EMAIL_HOST_USER = env("EMAIL")  # 발신할 이메일
+EMAIL_HOST_PASSWORD = env("EMAIL_PASSWORD")  # 발신할 이메일의 비밀번호
+EMAIL_USE_TLS = True  # TLS 보안 방법
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
