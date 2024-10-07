@@ -1,8 +1,7 @@
 # 서드파티 라이브러리
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
 
 # Django 기능 및 프로젝트 관련
 from .models import Review, Comment, Like
@@ -132,19 +131,30 @@ class LikeViewSet(viewsets.ModelViewSet):
 @require_http_methods(["POST"])
 def transform_review(request):
     data = json.loads(request.body)
-    content = data["content"]
+    content = data.get("content")
+    style = data.get("style", "기본")  # 기본 스타일
 
+    # 말투에 따라 다른 시스템 메시지 설정
+    system_messages = {
+        "조선시대": "조선시대 말투로 변경해줘. 100~200자 사이로 변경해.",
+        "평론가": "너는 입력된 내용을 비유와 은유를 섞어서 평론가처럼 바꿔줘. 100~200자 사이로 변경해.",
+        "Mz": "이모지 섞어서 요즘 mz세대 말투로 변경해줘 100~200자 사이로 변경해.",
+        "기본": "기본",
+    }
+
+    system_message = system_messages.get(style, "기본")
+
+    # OpenAI API 호출
     completion = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4o-mini",
         messages=[
             {
                 "role": "system",
-                "content": "너는 입력된 내용을 은유와 비유를 사용해서 평론가 처럼 바꿔줘.",
+                "content": system_message,
             },
             {"role": "user", "content": content},
         ],
     )
 
     transformed_content = completion.choices[0].message.content
-
     return JsonResponse({"transformedContent": transformed_content})

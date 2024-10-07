@@ -579,38 +579,35 @@ function addEventListeners() {
         });
     });
 }
-// 말투 변경 함수 (axios 사용)
-async function transformReviewContent(reviewContent) {
+
+async function transformReviewContent(style) {
+    const reviewContent = document.getElementById('reviewContent').value.trim();
+    if (!reviewContent) {
+        alert('리뷰를 입력하세요.');
+        return;
+    }
+
     try {
-        const response = await axios.post(`${API_BASE_URL}reviews/transform-review/`, { content: reviewContent });
-        console.log(response.data);
-        return response.data.transformedContent;
+        const response = await axios.post(`${API_BASE_URL}reviews/transform-review/`, {
+            content: reviewContent,
+            style: style  // 말투 스타일을 동적으로 전달
+        });
+        document.getElementById('reviewContent').value = response.data.transformedContent;
+        alert('말투가 변환되었습니다.');
     } catch (error) {
-        console.error('Error transforming review content:', error);
-        throw new Error('말투 변경 실패');
+        console.error('말투 변경 중 오류가 발생했습니다:', error);
     }
 }
 
-// 페이지 로드 시 실행할 이벤트 설정
-document.addEventListener('DOMContentLoaded', () => {
+// 버튼별로 말투 스타일을 전달
+document.getElementById('transformToJoseon').addEventListener('click', () => {
+    transformReviewContent('조선시대');
+});
 
-    // 말투 변경 버튼 클릭 이벤트 추가
-    const transformReviewBtn = document.getElementById('transformReviewBtn');
-    if (transformReviewBtn) {
-        transformReviewBtn.addEventListener('click', async () => {
-            const reviewContent = document.getElementById('reviewContent').value.trim();
-            if (!reviewContent) {
-                alert('리뷰를 입력하세요.');
-                return;
-            }
-            try {
-                const transformedContent = await transformReviewContent(reviewContent);
-                console.log('변환된 내용:', transformedContent);
-                document.getElementById('reviewContent').value = transformedContent;
-                alert('말투가 변경되었습니다.');
-            } catch (error) {
-                alert('말투 변경 중 오류가 발생했습니다.');
-            }
-        });
-    }
+document.getElementById('transformToCritic').addEventListener('click', () => {
+    transformReviewContent('평론가');
+});
+
+document.getElementById('transformToMz').addEventListener('click', () => {
+    transformReviewContent('Mz');
 });
