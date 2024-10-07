@@ -9,6 +9,17 @@ from .models import Review, Comment, Like
 from .serializers import ReviewSerializer, CommentSerializer, LikeSerializer
 from .permissions import IsAuthorOrReadOnly
 from movies.models import Movie
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
+
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -115,3 +126,25 @@ class LikeViewSet(viewsets.ModelViewSet):
             {"error": "리뷰 또는 코멘트 ID가 필요합니다."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def transform_review(request):
+    data = json.loads(request.body)
+    content = data["content"]
+
+    completion = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {
+                "role": "system",
+                "content": "너는 입력된 내용을 은유와 비유를 사용해서 평론가 처럼 바꿔줘.",
+            },
+            {"role": "user", "content": content},
+        ],
+    )
+
+    transformed_content = completion.choices[0].message.content
+
+    return JsonResponse({"transformedContent": transformed_content})
