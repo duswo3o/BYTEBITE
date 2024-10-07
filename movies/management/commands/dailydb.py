@@ -24,19 +24,19 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # 오직 UPDATE_DATE만 인자로 받도록 설정
         parser.add_argument(
-            '--update-date',
-            type=str,
-            help='--update-date는 YYYY-MM-DD 형식 (선택)'
+            "--update-date", type=str, help="--update-date는 YYYY-MM-DD 형식 (선택)"
         )
 
     def handle(self, *args, **options):
-        update_date_str = options.get('update_date')
+        update_date_str = options.get("update_date")
 
         if update_date_str:
             try:
-                self.UPDATE_DATE = datetime.strptime(update_date_str, '%Y-%m-%d')
+                self.UPDATE_DATE = datetime.strptime(update_date_str, "%Y-%m-%d")
             except ValueError:
-                self.stdout.write(self.style.ERROR('Invalid update date format. Use YYYY-MM-DD.'))
+                self.stdout.write(
+                    self.style.ERROR("Invalid update date format. Use YYYY-MM-DD.")
+                )
                 return
         else:
             self.UPDATE_DATE = self.DEFAULT_UPDATE_DATE
@@ -71,8 +71,9 @@ class Command(BaseCommand):
             title = item["movieNm"].strip().upper()
             rank = item["rank"]
             crawling_date = self.YESTERDAY.strftime("%Y-%m-%d")
+            release_date = item["openDt"]
 
-            movie = Movie.objects.filter(title=title).order_by("-prodyear").first()
+            movie = Movie.objects.filter(title=title, release_date=release_date).first()
             movie_pk = movie.pk if movie else None
 
             Ranking.objects.create(
@@ -86,7 +87,7 @@ class Command(BaseCommand):
         params = {
             "ServiceKey": settings.KMDB_API_KEY,
             "listCount": 100,
-            "detail": "N",
+            "detail": "Y",
             "releaseDts": self.UPDATE_DATE.strftime("%Y%m%d"),
             "releaseDte": self.UPDATE_DATE.strftime("%Y%m%d"),
         }
@@ -110,15 +111,8 @@ class Command(BaseCommand):
             runtime = item["runtime"] if item["runtime"] else None
             rating = item["rating"] if item["rating"] else None
             plot = item["plots"]["plot"][0]["plotText"]
-
-            prodyear = item["prodYear"]
-
-            try:
-                prodyear = int(prodyear)
-            except (ValueError, TypeError):
-                prodyear = None
-
             release_date = self.UPDATE_DATE.strftime("%Y-%m-%d")
+            poster = item['posters'] if item['posters'] else None
 
             genres = item["genre"].split(",")
             genre_objects = []
@@ -135,8 +129,8 @@ class Command(BaseCommand):
                     "runtime": runtime,
                     "grade": rating,
                     "plot": plot,
-                    "prodyear": prodyear,
                     "release_date": release_date,
+                    "poster": poster,
                 },
             )
 
