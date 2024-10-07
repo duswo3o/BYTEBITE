@@ -46,11 +46,11 @@ class Command(BaseCommand):
         # 작일 박스오피스 순위 삭제(중복 실행 시 오류 방지)
         Ranking.objects.filter(crawling_date=self.YESTERDAY.date()).delete()
 
-        # 작일 기준 박스오피스 순위 업데이트
-        self.update_ranking()
-
         # 8일 후 개봉 예정 영화의 정보 입력
         self.update_date()
+
+        # 작일 기준 박스오피스 순위 업데이트
+        self.update_ranking()
 
     def update_ranking(self):
         params = {
