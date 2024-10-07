@@ -92,6 +92,7 @@ class UserActivate(APIView):
         token_generator = PasswordResetTokenGenerator()
         if user is not None and token_generator.check_token(user, token):
             user.is_active = True
+            user.deactivate_time = None
             user.save()
             return Response(
                 {"message": "계정이 활성화되었습니다. 다시 로그인을 시도해주세요."},
