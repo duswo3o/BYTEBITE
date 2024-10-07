@@ -90,7 +90,7 @@ class MovieListApiView(APIView):
             "boxoffice_movies": boxoffice_serializer.data,
             "graded_movies": graded_serializer.data,
             "liked_movies": liked_serializer.data,
-            "coming_serializer": coming_serializer.data,
+            "coming_movies": coming_serializer.data,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
