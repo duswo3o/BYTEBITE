@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const transformedContent = await transformReviewContent(reviewContent);
                 console.log('변환된 내용:', transformedContent);
                 document.getElementById('reviewContent').value = transformedContent;
-                alert('말투가 변환되었습니다.');
+                alert('말투가 변경되었습니다.');
             } catch (error) {
                 alert('말투 변경 중 오류가 발생했습니다.');
             }
