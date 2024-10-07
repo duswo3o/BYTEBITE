@@ -33,7 +33,8 @@ class Command(BaseCommand):
 
         # 앞으로 7일간 개봉할 영화의 개봉일 입력
         release_data = self.initial_release_date()
-        self.save_to_database(release_data, 1)
+
+        self.save_to_database(release_data)
 
         # 이전 7일간의 박스오피스 순위 입력
         self.save_to_rank_database()
@@ -49,7 +50,7 @@ class Command(BaseCommand):
                 "ServiceKey": settings.KMDB_API_KEY,
                 "listCount": 1000,
                 "startCount": first_count,
-                "detail": "N",
+                "detail": "Y",
             }
 
             response = requests.get(self.API_URL, params=params)
@@ -77,7 +78,7 @@ class Command(BaseCommand):
                 "ServiceKey": settings.KMDB_API_KEY,
                 "listCount": 1000,
                 "startCount": second_count,
-                "detail": "N",
+                "detail": "Y",
             }
 
             response = requests.get(self.API_URL, params=params)
@@ -105,7 +106,7 @@ class Command(BaseCommand):
                 "ServiceKey": settings.KMDB_API_KEY,
                 "listCount": 1000,
                 "startCount": last_count,
-                "detail": "N",
+                "detail": "Y",
             }
 
             response = requests.get(self.API_URL, params=params)
@@ -135,7 +136,7 @@ class Command(BaseCommand):
             # 입력할 테스트 케이스의 갯수 조절(1 ~ 1000)
             "listCount": 100,
             "startCount": start_count,
-            "detail": "N",
+            "detail": "Y",
         }
 
         response = requests.get(self.API_URL, params=params)
@@ -156,7 +157,7 @@ class Command(BaseCommand):
             params = {
                 "ServiceKey": settings.KMDB_API_KEY,
                 "listCount": 100,
-                "detail": "N",
+                "detail": "Y",
                 "releaseDts": update_date.strftime("%Y%m%d"),
                 "releaseDte": update_date.strftime("%Y%m%d"),
             }
@@ -177,7 +178,7 @@ class Command(BaseCommand):
 
         return release_data
 
-    def save_to_database(self, total_data, coming=0):
+    def save_to_database(self, total_data):
         for item in total_data:
             movie_cd = item["movieSeq"]
             title = item["title"].strip().upper()
@@ -185,15 +186,13 @@ class Command(BaseCommand):
             rating = item["rating"] if item["rating"] else None
             plot = item["plots"]["plot"][0]["plotText"]
 
-            prodyear = item["prodYear"]
+            release_date = item["repRlsDate"]
 
-            try:
-                prodyear = int(prodyear)
-            except (ValueError, TypeError):
-                prodyear = None
-
-            if coming == 1:
-                release_date = item["release_date"]
+            if len(release_date) == 8:
+                year = release_date[:4]
+                month = release_date[4:6]
+                day = release_date[6:8]
+                release_date = f"{year}-{month}-{day}"
             else:
                 release_date = None
 
@@ -212,7 +211,6 @@ class Command(BaseCommand):
                     "runtime": runtime,
                     "grade": rating,
                     "plot": plot,
-                    "prodyear": prodyear,
                     "release_date": release_date,
                 },
             )
@@ -289,10 +287,11 @@ class Command(BaseCommand):
                     title = item["movieNm"].strip().upper()
                     rank = item["rank"]
                     crawling_date = update_date.strftime("%Y-%m-%d")
+                    release_date = item["openDt"]
 
-                    movie = (
-                        Movie.objects.filter(title=title).order_by("-prodyear").first()
-                    )
+                    movie = Movie.objects.filter(
+                        title=title, release_date=release_date
+                    ).first()
 
                     movie_pk = movie.pk if movie else None
 
