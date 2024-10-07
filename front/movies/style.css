@@ -76,19 +76,24 @@ button:hover {
     color: #e05a79;
 }
 
-.comment-text:hover {
-    color: #007BFF; /* 텍스트 색상 변경 */
-    background-color: #f0f0f0; /* 배경색 변경 */
-}
-.delete-text:hover {
-    color: #007BFF; /* 텍스트 색상 변경 */
-    background-color: #f0f0f0; /* 배경색 변경 */
-}
-.like-text:hover {
-    color: #007BFF; /* 텍스트 색상 변경 */
-    background-color: #f0f0f0; /* 배경색 변경 */
-}
+.comment-delete-text:hover,
+.comment-edit-text:hover,
+.comment-like-text:hover,
+.comment-text:hover,
+.delete-text:hover,
+.like-text:hover,
 .edit-text:hover {
-    color: #007BFF; /* 텍스트 색상 변경 */
-    background-color: #f0f0f0; /* 배경색 변경 */
+    color: #007BFF;
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.button-container {
+    display: flex; /* Flexbox 사용 */
+    gap: 10px; /* 버튼 간의 간격 조정 */
+    margin-bottom: 10px; /* 버튼 아래 여백 */
+}
+
+.button-container button {
+    flex: 1; /* 버튼들이 동일한 크기로 늘어나도록 설정 */
 }

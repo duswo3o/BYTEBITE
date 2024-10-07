@@ -100,7 +100,7 @@ axios.get(`${API_BASE_URL}movies/`)
 
             li.appendChild(gradelink);
             li.appendChild(document.createTextNode(`, Average Grade: ${movie.average_grade || 0}`));
-            
+
             gradedList.appendChild(li);
         });
 
@@ -218,7 +218,7 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
         // 보고싶어요,관심없어요
         const likeButton = document.getElementById('like');
         const dislikeButton = document.getElementById('dislike');
-        
+
         // '보고싶어요'와 '관심없어요' 버튼에 각각 반응 추가
         handleReaction(likeButton, moviepk, 'like');
         handleReaction(dislikeButton, moviepk, 'dislike');
@@ -236,7 +236,7 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
             const scoreData = {
                 evaluate: scoreValue
             };
-        
+
             sendScoreData(moviepk, scoreData);
         });
 
@@ -343,7 +343,7 @@ async function toggleLike(reviewId) {
     }
 }
 
-// 리뷰 작성하기 함수
+// 리뷰 작성하기 함수 수정
 async function postReview(moviePk, content) {
     if (!content.trim()) {
         alert('리뷰 내용을 입력해주세요.');
@@ -354,6 +354,7 @@ async function postReview(moviePk, content) {
         await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { content });
         alert('리뷰 작성 성공');
         await refreshReviews(moviePk);
+        document.getElementById('reviewContent').value = ''; // 입력 필드 초기화
     } catch (error) {
         handleError('리뷰 작성', error);
     }
@@ -462,7 +463,7 @@ function displayReviews(reviews) {
                 <div class="comments" id="comments-${review.id}">
                     ${review.comments.map(comment => `
                         <div class="comment" id="comment-${comment.id}">
-                            <span class="comment-author">${comment.author}</span>: 
+                            <span class="comment-author">${comment.author}</span>:
                             <span class="comment-content" id="comment-content-${comment.id}">${comment.content}</span>
                             <span class="comment-like-count">좋아요: ${comment.like_count}</span>
                             <span class="comment-like-text" data-comment-id="${comment.id}">[❤]</span>
@@ -480,6 +481,7 @@ function displayReviews(reviews) {
     // 이벤트 리스너 추가
     addEventListeners();
     }
+
 
 // 이벤트 리스너 추가 함수
 function addEventListeners() {
@@ -589,3 +591,35 @@ function addEventListeners() {
         });
     });
 }
+
+async function transformReviewContent(style) {
+    const reviewContent = document.getElementById('reviewContent').value.trim();
+    if (!reviewContent) {
+        alert('리뷰를 입력하세요.');
+        return;
+    }
+
+    try {
+        const response = await axios.post(`${API_BASE_URL}reviews/transform-review/`, {
+            content: reviewContent,
+            style: style  // 말투 스타일을 동적으로 전달
+        });
+        document.getElementById('reviewContent').value = response.data.transformedContent;
+        alert('말투가 변환되었습니다.');
+    } catch (error) {
+        console.error('말투 변경 중 오류가 발생했습니다:', error);
+    }
+}
+
+// 버튼별로 말투 스타일을 전달
+document.getElementById('transformToJoseon').addEventListener('click', () => {
+    transformReviewContent('조선시대');
+});
+
+document.getElementById('transformToCritic').addEventListener('click', () => {
+    transformReviewContent('평론가');
+});
+
+document.getElementById('transformToMz').addEventListener('click', () => {
+    transformReviewContent('Mz');
+});
