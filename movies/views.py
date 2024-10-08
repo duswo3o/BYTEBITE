@@ -75,15 +75,7 @@ class MovieListApiView(APIView):
         coming_liked_movies = []
         for date, group in groupby(coming_movies, key=lambda x: x.release_date):
             top_movie = next(group)
-            coming_liked_movies.append(
-                {
-                    "id": top_movie.id,
-                    "release_date": top_movie.release_date,
-                    "title": top_movie.title,
-                    "like": top_movie.like,
-                    "poster": top_movie.poster,
-                }
-            )
+            coming_liked_movies.append(top_movie)
 
         coming_serializer = ComingSerializer(coming_liked_movies, many=True)
 

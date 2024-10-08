@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 # Django 기능 및 프로젝트 관련
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from .models import Genre, Movie, Ranking, Staff
 
@@ -13,12 +14,18 @@ class PosterSerializer(serializers.ModelSerializer):
 
 
 class BoxofficeSerializer(serializers.ModelSerializer):
-    poster = serializers.CharField(source="movie_pk.poster", read_only=True)
+    poster = serializers.SerializerMethodField()
     movie_pk = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Ranking
         fields = ["title", "rank", "poster", "movie_pk"]
+
+    def get_poster(self, obj):
+        if obj.movie_pk and obj.movie_pk.poster:
+            return obj.movie_pk.poster
+
+        return f"{settings.STATIC_URL}images/no_image.png"
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -37,26 +44,47 @@ class MovieSerializer(serializers.ModelSerializer):
 
 class AverageGradeSerializer(serializers.ModelSerializer):
     average_grade = serializers.FloatField()
+    poster = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = ["id", "title", "average_grade", "poster"]
 
+    def get_poster(self, obj):
+        if obj.poster:
+            return obj.poster
+
+        return f"{settings.STATIC_URL}images/no_image.png"
+
 
 class LikeSerializer(serializers.ModelSerializer):
     like = serializers.IntegerField()
+    poster = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = ["id", "title", "like", "poster"]
 
+    def get_poster(self, obj):
+        if obj.poster:
+            return obj.poster
+
+        return f"{settings.STATIC_URL}images/no_image.png"
+
 
 class ComingSerializer(serializers.ModelSerializer):
     like = serializers.IntegerField()
+    poster = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = ["id", "title", "like", "release_date", "poster"]
+
+    def get_poster(self, obj):
+        if obj.poster:
+            return obj.poster
+
+        return f"{settings.STATIC_URL}images/no_image.png"
 
 
 class FilmographySerializer(MovieSerializer):

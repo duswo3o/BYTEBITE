@@ -75,15 +75,28 @@ axios.get(`${API_BASE_URL}movies/`)
 
         boxofficeMovies.forEach(movie => {
             const li = document.createElement('li');
+            const card = document.createElement('div');
+            card.classList.add('movie-card');
 
             const boxofficelink = document.createElement('a');
             boxofficelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.movie_pk}`;
-            boxofficelink.textContent = movie.title;
+            boxofficelink.classList.add('movie-link');
 
+            const posterImage = document.createElement('img');
+            posterImage.src = movie.poster;
+            posterImage.alt = `${movie.title} 포스터`;
 
-            li.appendChild(document.createTextNode(`${movie.rank}위: `));
-            li.appendChild(boxofficelink);
+            const title = document.createElement('h3');
+            title.textContent = movie.title;
 
+            const rank = document.createElement('p');
+            rank.textContent = `${movie.rank}위`;
+
+            boxofficelink.appendChild(posterImage);
+            boxofficelink.appendChild(title);
+            boxofficelink.appendChild(rank);
+            card.appendChild(boxofficelink);
+            li.appendChild(card);
             boxofficeList.appendChild(li);
         });
 
@@ -93,14 +106,28 @@ axios.get(`${API_BASE_URL}movies/`)
 
         gradedMovies.forEach(movie => {
             const li = document.createElement('li');
+            const card = document.createElement('div');
+            card.classList.add('movie-card');
 
             const gradelink = document.createElement('a');
             gradelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
-            gradelink.textContent = movie.title;
+            gradelink.classList.add('movie-link');
 
-            li.appendChild(gradelink);
-            li.appendChild(document.createTextNode(`, Average Grade: ${movie.average_grade || 0}`));
+            const posterImage = document.createElement('img');
+            posterImage.src = movie.poster;
+            posterImage.alt = `${movie.title} 포스터`;
 
+            const title = document.createElement('h3');
+            title.textContent = movie.title;
+
+            const averageGrade = document.createElement('p');
+            averageGrade.textContent = `Average Grade: ${movie.average_grade || 0}`;
+
+            gradelink.appendChild(posterImage);
+            gradelink.appendChild(title);
+            gradelink.appendChild(averageGrade);
+            card.appendChild(gradelink);
+            li.appendChild(card);
             gradedList.appendChild(li);
         });
 
@@ -110,13 +137,28 @@ axios.get(`${API_BASE_URL}movies/`)
 
         likedMovies.forEach(movie => {
             const li = document.createElement('li');
+            const card = document.createElement('div');
+            card.classList.add('movie-card');
 
             const likelink = document.createElement('a');
             likelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
-            likelink.textContent = movie.title;
+            likelink.classList.add('movie-link');
 
-            li.appendChild(likelink);
-            li.appendChild(document.createTextNode(`, likes: ${movie.like || 0}`));
+            const posterImage = document.createElement('img');
+            posterImage.src = movie.poster;
+            posterImage.alt = `${movie.title} 포스터`;
+
+            const title = document.createElement('h3');
+            title.textContent = movie.title;
+
+            const likes = document.createElement('p');
+            likes.textContent = `Likes: ${movie.like || 0}`;
+
+            likelink.appendChild(posterImage);
+            likelink.appendChild(title);
+            likelink.appendChild(likes);
+            card.appendChild(likelink);
+            li.appendChild(card);
             likedList.appendChild(li);
         });
 
@@ -126,13 +168,28 @@ axios.get(`${API_BASE_URL}movies/`)
 
         comingMovies.forEach(movie => {
             const li = document.createElement('li');
+            const card = document.createElement('div');
+            card.classList.add('movie-card');
 
             const cominglink = document.createElement('a');
             cominglink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
-            cominglink.textContent = movie.title;
+            cominglink.classList.add('movie-link');
 
-            li.appendChild(cominglink);
-            li.appendChild(document.createTextNode(`, likes: ${movie.like || 0}, coming: ${movie.release_date}`));
+            const posterImage = document.createElement('img');
+            posterImage.src = movie.poster;
+            posterImage.alt = `${movie.title} 포스터`;
+
+            const title = document.createElement('h3');
+            title.textContent = movie.title;
+
+            const releaseInfo = document.createElement('p');
+            releaseInfo.textContent = `Coming: ${movie.release_date}`;
+
+            cominglink.appendChild(posterImage);
+            cominglink.appendChild(title);
+            cominglink.appendChild(releaseInfo);
+            card.appendChild(cominglink);
+            li.appendChild(card);
             comingList.appendChild(li);
         });
     })
