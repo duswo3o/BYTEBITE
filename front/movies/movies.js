@@ -274,7 +274,7 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
 
         // 포스터 출력
         const posterImage = document.getElementById('movie-poster');
-        posterImage.src = movie.poster || `${API_BASE_URL}images/no_image.png`;
+        posterImage.src = movie.poster;
 
         // 보고싶어요,관심없어요
         const likeButton = document.getElementById('like');
