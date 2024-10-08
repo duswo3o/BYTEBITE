@@ -111,7 +111,7 @@ class Command(BaseCommand):
             rating = item["rating"] if item["rating"] else None
             plot = item["plots"]["plot"][0]["plotText"]
             release_date = self.UPDATE_DATE.strftime("%Y-%m-%d")
-            poster = item["posters"].split('|')[0] if item["posters"] else None
+            poster = item["posters"].split("|")[0] if item["posters"] else None
 
             genres = item["genre"].split(",")
             genre_objects = []

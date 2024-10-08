@@ -13,7 +13,7 @@ class PosterSerializer(serializers.ModelSerializer):
 
 
 class BoxofficeSerializer(serializers.ModelSerializer):
-    poster = serializers.CharField(source='movie_pk.poster', read_only=True)
+    poster = serializers.CharField(source="movie_pk.poster", read_only=True)
     movie_pk = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
