@@ -185,6 +185,7 @@ class Command(BaseCommand):
             runtime = item["runtime"] if item["runtime"] else None
             rating = item["rating"] if item["rating"] else None
             plot = item["plots"]["plot"][0]["plotText"]
+            poster = item["posters"].split('|')[0] if item["posters"] else None
 
             release_date = item["repRlsDate"]
 
@@ -212,6 +213,7 @@ class Command(BaseCommand):
                     "grade": rating,
                     "plot": plot,
                     "release_date": release_date,
+                    "poster": poster,
                 },
             )
 

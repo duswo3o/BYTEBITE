@@ -6,10 +6,19 @@ from django.contrib.auth import get_user_model
 from .models import Genre, Movie, Ranking, Staff
 
 
+class PosterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ["poster"]
+
+
 class BoxofficeSerializer(serializers.ModelSerializer):
+    poster = serializers.CharField(source='movie_pk.poster', read_only=True)
+    movie_pk = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Ranking
-        fields = ["title", "rank", "movie_pk"]
+        fields = ["title", "rank", "poster", "movie_pk"]
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -31,7 +40,7 @@ class AverageGradeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ["id", "title", "average_grade"]
+        fields = ["id", "title", "average_grade", "poster"]
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -39,7 +48,7 @@ class LikeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ["id", "title", "like"]
+        fields = ["id", "title", "like", "poster"]
 
 
 class ComingSerializer(serializers.ModelSerializer):
@@ -47,7 +56,7 @@ class ComingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ["id", "title", "like", "release_date"]
+        fields = ["id", "title", "like", "release_date", "poster"]
 
 
 class FilmographySerializer(MovieSerializer):

@@ -74,13 +74,12 @@ class Command(BaseCommand):
             release_date = item["openDt"]
 
             movie = Movie.objects.filter(title=title, release_date=release_date).first()
-            movie_pk = movie.pk if movie else None
 
             Ranking.objects.create(
                 title=title,
                 rank=rank,
                 crawling_date=crawling_date,
-                movie_pk=movie_pk,
+                movie_pk=movie,
             )
 
     def update_date(self):
@@ -112,7 +111,7 @@ class Command(BaseCommand):
             rating = item["rating"] if item["rating"] else None
             plot = item["plots"]["plot"][0]["plotText"]
             release_date = self.UPDATE_DATE.strftime("%Y-%m-%d")
-            poster = item["posters"] if item["posters"] else None
+            poster = item["posters"].split('|')[0] if item["posters"] else None
 
             genres = item["genre"].split(",")
             genre_objects = []
