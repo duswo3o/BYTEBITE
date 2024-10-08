@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 # Django 기능 및 프로젝트 관련
 from .models import Review, Comment, Like, Report
 from movies.models import Movie
-from .permissions import IsAuthorOrReadOnly
+from .permissions import IsAuthorOrReadOnly, IsActiveAndNotSuspended
 from .serializers import (
     CommentSerializer,
     ReviewSerializer,
@@ -40,7 +40,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if self.action in ["retrieve", "list"]:
             permission_classes = [AllowAny]
         elif self.action == "create":
-            permission_classes = [IsAuthenticated]
+            permission_classes = [IsActiveAndNotSuspended]
         else:
             permission_classes = [IsAuthorOrReadOnly]
         return [permission() for permission in permission_classes]
@@ -70,7 +70,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         if self.action in ["list", "retrieve"]:
             permission_classes = [AllowAny]
         elif self.action == "create":
-            permission_classes = [IsAuthenticated]
+            permission_classes = [IsActiveAndNotSuspended]
         else:
             permission_classes = [IsAuthorOrReadOnly]
         return [permission() for permission in permission_classes]
@@ -86,7 +86,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class LikeViewSet(viewsets.ModelViewSet):
     queryset = Like.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsActiveAndNotSuspended]
 
     def create(self, request, *args, **kwargs):
         review_id = kwargs.get("review_id")
@@ -172,7 +172,7 @@ def transform_review(request):
 
 
 class ReportAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsActiveAndNotSuspended]
 
     def post(self, request, **kwargs):
         review_id = kwargs.get("review_id")
