@@ -272,6 +272,10 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
         document.getElementById('movie-genre').textContent = genreNames;
         document.getElementById('movie-plot').textContent = movie.plot;
 
+        // 포스터 출력
+        const posterImage = document.getElementById('movie-poster');
+        posterImage.src = movie.poster || `${API_BASE_URL}images/no_image.png`;
+
         // 보고싶어요,관심없어요
         const likeButton = document.getElementById('like');
         const dislikeButton = document.getElementById('dislike');
