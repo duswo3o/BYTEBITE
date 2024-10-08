@@ -36,10 +36,17 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class MovieSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
+    poster = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = "__all__"
+
+    def get_poster(self, obj):
+        if obj.poster:
+            return obj.poster
+
+        return f"{settings.STATIC_URL}images/no_image.png"
 
 
 class AverageGradeSerializer(serializers.ModelSerializer):
