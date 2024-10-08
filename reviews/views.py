@@ -10,13 +10,15 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer,
     LikeSerializer,
-    ReportSerializer,
 )
+
 from .permissions import IsAuthorOrReadOnly
 from movies.models import Movie
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+from django.core.mail import send_mail
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -185,10 +187,35 @@ class ReportAPIView(APIView):
                 )
 
             report = Report.objects.create(reporter=reporter, review=review)
-            serializer = ReportSerializer(report)
+            report_count = Report.objects.filter(review=review).count()
+
+            # 작성자에게 경고 이메일 전송
+            if report_count == 1:  # 테스트를 위한 1회
+                send_mail(
+                    subject="popcorngeek에서 작성한 리뷰가 신고되었습니다.",
+                    message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되었습니다.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[review.author.email],
+                    fail_silently=False,
+                )
+
+            # 작성자에게 리뷰 삭제 이메일 전송
+            elif report_count >= 3:
+                send_mail(
+                    subject="popcorngeek에서 작성한 리뷰가 지속적으로 신고되어 삭제되었습니다.",
+                    message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되어 삭제되었습니다.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[review.author.email],
+                    fail_silently=False,
+                )
+                review.delete()
+                review.author.admonition += 1
+                review.author.save()
+
+            # serializer = ReportSerializer(report)
             return Response(
-                serializer.data,
-                # {"message": "해당 리뷰가 신고 완료되었습니다."},
+                # serializer.data,
+                {"message": "해당 리뷰가 신고 완료되었습니다."},
                 status=status.HTTP_200_OK,
             )
 
@@ -202,9 +229,32 @@ class ReportAPIView(APIView):
                 )
 
             report = Report.objects.create(reporter=reporter, comment=comment)
-            serializer = ReportSerializer(report)
+            report_count = Report.objects.filter(comment=comment).count()
+
+            # 작성자에게 경고 이메일 전송
+            if report_count >= 1:  # 테스트를 위한 1회
+                send_mail(
+                    subject="popcorngeek에서 작성한 리뷰가 신고되었습니다.",
+                    message=f"귀하의 댓글('{comment.content[10:]}...')가 {report_count}회 신고되었습니다.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[comment.author.email],
+                    fail_silently=False,
+                )
+
+            # 작성자에게 댓글 삭제 이메일 전송
+            elif report_count >= 3:
+                send_mail(
+                    subject="popcorngeek에서 작성한 리뷰가 지속적으로 신고되어 삭제되었습니다.",
+                    message=f"귀하의 댓글('{comment.content[10:]}...')가 {report_count}회 신고되어 삭제되었습니다.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[comment.author.email],
+                    fail_silently=False,
+                )
+                comment.delete()
+                comment.author.admontition += 1
+                comment.author.save()
+
             return Response(
-                serializer.data,
-                # {"message": "해당 댓글이 신고 완료되었습니다."},
+                {"message": "해당 댓글이 신고 완료되었습니다."},
                 status=status.HTTP_200_OK,
             )

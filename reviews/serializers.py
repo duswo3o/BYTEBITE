@@ -60,10 +60,3 @@ class LikeSerializer(serializers.ModelSerializer):
             "author",
             "review",
         ]
-
-
-class ReportSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Report
-        fields = "__all__"
