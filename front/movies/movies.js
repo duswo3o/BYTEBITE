@@ -2,15 +2,15 @@ const API_BASE_URL = 'http://127.0.0.1:8000/api/v1/'
 
 // 토큰 저장 및 관리 함수
 const tokenManager = {
-    getAccessToken: () => localStorage.getItem('jwtAccessToken'),
-    getRefreshToken: () => localStorage.getItem('jwtRefreshToken'),
+    getAccessToken: () => sessionStorage.getItem('jwtAccessToken'),
+    getRefreshToken: () => sessionStorage.getItem('jwtRefreshToken'),
     setTokens: ({ access, refresh }) => {
-        localStorage.setItem('jwtAccessToken', access);
-        localStorage.setItem('jwtRefreshToken', refresh);
+        sessionStorage.setItem('jwtAccessToken', access);
+        sessionStorage.setItem('jwtRefreshToken', refresh);
     },
     clearTokens: () => {
-        localStorage.removeItem('jwtAccessToken');
-        localStorage.removeItem('jwtRefreshToken');
+        sessionStorage.removeItem('jwtAccessToken');
+        sessionStorage.removeItem('jwtRefreshToken');
     },
     async refreshAccessToken() {
         const refreshToken = this.getRefreshToken();
