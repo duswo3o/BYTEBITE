@@ -121,7 +121,7 @@ axios.get(`${API_BASE_URL}movies/`)
         });
 
         // 개봉예정작
-        const comingMovies = response.data.coming_serializer;
+        const comingMovies = response.data.coming_movies;
         const comingList = document.getElementById('coming-movies-list');
 
         comingMovies.forEach(movie => {

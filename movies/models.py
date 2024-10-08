@@ -68,8 +68,8 @@ class Movie(models.Model):
         related_name="movies",
         blank=True,
     )
-    prodyear = models.IntegerField(null=True, blank=True)
     release_date = models.DateField(null=True, blank=True)
+    poster = models.URLField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.title
