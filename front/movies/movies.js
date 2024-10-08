@@ -2,15 +2,15 @@ const API_BASE_URL = 'http://127.0.0.1:8000/api/v1/'
 
 // 토큰 저장 및 관리 함수
 const tokenManager = {
-    getAccessToken: () => localStorage.getItem('jwtAccessToken'),
-    getRefreshToken: () => localStorage.getItem('jwtRefreshToken'),
+    getAccessToken: () => sessionStorage.getItem('jwtAccessToken'),
+    getRefreshToken: () => sessionStorage.getItem('jwtRefreshToken'),
     setTokens: ({ access, refresh }) => {
-        localStorage.setItem('jwtAccessToken', access);
-        localStorage.setItem('jwtRefreshToken', refresh);
+        sessionStorage.setItem('jwtAccessToken', access);
+        sessionStorage.setItem('jwtRefreshToken', refresh);
     },
     clearTokens: () => {
-        localStorage.removeItem('jwtAccessToken');
-        localStorage.removeItem('jwtRefreshToken');
+        sessionStorage.removeItem('jwtAccessToken');
+        sessionStorage.removeItem('jwtRefreshToken');
     },
     async refreshAccessToken() {
         const refreshToken = this.getRefreshToken();
@@ -201,7 +201,7 @@ axios.get(`${API_BASE_URL}movies/`)
 const searchForm = document.getElementById('searchForm');
 
 if (searchForm) {
-    searchForm.addEventListener('submit', function(event) {
+    searchForm.addEventListener('submit', function (event) {
         event.preventDefault();
 
         const searchKeyword = document.getElementById('search_keyword').value.trim();
@@ -306,8 +306,8 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
             const scoreData = {
                 evaluate: 0
             };
-        // 리뷰 출력
-        sendScoreData(moviepk, scoreData);
+            // 리뷰 출력
+            sendScoreData(moviepk, scoreData);
         });
 
         refreshReviews(moviepk);
@@ -321,12 +321,12 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
 // 보고싶어요, 관심없어요 데이터 전송
 function sendLikeData(moviepk, movieData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/`, movieData)
-    .then(response => {
-        console.log('영화 정보가 성공적으로 전송되었습니다:', response.data);
-    })
-    .catch(error => {
-        console.error('영화 정보 전송 중 오류가 발생했습니다:', error);
-    });
+        .then(response => {
+            console.log('영화 정보가 성공적으로 전송되었습니다:', response.data);
+        })
+        .catch(error => {
+            console.error('영화 정보 전송 중 오류가 발생했습니다:', error);
+        });
 }
 
 // 보고싶어요, 관심 없어요 로직 처리
@@ -341,12 +341,12 @@ function handleReaction(button, moviepk, reactionType) {
 // 영화 평가하기 데이터 전송
 function sendScoreData(moviepk, scoreData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/score/`, scoreData)
-    .then(response => {
-        console.log('성공적으로 전송되었습니다:', response.data);
-    })
-    .catch(error => {
-        console.error('전송 중 오류가 발생했습니다:', error);
-    });
+        .then(response => {
+            console.log('성공적으로 전송되었습니다:', response.data);
+        })
+        .catch(error => {
+            console.error('전송 중 오류가 발생했습니다:', error);
+        });
 }
 
 // 리뷰 코맨트 가져오기 함수
@@ -446,6 +446,19 @@ async function deleteReview(reviewId) {
     }
 }
 
+// 리뷰 신고 함수
+async function reportReview(reviewId) {
+    try {
+        const response = await axios.post(`${API_BASE_URL}reviews/report/review/${reviewId}/`);
+        console.log("response", response)
+        alert(response.data.message || "정상적으로 신고되었습니다.")
+    } catch (error) {
+        console.log(error)
+        alert(error.response.data.message)
+    }
+}
+
+
 // 댓글 작성하기 함수
 async function postComment(reviewId, content) {
     if (!content.trim()) {
@@ -496,6 +509,19 @@ async function toggleCommentLike(commentId) {
     }
 }
 
+// 댓글 신고 함수
+async function reportComment(commentId) {
+    try {
+        const response = await axios.post(`${API_BASE_URL}reviews/report/comment/${commentId}/`);
+        console.log(response);
+        alert(response);
+
+    } catch (error) {
+        console.log(error)
+        alert(error.response.data.message)
+    }
+}
+
 // 리뷰 표시 함수
 function displayReviews(reviews) {
     const responseDiv = document.getElementById('response');
@@ -519,6 +545,7 @@ function displayReviews(reviews) {
                 <textarea id="edit-content-${review.id}" style="display:none;"></textarea>
                 <button class="save-btn" data-review-id="${review.id}" style="display:none;">수정 완료</button>
                 <span class="comment-text" data-review-id="${review.id}">[댓글 달기]</span>
+                <span class="report-text" data-review-id="${review.id}">[신고]</span>
                 <textarea id="comment-content-${review.id}" style="display:none;" placeholder="댓글을 입력하세요..."></textarea>
                 <button class="submit-comment-btn" data-review-id="${review.id}" style="display:none;">댓글 작성 완료</button>
                 <div class="comments" id="comments-${review.id}">
@@ -530,18 +557,19 @@ function displayReviews(reviews) {
                             <span class="comment-like-text" data-comment-id="${comment.id}">[❤]</span>
                             <span class="comment-edit-text" data-comment-id="${comment.id}">[수정]</span>
                             <span class="comment-delete-text" data-comment-id="${comment.id}">[삭제]</span>
+                            <span class="comment-report-text" data-comment-id="${comment.id}">[신고]</span>
                             <textarea id="edit-comment-${comment.id}" style="display:none;"></textarea>
                             <button class="save-comment-btn" data-comment-id="${comment.id}" style="display:none;">수정 완료</button>
                         </div>
                     `).join('')}
                 </div>
             `;
-            responseDiv.appendChild(reviewDiv);
-        });
+        responseDiv.appendChild(reviewDiv);
+    });
 
     // 이벤트 리스너 추가
     addEventListeners();
-    }
+}
 
 
 // 이벤트 리스너 추가 함수
@@ -586,6 +614,15 @@ function addEventListeners() {
             await deleteReview(reviewId);
         });
     });
+
+
+    // 리뷰 신고 버튼 이벤트 리스너
+    document.querySelectorAll('.report-text').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const reviewId = event.target.getAttribute('data-review-id');
+            await reportReview(reviewId);
+        })
+    })
 
     // 댓글 달기 버튼 이벤트 리스너
     document.querySelectorAll('.comment-text').forEach(button => {
@@ -651,6 +688,14 @@ function addEventListeners() {
             await deleteComment(reviewId, commentId);
         });
     });
+
+    // 댓글 신고 버튼 이벤트 리스너
+    document.querySelectorAll('.comment-report-text').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const commentId = event.target.getAttribute('data-comment-id');
+            await reportComment(commentId);
+        })
+    })
 }
 
 async function transformReviewContent(style) {

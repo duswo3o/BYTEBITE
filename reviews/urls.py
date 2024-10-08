@@ -45,5 +45,5 @@ urlpatterns = [
     ),
     path("transform-review/", transform_review, name="transform_review"),
     path("report/review/<int:review_id>/", ReportAPIView.as_view()),
-    path("report/comment/<int:review_id>/", ReportAPIView.as_view()),
+    path("report/comment/<int:comment_id>/", ReportAPIView.as_view()),
 ]
