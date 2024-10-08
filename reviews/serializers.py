@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Review, Comment, Like
+from .models import Review, Comment, Like, Report
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -60,3 +60,10 @@ class LikeSerializer(serializers.ModelSerializer):
             "author",
             "review",
         ]
+
+
+class ReportSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Report
+        fields = "__all__"

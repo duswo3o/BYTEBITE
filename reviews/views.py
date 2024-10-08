@@ -2,15 +2,22 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 # Django 기능 및 프로젝트 관련
-from .models import Review, Comment, Like
-from .serializers import ReviewSerializer, CommentSerializer, LikeSerializer
+from .models import Review, Comment, Like, Report
+from .serializers import (
+    ReviewSerializer,
+    CommentSerializer,
+    LikeSerializer,
+    ReportSerializer,
+)
 from .permissions import IsAuthorOrReadOnly
 from movies.models import Movie
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -158,3 +165,46 @@ def transform_review(request):
 
     transformed_content = completion.choices[0].message.content
     return JsonResponse({"transformedContent": transformed_content})
+
+
+class ReportAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, **kwargs):
+        review_id = kwargs.get("review_id")
+        comment_id = kwargs.get("comment_id")
+        reporter = request.user
+
+        if review_id:
+            review = get_object_or_404(Review, id=review_id)
+            report = Report.objects.filter(reporter=reporter, review=review).first()
+            if report:
+                return Response(
+                    {"message": "이미 신고한 리뷰입니다"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            report = Report.objects.create(reporter=reporter, review=review)
+            serializer = ReportSerializer(report)
+            return Response(
+                serializer.data,
+                # {"message": "해당 리뷰가 신고 완료되었습니다."},
+                status=status.HTTP_200_OK,
+            )
+
+        elif comment_id:
+            comment = get_object_or_404(Comment, id=comment_id)
+            report = Report.objects.filter(reporter=reporter, comment=comment).first()
+            if report:
+                return Response(
+                    {"message": "이미 신고한 댓글입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            report = Report.objects.create(reporter=reporter, comment=comment)
+            serializer = ReportSerializer(report)
+            return Response(
+                serializer.data,
+                # {"message": "해당 댓글이 신고 완료되었습니다."},
+                status=status.HTTP_200_OK,
+            )
