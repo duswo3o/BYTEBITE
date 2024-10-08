@@ -1,29 +1,30 @@
+# 표준 라이브러리
+import os
+import json
+
 # 서드파티 라이브러리
-from rest_framework import viewsets, permissions, status
+from django.core.mail import send_mail
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from rest_framework import permissions, status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Django 기능 및 프로젝트 관련
 from .models import Review, Comment, Like, Report
+from movies.models import Movie
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (
     ReviewSerializer,
     CommentSerializer,
     LikeSerializer,
 )
-
-from .permissions import IsAuthorOrReadOnly
-from movies.models import Movie
 from openai import OpenAI
-import os
 from dotenv import load_dotenv
-from django.core.mail import send_mail
-from django.conf import settings
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-import json
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
