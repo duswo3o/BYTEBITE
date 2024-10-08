@@ -61,6 +61,8 @@ class User(AbstractUser):
 
     # 유저가 작성한 라뷰 또는 댓글이 누적신고 n회 이상으로 삭제조치 되었을 때 증가
     admonition = models.PositiveIntegerField(default=0)
+    is_suspended = models.BooleanField(default=False)
+    suspended_time = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.nickname

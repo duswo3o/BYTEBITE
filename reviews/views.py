@@ -1,6 +1,7 @@
 # 표준 라이브러리
 import os
 import json
+from datetime import datetime, timedelta
 
 # 서드파티 라이브러리
 from django.core.mail import send_mail
@@ -180,8 +181,7 @@ class ReportAPIView(APIView):
 
         if review_id:
             review = get_object_or_404(Review, id=review_id)
-            report = Report.objects.filter(
-                reporter=reporter, review=review).first()
+            report = Report.objects.filter(reporter=reporter, review=review).first()
             if report:
                 return Response(
                     {"message": "이미 신고한 리뷰입니다"},
@@ -190,6 +190,7 @@ class ReportAPIView(APIView):
 
             report = Report.objects.create(reporter=reporter, review=review)
             report_count = Report.objects.filter(review=review).count()
+            writer = review.author
 
             # 작성자에게 경고 이메일 전송
             if report_count == 5:  # 테스트를 위한 1회
@@ -197,21 +198,31 @@ class ReportAPIView(APIView):
                     subject="popcorngeek에서 작성한 리뷰가 신고되었습니다.",
                     message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되었습니다.",
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[review.author.email],
+                    recipient_list=[writer.email],
                     fail_silently=False,
                 )
 
             # 작성자에게 리뷰 삭제 이메일 전송
             elif report_count >= 10:
+                review.delete()
                 send_mail(
                     subject="popcorngeek에서 작성한 리뷰가 지속적으로 신고되어 삭제되었습니다.",
                     message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되어 삭제되었습니다.",
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[review.author.email],
+                    recipient_list=[writer.email],
                     fail_silently=False,
                 )
-                review.delete()
-                review.author.admonition += 1
+                writer.admonition += 1
+                if writer.admonition >= 5:  # 테스트용 2회
+                    writer.is_suspended = True
+                    writer.suspended_time = datetime.now() + timedelta(hours=9)
+                    send_mail(
+                        subject="popcorngeek에서 귀하의 계정이 정지되었습니다.",
+                        message="popcoengeek에서 귀하는 경고가 누적되어 계정이 정지되었습니다.",
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[writer.email],
+                        fail_silently=False,
+                    )
                 review.author.save()
 
             # serializer = ReportSerializer(report)
@@ -223,8 +234,7 @@ class ReportAPIView(APIView):
 
         elif comment_id:
             comment = get_object_or_404(Comment, id=comment_id)
-            report = Report.objects.filter(
-                reporter=reporter, comment=comment).first()
+            report = Report.objects.filter(reporter=reporter, comment=comment).first()
             if report:
                 return Response(
                     {"message": "이미 신고한 댓글입니다."},
@@ -233,6 +243,7 @@ class ReportAPIView(APIView):
 
             report = Report.objects.create(reporter=reporter, comment=comment)
             report_count = Report.objects.filter(comment=comment).count()
+            writer = comment.author
 
             # 작성자에게 경고 이메일 전송
             if report_count == 5:
@@ -240,21 +251,31 @@ class ReportAPIView(APIView):
                     subject="popcorngeek에서 작성한 리뷰가 신고되었습니다.",
                     message=f"귀하의 댓글('{comment.content[10:]}...')가 {report_count}회 신고되었습니다.",
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[comment.author.email],
+                    recipient_list=[writer.email],
                     fail_silently=False,
                 )
 
             # 작성자에게 댓글 삭제 이메일 전송
             elif report_count >= 10:
+                comment.delete()
                 send_mail(
                     subject="popcorngeek에서 작성한 리뷰가 지속적으로 신고되어 삭제되었습니다.",
                     message=f"귀하의 댓글('{comment.content[10:]}...')가 {report_count}회 신고되어 삭제되었습니다.",
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[comment.author.email],
+                    recipient_list=[writer.email],
                     fail_silently=False,
                 )
-                comment.delete()
-                comment.author.admontition += 1
+                writer.admonition += 1
+                if writer.admonition >= 5:  # 테스트용 2회
+                    writer.is_suspended = True
+                    writer.suspended_time = datetime.now() + timedelta(hours=9)
+                    send_mail(
+                        subject="popcorngeek에서 귀하의 계정이 정지되었습니다.",
+                        message="popcoengeek에서 귀하는 경고가 누적되어 계정이 정지되었습니다.",
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[writer.email],
+                        fail_silently=False,
+                    )
                 comment.author.save()
 
             return Response(
