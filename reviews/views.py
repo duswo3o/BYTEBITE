@@ -1,5 +1,4 @@
 # 표준 라이브러리
-from datetime import datetime, timedelta
 import os
 import json
 
@@ -8,6 +7,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from rest_framework import permissions, status, viewsets
@@ -215,7 +215,7 @@ class ReportAPIView(APIView):
                 writer.admonition += 1
                 if writer.admonition >= 5:
                     writer.is_suspended = True
-                    writer.suspended_time = datetime.now() + timedelta(hours=9)
+                    writer.suspended_time = timezone.now()
                     send_mail(
                         subject="popcorngeek에서 귀하의 계정이 정지되었습니다.",
                         message="popcoengeek에서 귀하는 경고가 누적되어 계정이 정지되었습니다.",
@@ -266,7 +266,7 @@ class ReportAPIView(APIView):
                 writer.admonition += 1
                 if writer.admonition >= 5:  # 테스트용 2회
                     writer.is_suspended = True
-                    writer.suspended_time = datetime.now() + timedelta(hours=9)
+                    writer.suspended_time = timezone.now()
                     send_mail(
                         subject="popcorngeek에서 귀하의 계정이 정지되었습니다.",
                         message="popcoengeek에서 귀하는 경고가 누적되어 계정이 정지되었습니다.",
