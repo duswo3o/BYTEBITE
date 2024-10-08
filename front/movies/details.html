@@ -4,11 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>영화 상세 정보</title>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="movies.js"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1 id="movie-title"></h1>
+
+        <div>
+            <img id="movie-poster" alt="Movie Poster" />
+        </div>
 
         <p><strong>장르:</strong> <span id="movie-genre"></span></p>
 
@@ -38,8 +46,5 @@
 
         <div id="response" class="reviews-container"></div>
     </div>
-
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="movies.js"></script>
 </body>
 </html>

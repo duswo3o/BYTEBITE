@@ -60,7 +60,7 @@ class MovieListApiView(APIView):
 
         # 개봉예정작 출력
         start_date = datetime.now() + timedelta(days=1)
-        end_date = datetime.now() + timedelta(days=7)
+        end_date = datetime.now() + timedelta(days=8)
 
         coming_movies = (
             Movie.objects.filter(release_date__range=[start_date, end_date])
@@ -75,14 +75,7 @@ class MovieListApiView(APIView):
         coming_liked_movies = []
         for date, group in groupby(coming_movies, key=lambda x: x.release_date):
             top_movie = next(group)
-            coming_liked_movies.append(
-                {
-                    "id": top_movie.id,
-                    "release_date": top_movie.release_date,
-                    "title": top_movie.title,
-                    "like": top_movie.like,
-                }
-            )
+            coming_liked_movies.append(top_movie)
 
         coming_serializer = ComingSerializer(coming_liked_movies, many=True)
 
