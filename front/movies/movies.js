@@ -450,8 +450,9 @@ async function deleteReview(reviewId) {
 async function reportReview(reviewId) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/report/review/${reviewId}/`);
-        console.log("response", response)
-        alert(response.data.message || "정상적으로 신고되었습니다.")
+        console.log(response);
+        alert(response.data.message);
+
     } catch (error) {
         console.log(error)
         alert(error.response.data.message)
@@ -514,7 +515,7 @@ async function reportComment(commentId) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/report/comment/${commentId}/`);
         console.log(response);
-        alert(response);
+        alert(response.data.message);
 
     } catch (error) {
         console.log(error)

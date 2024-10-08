@@ -180,7 +180,8 @@ class ReportAPIView(APIView):
 
         if review_id:
             review = get_object_or_404(Review, id=review_id)
-            report = Report.objects.filter(reporter=reporter, review=review).first()
+            report = Report.objects.filter(
+                reporter=reporter, review=review).first()
             if report:
                 return Response(
                     {"message": "이미 신고한 리뷰입니다"},
@@ -191,7 +192,7 @@ class ReportAPIView(APIView):
             report_count = Report.objects.filter(review=review).count()
 
             # 작성자에게 경고 이메일 전송
-            if report_count == 1:  # 테스트를 위한 1회
+            if report_count == 5:  # 테스트를 위한 1회
                 send_mail(
                     subject="popcorngeek에서 작성한 리뷰가 신고되었습니다.",
                     message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되었습니다.",
@@ -201,7 +202,7 @@ class ReportAPIView(APIView):
                 )
 
             # 작성자에게 리뷰 삭제 이메일 전송
-            elif report_count >= 3:
+            elif report_count >= 10:
                 send_mail(
                     subject="popcorngeek에서 작성한 리뷰가 지속적으로 신고되어 삭제되었습니다.",
                     message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되어 삭제되었습니다.",
@@ -222,7 +223,8 @@ class ReportAPIView(APIView):
 
         elif comment_id:
             comment = get_object_or_404(Comment, id=comment_id)
-            report = Report.objects.filter(reporter=reporter, comment=comment).first()
+            report = Report.objects.filter(
+                reporter=reporter, comment=comment).first()
             if report:
                 return Response(
                     {"message": "이미 신고한 댓글입니다."},
@@ -233,7 +235,7 @@ class ReportAPIView(APIView):
             report_count = Report.objects.filter(comment=comment).count()
 
             # 작성자에게 경고 이메일 전송
-            if report_count >= 1:  # 테스트를 위한 1회
+            if report_count == 5:
                 send_mail(
                     subject="popcorngeek에서 작성한 리뷰가 신고되었습니다.",
                     message=f"귀하의 댓글('{comment.content[10:]}...')가 {report_count}회 신고되었습니다.",
@@ -243,7 +245,7 @@ class ReportAPIView(APIView):
                 )
 
             # 작성자에게 댓글 삭제 이메일 전송
-            elif report_count >= 3:
+            elif report_count >= 10:
                 send_mail(
                     subject="popcorngeek에서 작성한 리뷰가 지속적으로 신고되어 삭제되었습니다.",
                     message=f"귀하의 댓글('{comment.content[10:]}...')가 {report_count}회 신고되어 삭제되었습니다.",
