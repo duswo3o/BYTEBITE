@@ -1,7 +1,7 @@
 # 표준 라이브러리
+from datetime import datetime, timedelta
 import os
 import json
-from datetime import datetime, timedelta
 
 # 서드파티 라이브러리
 from django.core.mail import send_mail
@@ -20,8 +20,8 @@ from .models import Review, Comment, Like, Report
 from movies.models import Movie
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
-    ReviewSerializer,
     CommentSerializer,
+    ReviewSerializer,
     LikeSerializer,
 )
 from openai import OpenAI
@@ -193,7 +193,7 @@ class ReportAPIView(APIView):
             writer = review.author
 
             # 작성자에게 경고 이메일 전송
-            if report_count == 5:  # 테스트를 위한 1회
+            if report_count == 5:
                 send_mail(
                     subject="popcorngeek에서 작성한 리뷰가 신고되었습니다.",
                     message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되었습니다.",
@@ -213,7 +213,7 @@ class ReportAPIView(APIView):
                     fail_silently=False,
                 )
                 writer.admonition += 1
-                if writer.admonition >= 5:  # 테스트용 2회
+                if writer.admonition >= 5:
                     writer.is_suspended = True
                     writer.suspended_time = datetime.now() + timedelta(hours=9)
                     send_mail(
@@ -225,9 +225,7 @@ class ReportAPIView(APIView):
                     )
                 review.author.save()
 
-            # serializer = ReportSerializer(report)
             return Response(
-                # serializer.data,
                 {"message": "해당 리뷰가 신고 완료되었습니다."},
                 status=status.HTTP_200_OK,
             )
