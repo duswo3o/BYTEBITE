@@ -66,3 +66,40 @@ class Like(models.Model):
 
     class Meta:
         unique_together = ("user", "review", "comment")
+
+
+class Report(models.Model):
+    reporter = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="reported_user",
+    )
+    review = models.ForeignKey(
+        to=Review,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="reported_review",
+    )
+    comment = models.ForeignKey(
+        to=Comment,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="reported_comment",
+    )
+
+    class Meta:
+        # 중복 신고가 불가능하도록 여러 필드에 대해 unique 옵션 설정
+        unique_together = ["reporter", "review", "comment"]
+
+    def __str__(self):
+        if self.review:
+            return (
+                f"{self.reporter.nickname}님이 {self.review.id} 리뷰를 신고하였습니다."
+            )
+        elif self.comment:
+            return (
+                f"{self.reporter.nickname}님이 {self.comment.id} 댓글을 신고하였습니다."
+            )

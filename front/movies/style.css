@@ -147,6 +147,18 @@ li {
     background-color: #f0f0f0;
     cursor: pointer;
 }
+.report-text{
+    color:rgb(214, 205, 74);
+}
+.report-text:hover{
+    color : red
+}
+.comment-report-text {
+    color:rgb(214, 205, 74);
+}
+.comment-report-text:hover {
+    color : red
+}
 
 .button-container {
     display: flex; /* Flexbox 사용 */
