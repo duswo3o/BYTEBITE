@@ -217,3 +217,15 @@ class UserFollowAPIView(APIView):
 class UserProfileAPIView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+
+
+class PaymentAPIView(RetrieveAPIView):
+    def post(self, request, *args, **kwargs):
+        # 결제 정보를 터미널에 출력
+        print(request.data)
+
+        # 테스트 응답
+        return Response(
+            {"message": "결제 정보가 성공적으로 전달되었습니다."},
+            status=status.HTTP_200_OK,
+        )
