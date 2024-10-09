@@ -18,7 +18,7 @@
           {
             pg: "kakaopay.TC0ONETIME",
             pay_method: "card",
-            merchant_uid: "57008833-33002", // 상점 고유 주문번호
+            merchant_uid: "57008833-33011", // 상점 고유 주문번호
             name: "포트원 테스트",
             amount: 10,
             buyer_email: "good@portone.io",
@@ -31,7 +31,7 @@
             // 결제 완료 후 서버로 imp_uid와 merchant_uid 전송
             if (rsp.success) {
               axios({
-                url: "/payments/complete", // 서버의 결제 정보를 받는 endpoint
+                url: "http://127.0.0.1:8000/api/v1/accounts/payments/", // 서버의 결제 정보를 받는 endpoint
                 method: "post",
                 headers: { "Content-Type": "application/json" },
                 data: {
