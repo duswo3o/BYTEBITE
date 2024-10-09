@@ -2,15 +2,15 @@ const API_BASE_URL = 'https://api.popcorngeek.store/api/v1/'
 
 // 토큰 저장 및 관리 함수
 const tokenManager = {
-    getAccessToken: () => localStorage.getItem('jwtAccessToken'),
-    getRefreshToken: () => localStorage.getItem('jwtRefreshToken'),
+    getAccessToken: () => sessionStorage.getItem('jwtAccessToken'),
+    getRefreshToken: () => sessionStorage.getItem('jwtRefreshToken'),
     setTokens: ({ access, refresh }) => {
-        localStorage.setItem('jwtAccessToken', access);
-        localStorage.setItem('jwtRefreshToken', refresh);
+        sessionStorage.setItem('jwtAccessToken', access);
+        sessionStorage.setItem('jwtRefreshToken', refresh);
     },
     clearTokens: () => {
-        localStorage.removeItem('jwtAccessToken');
-        localStorage.removeItem('jwtRefreshToken');
+        sessionStorage.removeItem('jwtAccessToken');
+        sessionStorage.removeItem('jwtRefreshToken');
     },
     async refreshAccessToken() {
         const refreshToken = this.getRefreshToken();
@@ -72,41 +72,125 @@ axios.get(`${API_BASE_URL}movies/`)
         // 박스오피스 순
         const boxofficeMovies = response.data.boxoffice_movies;
         const boxofficeList = document.getElementById('boxoffice-movies-list');
+
         boxofficeMovies.forEach(movie => {
             const li = document.createElement('li');
-            li.textContent = `${movie.rank}위: ${movie.title}`;
+            const card = document.createElement('div');
+            card.classList.add('movie-card');
+
+            const boxofficelink = document.createElement('a');
+            boxofficelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.movie_pk}`;
+            boxofficelink.classList.add('movie-link');
+
+            const posterImage = document.createElement('img');
+            posterImage.src = movie.poster;
+            posterImage.alt = `${movie.title} 포스터`;
+
+            const title = document.createElement('h3');
+            title.textContent = movie.title;
+
+            const rank = document.createElement('p');
+            rank.textContent = `${movie.rank}위`;
+
+            boxofficelink.appendChild(posterImage);
+            boxofficelink.appendChild(title);
+            boxofficelink.appendChild(rank);
+            card.appendChild(boxofficelink);
+            li.appendChild(card);
             boxofficeList.appendChild(li);
         });
 
         // 평균 평점 순
         const gradedMovies = response.data.graded_movies;
         const gradedList = document.getElementById('graded-movies-list');
+
         gradedMovies.forEach(movie => {
             const li = document.createElement('li');
+            const card = document.createElement('div');
+            card.classList.add('movie-card');
 
             const gradelink = document.createElement('a');
-            gradelink.href = `https://api.popcorngeek.store/front/movies/details.html?pk=${movie.id}`;
-            gradelink.textContent = movie.title;
+            gradelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
+            gradelink.classList.add('movie-link');
 
-            li.appendChild(gradelink);
-            li.appendChild(document.createTextNode(`, Average Grade: ${movie.average_grade || 0}`));
-            
+            const posterImage = document.createElement('img');
+            posterImage.src = movie.poster;
+            posterImage.alt = `${movie.title} 포스터`;
+
+            const title = document.createElement('h3');
+            title.textContent = movie.title;
+
+            const averageGrade = document.createElement('p');
+            averageGrade.textContent = `Average Grade: ${movie.average_grade || 0}`;
+
+            gradelink.appendChild(posterImage);
+            gradelink.appendChild(title);
+            gradelink.appendChild(averageGrade);
+            card.appendChild(gradelink);
+            li.appendChild(card);
             gradedList.appendChild(li);
         });
 
         // 좋아요 순
         const likedMovies = response.data.liked_movies;
         const likedList = document.getElementById('liked-movies-list');
+
         likedMovies.forEach(movie => {
             const li = document.createElement('li');
+            const card = document.createElement('div');
+            card.classList.add('movie-card');
 
             const likelink = document.createElement('a');
-            likelink.href = `https://api.popcorngeek.store/front/movies/details.html?pk=${movie.id}`;
-            likelink.textContent = movie.title;
+            likelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
+            likelink.classList.add('movie-link');
 
-            li.appendChild(likelink);
-            li.appendChild(document.createTextNode(`, likes: ${movie.like || 0}`));
+            const posterImage = document.createElement('img');
+            posterImage.src = movie.poster;
+            posterImage.alt = `${movie.title} 포스터`;
+
+            const title = document.createElement('h3');
+            title.textContent = movie.title;
+
+            const likes = document.createElement('p');
+            likes.textContent = `Likes: ${movie.like || 0}`;
+
+            likelink.appendChild(posterImage);
+            likelink.appendChild(title);
+            likelink.appendChild(likes);
+            card.appendChild(likelink);
+            li.appendChild(card);
             likedList.appendChild(li);
+        });
+
+        // 개봉예정작
+        const comingMovies = response.data.coming_movies;
+        const comingList = document.getElementById('coming-movies-list');
+
+        comingMovies.forEach(movie => {
+            const li = document.createElement('li');
+            const card = document.createElement('div');
+            card.classList.add('movie-card');
+
+            const cominglink = document.createElement('a');
+            cominglink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
+            cominglink.classList.add('movie-link');
+
+            const posterImage = document.createElement('img');
+            posterImage.src = movie.poster;
+            posterImage.alt = `${movie.title} 포스터`;
+
+            const title = document.createElement('h3');
+            title.textContent = movie.title;
+
+            const releaseInfo = document.createElement('p');
+            releaseInfo.textContent = `Coming: ${movie.release_date}`;
+
+            cominglink.appendChild(posterImage);
+            cominglink.appendChild(title);
+            cominglink.appendChild(releaseInfo);
+            card.appendChild(cominglink);
+            li.appendChild(card);
+            comingList.appendChild(li);
         });
     })
     .catch(error => {
@@ -117,7 +201,7 @@ axios.get(`${API_BASE_URL}movies/`)
 const searchForm = document.getElementById('searchForm');
 
 if (searchForm) {
-    searchForm.addEventListener('submit', function(event) {
+    searchForm.addEventListener('submit', function (event) {
         event.preventDefault();
 
         const searchKeyword = document.getElementById('search_keyword').value.trim();
@@ -188,10 +272,14 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
         document.getElementById('movie-genre').textContent = genreNames;
         document.getElementById('movie-plot').textContent = movie.plot;
 
+        // 포스터 출력
+        const posterImage = document.getElementById('movie-poster');
+        posterImage.src = movie.poster;
+
         // 보고싶어요,관심없어요
         const likeButton = document.getElementById('like');
         const dislikeButton = document.getElementById('dislike');
-        
+
         // '보고싶어요'와 '관심없어요' 버튼에 각각 반응 추가
         handleReaction(likeButton, moviepk, 'like');
         handleReaction(dislikeButton, moviepk, 'dislike');
@@ -209,7 +297,7 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
             const scoreData = {
                 evaluate: scoreValue
             };
-        
+
             sendScoreData(moviepk, scoreData);
         });
 
@@ -218,8 +306,8 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
             const scoreData = {
                 evaluate: 0
             };
-        // 리뷰 출력
-        sendScoreData(moviepk, scoreData);
+            // 리뷰 출력
+            sendScoreData(moviepk, scoreData);
         });
 
         refreshReviews(moviepk);
@@ -233,12 +321,12 @@ axios.get(`${API_BASE_URL}movies/${moviepk}/`)
 // 보고싶어요, 관심없어요 데이터 전송
 function sendLikeData(moviepk, movieData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/`, movieData)
-    .then(response => {
-        console.log('영화 정보가 성공적으로 전송되었습니다:', response.data);
-    })
-    .catch(error => {
-        console.error('영화 정보 전송 중 오류가 발생했습니다:', error);
-    });
+        .then(response => {
+            console.log('영화 정보가 성공적으로 전송되었습니다:', response.data);
+        })
+        .catch(error => {
+            console.error('영화 정보 전송 중 오류가 발생했습니다:', error);
+        });
 }
 
 // 보고싶어요, 관심 없어요 로직 처리
@@ -253,12 +341,12 @@ function handleReaction(button, moviepk, reactionType) {
 // 영화 평가하기 데이터 전송
 function sendScoreData(moviepk, scoreData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/score/`, scoreData)
-    .then(response => {
-        console.log('성공적으로 전송되었습니다:', response.data);
-    })
-    .catch(error => {
-        console.error('전송 중 오류가 발생했습니다:', error);
-    });
+        .then(response => {
+            console.log('성공적으로 전송되었습니다:', response.data);
+        })
+        .catch(error => {
+            console.error('전송 중 오류가 발생했습니다:', error);
+        });
 }
 
 // 리뷰 코맨트 가져오기 함수
@@ -316,7 +404,7 @@ async function toggleLike(reviewId) {
     }
 }
 
-// 리뷰 작성하기 함수
+// 리뷰 작성하기 함수 수정
 async function postReview(moviePk, content) {
     if (!content.trim()) {
         alert('리뷰 내용을 입력해주세요.');
@@ -327,6 +415,7 @@ async function postReview(moviePk, content) {
         await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { content });
         alert('리뷰 작성 성공');
         await refreshReviews(moviePk);
+        document.getElementById('reviewContent').value = ''; // 입력 필드 초기화
     } catch (error) {
         handleError('리뷰 작성', error);
     }
@@ -356,6 +445,20 @@ async function deleteReview(reviewId) {
         handleError('리뷰 삭제', error);
     }
 }
+
+// 리뷰 신고 함수
+async function reportReview(reviewId) {
+    try {
+        const response = await axios.post(`${API_BASE_URL}reviews/report/review/${reviewId}/`);
+        console.log(response);
+        alert(response.data.message);
+
+    } catch (error) {
+        console.log(error)
+        alert(error.response.data.message)
+    }
+}
+
 
 // 댓글 작성하기 함수
 async function postComment(reviewId, content) {
@@ -407,6 +510,19 @@ async function toggleCommentLike(commentId) {
     }
 }
 
+// 댓글 신고 함수
+async function reportComment(commentId) {
+    try {
+        const response = await axios.post(`${API_BASE_URL}reviews/report/comment/${commentId}/`);
+        console.log(response);
+        alert(response.data.message);
+
+    } catch (error) {
+        console.log(error)
+        alert(error.response.data.message)
+    }
+}
+
 // 리뷰 표시 함수
 function displayReviews(reviews) {
     const responseDiv = document.getElementById('response');
@@ -430,29 +546,32 @@ function displayReviews(reviews) {
                 <textarea id="edit-content-${review.id}" style="display:none;"></textarea>
                 <button class="save-btn" data-review-id="${review.id}" style="display:none;">수정 완료</button>
                 <span class="comment-text" data-review-id="${review.id}">[댓글 달기]</span>
+                <span class="report-text" data-review-id="${review.id}">[신고]</span>
                 <textarea id="comment-content-${review.id}" style="display:none;" placeholder="댓글을 입력하세요..."></textarea>
                 <button class="submit-comment-btn" data-review-id="${review.id}" style="display:none;">댓글 작성 완료</button>
                 <div class="comments" id="comments-${review.id}">
                     ${review.comments.map(comment => `
                         <div class="comment" id="comment-${comment.id}">
-                            <span class="comment-author">${comment.author}</span>: 
+                            <span class="comment-author">${comment.author}</span>:
                             <span class="comment-content" id="comment-content-${comment.id}">${comment.content}</span>
                             <span class="comment-like-count">좋아요: ${comment.like_count}</span>
                             <span class="comment-like-text" data-comment-id="${comment.id}">[❤]</span>
                             <span class="comment-edit-text" data-comment-id="${comment.id}">[수정]</span>
                             <span class="comment-delete-text" data-comment-id="${comment.id}">[삭제]</span>
+                            <span class="comment-report-text" data-comment-id="${comment.id}">[신고]</span>
                             <textarea id="edit-comment-${comment.id}" style="display:none;"></textarea>
                             <button class="save-comment-btn" data-comment-id="${comment.id}" style="display:none;">수정 완료</button>
                         </div>
                     `).join('')}
                 </div>
             `;
-            responseDiv.appendChild(reviewDiv);
-        });
+        responseDiv.appendChild(reviewDiv);
+    });
 
     // 이벤트 리스너 추가
     addEventListeners();
-    }
+}
+
 
 // 이벤트 리스너 추가 함수
 function addEventListeners() {
@@ -496,6 +615,15 @@ function addEventListeners() {
             await deleteReview(reviewId);
         });
     });
+
+
+    // 리뷰 신고 버튼 이벤트 리스너
+    document.querySelectorAll('.report-text').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const reviewId = event.target.getAttribute('data-review-id');
+            await reportReview(reviewId);
+        })
+    })
 
     // 댓글 달기 버튼 이벤트 리스너
     document.querySelectorAll('.comment-text').forEach(button => {
@@ -561,4 +689,44 @@ function addEventListeners() {
             await deleteComment(reviewId, commentId);
         });
     });
+
+    // 댓글 신고 버튼 이벤트 리스너
+    document.querySelectorAll('.comment-report-text').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const commentId = event.target.getAttribute('data-comment-id');
+            await reportComment(commentId);
+        })
+    })
 }
+
+async function transformReviewContent(style) {
+    const reviewContent = document.getElementById('reviewContent').value.trim();
+    if (!reviewContent) {
+        alert('리뷰를 입력하세요.');
+        return;
+    }
+
+    try {
+        const response = await axios.post(`${API_BASE_URL}reviews/transform-review/`, {
+            content: reviewContent,
+            style: style  // 말투 스타일을 동적으로 전달
+        });
+        document.getElementById('reviewContent').value = response.data.transformedContent;
+        alert('말투가 변환되었습니다.');
+    } catch (error) {
+        console.error('말투 변경 중 오류가 발생했습니다:', error);
+    }
+}
+
+// 버튼별로 말투 스타일을 전달
+document.getElementById('transformToJoseon').addEventListener('click', () => {
+    transformReviewContent('조선시대');
+});
+
+document.getElementById('transformToCritic').addEventListener('click', () => {
+    transformReviewContent('평론가');
+});
+
+document.getElementById('transformToMz').addEventListener('click', () => {
+    transformReviewContent('Mz');
+});

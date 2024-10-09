@@ -1,23 +1,28 @@
 from datetime import datetime, timedelta
 
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, get_user_model
-from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView
-from rest_framework.response import Response
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.shortcuts import get_object_or_404
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import (
-    UserCreateSerializer,
     ChangePasswordSerializer,
     UpdateProfileSerializer,
+    UserCreateSerializer,
     UserProfileSerializer,
+    UserSigninSerializer,
 )
-from .models import User
+
+
+User = get_user_model()
 
 
 # Create your views here
@@ -30,7 +35,9 @@ class UserAPIView(APIView):
             )
 
         email = request.data.get("email")
-        user = User.objects.filter(email=email)
+        user = User.objects.filter(email=email).first()
+
+        # 이미 존재하는 사용자가 있고, 그 사용자가 비활성화된 상태인 경우
         if user and user[0].is_active == False:
             return Response(
                 {
@@ -74,6 +81,30 @@ class UserAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class UserActivate(APIView):
+    def get(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = urlsafe_base64_decode(uidb64)  # .decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        token_generator = PasswordResetTokenGenerator()
+        if user is not None and token_generator.check_token(user, token):
+            user.is_active = True
+            user.deactivate_time = None
+            user.save()
+            return Response(
+                {"message": "계정이 활성화되었습니다. 다시 로그인을 시도해주세요."},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"message": "링크가 유효하지 않거나 이미 사용되었습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
 @api_view(["POST"])
 def delete_user(request):
     deactivate_users = User.objects.filter(is_active=False)
@@ -95,44 +126,26 @@ class UserSigninAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
+        serializer = UserSigninSerializer(data=request.data)
+        if serializer.is_valid():
+            # 로그인 성공 후의 추가 작업 (예: JWT 토큰 생성 등)
+            user = authenticate(email=email, password=password)
+            refresh = RefreshToken.for_user(user)
+            data = {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+            signin_user = User.objects.get(email=email)
+            data["id"] = signin_user.id
+            data["email"] = signin_user.email
+            data["nickname"] = signin_user.nickname
+            data["gender"] = signin_user.gender
+            data["age"] = signin_user.age
+            data["bio"] = signin_user.bio
 
-        user = User.objects.filter(email=email)
-        message = False
-        if user and user[0].is_active == False:
-            user[0].is_active = True
-            user[0].deactivate_time = None
-            user[0].save()
-            message = "계정이 활성화되었습니다."
+            return Response(data=data, status=status.HTTP_200_OK)
 
-        user = authenticate(email=email, password=password)
-
-        if not user:
-            return Response(
-                {"error": "이메일 혹은 패스워드가 일치하지 않습니다."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        refresh = RefreshToken.for_user(user)
-        data = {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }
-
-        user = get_user_model().objects.get(email=email)
-        data["id"] = user.id
-        data["email"] = user.email
-        data["nickname"] = user.nickname
-        data["gender"] = user.gender
-        data["age"] = user.age
-        data["bio"] = user.bio
-
-        if message:
-            data["message"] = message
-
-        return Response(
-            data=data,
-            status=status.HTTP_200_OK,
-        )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserSignoutAPIView(APIView):
@@ -204,3 +217,15 @@ class UserFollowAPIView(APIView):
 class UserProfileAPIView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+
+
+class PaymentAPIView(RetrieveAPIView):
+    def post(self, request, *args, **kwargs):
+        # 결제 정보를 터미널에 출력
+        print(request.data)
+
+        # 테스트 응답
+        return Response(
+            {"message": "결제 정보가 성공적으로 전달되었습니다."},
+            status=status.HTTP_200_OK,
+        )
