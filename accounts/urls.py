@@ -12,4 +12,5 @@ urlpatterns = [
     path("<int:pk>/", views.UserProfileAPIView().as_view()),
     path("<int:user_pk>/follow/", views.UserFollowAPIView().as_view()),
     path("delete_user/", views.delete_user),
+    path("payment/", views.PaymentAPIView().as_view()),
 ]

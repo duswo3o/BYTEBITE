@@ -217,3 +217,7 @@ class UserFollowAPIView(APIView):
 class UserProfileAPIView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+
+
+class PaymentAPIView(RetrieveAPIView):
+    pass
