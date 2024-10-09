@@ -3,9 +3,9 @@ black==24.8.0
 certifi==2024.8.30
 charset-normalizer==3.3.2
 click==8.1.7
-Django==4.2
+Django==5.1.1
 django-cors-headers==4.4.0
-django-debug-toolbar
+django-debug-toolbar==4.4.6
 django-environ==0.11.2
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
@@ -23,3 +23,6 @@ sqlparse==0.5.1
 tomli==2.0.1
 typing_extensions==4.12.2
 urllib3==2.2.3
+
+openai~=1.51.0
+python-dotenv~=1.0.1
