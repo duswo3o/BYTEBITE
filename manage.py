@@ -2,7 +2,10 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from django.utils.regex_helper import _lazy_re_compile
+import django.http.request
 
+django.http.request.host_validation_re = _lazy_re_compile(r"[a-zA-z0-9.:]*")
 
 def main():
     """Run administrative tasks."""
@@ -18,5 +21,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

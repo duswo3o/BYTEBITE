@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://popcorngeek.store/api/v1/"; // API 기본 URL
+const API_BASE_URL = "https://api.popcorngeek.store/api/v1"; // API 기본 URL
 
 // 토큰 저장 및 관리 함수
 const tokenManager = {
