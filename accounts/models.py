@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
@@ -52,8 +54,15 @@ class User(AbstractUser):
     followings = models.ManyToManyField(
         to="self", related_name="followers", symmetrical=False
     )
-    # 비활성화된 시점을 저장하여 일정 기간동안만 해당 유저의 정보를 보관하기위햐 필드 추가
-    deactivate_time = models.DateTimeField(blank=True, null=True)
+
+    # 비활성화된 시점을 저장하여 일정 기간동안만 해당 유저의 정보를 보관하기위해 필드 추가
+    now = datetime.now() + timedelta(hours=9)
+    deactivate_time = models.DateTimeField(default=now, blank=True, null=True)
+
+    # 유저가 작성한 라뷰 또는 댓글이 누적신고 n회 이상으로 삭제조치 되었을 때 증가
+    admonition = models.PositiveIntegerField(default=0)
+    is_suspended = models.BooleanField(default=False)
+    suspended_time = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.nickname

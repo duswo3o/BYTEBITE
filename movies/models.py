@@ -4,15 +4,6 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class Ranking(models.Model):
-    title = models.CharField(max_length=255)
-    rank = models.PositiveIntegerField()
-    crawling_date = models.DateField()
-
-    def __str__(self):
-        return self.title
-
-
 class Staff(models.Model):
     name_cd = models.IntegerField(unique=True, blank=True)
     name = models.CharField(max_length=50)
@@ -66,6 +57,20 @@ class Movie(models.Model):
         Tag,
         related_name="movies",
         blank=True,
+    )
+    release_date = models.DateField(null=True, blank=True)
+    poster = models.URLField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Ranking(models.Model):
+    title = models.CharField(max_length=255)
+    rank = models.PositiveIntegerField()
+    crawling_date = models.DateField()
+    movie_pk = models.ForeignKey(
+        Movie, on_delete=models.CASCADE, related_name="ranking", blank=True, null=True
     )
 
     def __str__(self):

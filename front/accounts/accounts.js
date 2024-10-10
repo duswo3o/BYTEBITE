@@ -1,6 +1,6 @@
 // import axios from "axios";
 
-const API_BASE_URL = 'https://43.201.150.34/api/v1'
+const API_BASE_URL = 'https://api.popcorngeek.store/api/v1'
 
 const signupBtn = document.getElementById("signup-btn");
 const signinBtn = document.getElementById("signin-btn");
@@ -10,15 +10,15 @@ const followBtn = document.getElementById("followUserBtn");
 
 // 토큰 저장 및 관리 함수
 const tokenManager = {
-    getAccessToken: () => localStorage.getItem('jwtAccessToken'),
-    getRefreshToken: () => localStorage.getItem('jwtRefreshToken'),
+    getAccessToken: () => sessionStorage.getItem('jwtAccessToken'),
+    getRefreshToken: () => sessionStorage.getItem('jwtRefreshToken'),
     setTokens: ({ access, refresh }) => {
-        localStorage.setItem('jwtAccessToken', access);
-        localStorage.setItem('jwtRefreshToken', refresh);
+        sessionStorage.setItem('jwtAccessToken', access);
+        sessionStorage.setItem('jwtRefreshToken', refresh);
     },
     clearTokens: () => {
-        localStorage.removeItem('jwtAccessToken');
-        localStorage.removeItem('jwtRefreshToken');
+        sessionStorage.removeItem('jwtAccessToken');
+        sessionStorage.removeItem('jwtRefreshToken');
     },
     async refreshAccessToken() {
         const refreshToken = this.getRefreshToken();
@@ -73,7 +73,7 @@ axios.interceptors.response.use(
             } catch (err) {
                 console.error('새로운 토큰으로 재요청 실패:', err);
                 console.log("로컬 스토리지를 삭제합니다.")
-                localStorage.clear()
+                sessionStorage.clear()
 
                 alert("토큰이 만료되었습니다. 다시 로그인해주세요.")
                 window.location.href = "signin.html"
@@ -126,8 +126,8 @@ const signinUser = () => {
         .then(response => {
             // 로그인 성공 시 토큰 저장
             tokenManager.setTokens(response.data);
-            // localStorage.setItem('jwtAccessToken', access);
-            // localStorage.setItem('jwtRefreshToken', refresh);
+            // sessionStorage.setItem('jwtAccessToken', access);
+            // sessionStorage.setItem('jwtRefreshToken', refresh);
 
             // 회원정보 스토리지에 저장
             localStorage.setItem('id', response.data.id)
@@ -144,6 +144,12 @@ const signinUser = () => {
         })
         .catch(error => {
             console.log(error)
+            if(error.response.data.non_field_errors){
+                alert(error.response.data.non_field_errors)
+            }
+            else if(error.response.data.email){
+                alert(error.response.data.email)
+            }
         })
 }
 
@@ -160,31 +166,19 @@ const signoutUser = () => {
         refresh: refreshToken
     })
         .then(response => {
+            sessionStorage.clear()
             localStorage.clear()
             console.log(response)
             alert("로그아웃 되었습니다")
         })
         .catch(error => {
             console.log(error)
-            alert("로그아웃 실패")
+            sessionStorage.clear()
+            localStorage.clear()
+            // alert("로그아웃 실패")
         })
 }
 
-// 버튼 보여주기 설정
-document.addEventListener('DOMContentLoaded', function () {
-    const accessToken = localStorage.getItem('jwtAccessToken');
-    // 로컬스토리지에 토큰이 있는 경우
-    if (accessToken) {
-        // 로그아웃 버튼만 보여주기
-        document.getElementById('signinBtn').style.display = 'none';
-        document.getElementById('signoutBtn').style.display = 'block';
-    }
-    // 로컬스토리지에 토큰이 없는 경우 
-    else {
-        document.getElementById('signinBtn').style.display = 'block';
-        document.getElementById('signoutBtn').style.display = 'none';
-    }
-});
 
 
 // 프로필 조회
@@ -428,7 +422,7 @@ const withdrawUser = () => {
     })
         .then(response => {
             console.log(response)
-            localStorage.clear()
+            sessionStorage.clear()
             window.location.href = 'profile.html'
         })
         .catch(error => {

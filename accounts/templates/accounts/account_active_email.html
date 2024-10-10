@@ -1,0 +1,8 @@
+{% block content %}
+    안녕하세요, {{ user.nickname }}님!
+
+    계정을 활성화하려면 아래 링크를 클릭하세요:
+    http://{{ domain }}/api/v1/accounts/activate/{{ uid }}/{{ token }}/
+
+    감사합니다!
+{% endblock %}

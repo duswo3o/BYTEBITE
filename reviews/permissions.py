@@ -6,3 +6,12 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj.author == request.user
+
+
+class IsActiveAndNotSuspended(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_active
+            and not request.user.is_suspended
+            and request.user.is_authenticated
+        )
