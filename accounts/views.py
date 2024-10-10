@@ -105,23 +105,6 @@ class UserActivate(APIView):
             )
 
 
-@api_view(["POST"])
-def delete_user(request):
-    deactivate_users = User.objects.filter(is_active=False)
-    now = datetime.now()
-    delete_cnt = 0
-    for user in deactivate_users:
-        # 테스트용 2분
-        if (now - user.deactivate_time.replace(tzinfo=None)).seconds > 120:
-            user.delete()
-            delete_cnt += 1
-
-    return Response(
-        {"message": f"{delete_cnt}개의 계정이 삭제되었습니다."},
-        status=status.HTTP_200_OK,
-    )
-
-
 class UserSigninAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
