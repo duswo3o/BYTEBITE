@@ -79,7 +79,7 @@ axios.get(`${API_BASE_URL}movies/`)
             card.classList.add('movie-card');
 
             const boxofficelink = document.createElement('a');
-            boxofficelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.movie_pk}`;
+            boxofficelink.href = `https://popcorngeek.store/front/movies/details.html?pk=${movie.movie_pk}`;
             boxofficelink.classList.add('movie-link');
 
             const posterImage = document.createElement('img');
@@ -110,7 +110,7 @@ axios.get(`${API_BASE_URL}movies/`)
             card.classList.add('movie-card');
 
             const gradelink = document.createElement('a');
-            gradelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
+            gradelink.href = `https://popcorngeek.store/front/movies/details.html?pk=${movie.id}`;
             gradelink.classList.add('movie-link');
 
             const posterImage = document.createElement('img');
@@ -141,7 +141,7 @@ axios.get(`${API_BASE_URL}movies/`)
             card.classList.add('movie-card');
 
             const likelink = document.createElement('a');
-            likelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
+            likelink.href = `https://popcorngeek.store/front/movies/details.html?pk=${movie.id}`;
             likelink.classList.add('movie-link');
 
             const posterImage = document.createElement('img');
@@ -172,7 +172,7 @@ axios.get(`${API_BASE_URL}movies/`)
             card.classList.add('movie-card');
 
             const cominglink = document.createElement('a');
-            cominglink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
+            cominglink.href = `https://popcorngeek.store/front/movies/details.html?pk=${movie.id}`;
             cominglink.classList.add('movie-link');
 
             const posterImage = document.createElement('img');
@@ -240,7 +240,7 @@ if (searchKeyword) {
                     const genreNames = item.genre.map(genre => genre.name).join(', ');
 
                     const searchlink = document.createElement('a');
-                    searchlink.href = `https://api.popcorngeek.store/front/movies/details.html?pk=${item.id}`;
+                    searchlink.href = `https://popcorngeek.store/front/movies/details.html?pk=${item.id}`;
                     searchlink.textContent = item.title;
 
                     li.appendChild(searchlink);
