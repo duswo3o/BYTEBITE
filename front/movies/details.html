@@ -3,35 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POPCORNGEEK</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="movies.js" defer></script> <!-- defer를 사용하여 DOMContentLoaded 후 실행 -->
+    <title>영화 상세 정보</title>
+
+    <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-    <h1 id="movie-title"></h1>
-    
-    <p><strong>장르:</strong> <span id="movie-genre"></span></p>
-    <p><strong>줄거리:</strong> <span id="movie-plot"></span></p>
+    <div class="container">
+        <h1 id="movie-title"></h1>
 
-    <button type="button" id="like">보고싶어요!</button>
-    <button type="button" id="dislike">관심없어요...</button>
-    <br><br>
-    
-    <form id="score-form">
-        <input type="number" id="score-input" placeholder="점수 입력" min="0.1" max="5" step="0.1" required>
-        <button type="button" id="score-button">평가하기</button>
-    </form>
-    <button type="button" id="cancel-score">평가 취소하기</button>
+        <div>
+            <img id="movie-poster" alt="Movie Poster" />
+        </div>
 
-    <div>
-        <label for="reviewContent">리뷰 내용:</label>
-        <textarea id="reviewContent" placeholder="리뷰를 입력하세요"></textarea>
+        <p><strong>장르:</strong> <span id="movie-genre"></span></p>
+
+        <p><strong>줄거리:</strong> <span id="movie-plot"></span></p>
+        
+        <div class="button-container">
+            <button id="like">보고싶어요!</button>
+            <button id="dislike">관심없어요...</button>
+        </div>
+        <br>
+
+        <div class="review-form">
+            <input type="number" id="score-input" min="0" max="5" step="0.5" placeholder="평점">
+            <div class="button-container">
+                <button id="score-button">평가하기</button>
+                <button id="cancel-score">평가 취소하기</button>
+            </div>
+        </div>
+        <br>
+
+        <div class="review-form">
+            <textarea id="reviewContent" rows="4" cols="50" placeholder="리뷰 내용을 입력하세요"></textarea>
+            <label>
+                <input type="checkbox" id="isSpoiler"> 스포일러 포함
+            </label>
+            <div class="button-container">
+                <button id="transformToJoseon">조선시대 말투</button>
+                <button id="transformToCritic">평론가 말투</button>
+                <button id="transformToMz">MZ 말투</button>
+            </div>
+            <button id="postReviewBtn">리뷰 작성하기</button>
+        </div>
+
+        <div id="response" class="reviews-container"></div>
     </div>
 
-    <button id="postReviewBtn">리뷰 작성하기 (POST)</button>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="movies.js"></script>
+    
+    <script>
+        // DOMContentLoaded를 사용해 페이지가 로드되었을 때 movie.js의 fetchMovieDetails 호출
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const moviepk = urlParams.get('pk');
 
-    <!-- 결과 출력 -->
-    <div id="response" class="container"></div>
+            if (moviepk) {
+                fetchMovieDetails(moviepk);  // movie.js 파일에 있는 fetchMovieDetails 함수 호출
+            }
+        });
+    </script>
 </body>
 </html>

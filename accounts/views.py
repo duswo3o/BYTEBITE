@@ -1,23 +1,32 @@
 from datetime import datetime, timedelta
 
-from django.shortcuts import get_object_or_404
+import requests
+
+from django.conf import settings
+from django.core.mail import send_mail
 from django.contrib.auth import authenticate, get_user_model
-from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView
-from rest_framework.response import Response
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.shortcuts import get_object_or_404
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import (
-    UserCreateSerializer,
     ChangePasswordSerializer,
     UpdateProfileSerializer,
+    UserCreateSerializer,
     UserProfileSerializer,
+    UserSigninSerializer,
 )
-from .models import User
+
+
+User = get_user_model()
 
 
 # Create your views here
@@ -30,7 +39,9 @@ class UserAPIView(APIView):
             )
 
         email = request.data.get("email")
-        user = User.objects.filter(email=email)
+        user = User.objects.filter(email=email).first()
+
+        # 이미 존재하는 사용자가 있고, 그 사용자가 비활성화된 상태인 경우
         if user and user[0].is_active == False:
             return Response(
                 {
@@ -74,65 +85,54 @@ class UserAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["POST"])
-def delete_user(request):
-    deactivate_users = User.objects.filter(is_active=False)
-    now = datetime.now()
-    delete_cnt = 0
-    for user in deactivate_users:
-        # 테스트용 2분
-        if (now - user.deactivate_time.replace(tzinfo=None)).seconds > 120:
-            user.delete()
-            delete_cnt += 1
+class UserActivate(APIView):
+    def get(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = urlsafe_base64_decode(uidb64)  # .decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
 
-    return Response(
-        {"message": f"{delete_cnt}개의 계정이 삭제되었습니다."},
-        status=status.HTTP_200_OK,
-    )
+        token_generator = PasswordResetTokenGenerator()
+        if user is not None and token_generator.check_token(user, token):
+            user.is_active = True
+            user.deactivate_time = None
+            user.save()
+            return Response(
+                {"message": "계정이 활성화되었습니다. 다시 로그인을 시도해주세요."},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"message": "링크가 유효하지 않거나 이미 사용되었습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class UserSigninAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
+        serializer = UserSigninSerializer(data=request.data)
+        if serializer.is_valid():
+            # 로그인 성공 후의 추가 작업 (예: JWT 토큰 생성 등)
+            user = authenticate(email=email, password=password)
+            refresh = RefreshToken.for_user(user)
+            data = {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+            signin_user = User.objects.get(email=email)
+            data["id"] = signin_user.id
+            data["email"] = signin_user.email
+            data["nickname"] = signin_user.nickname
+            data["gender"] = signin_user.gender
+            data["age"] = signin_user.age
+            data["bio"] = signin_user.bio
 
-        user = User.objects.filter(email=email)
-        message = False
-        if user and user[0].is_active == False:
-            user[0].is_active = True
-            user[0].deactivate_time = None
-            user[0].save()
-            message = "계정이 활성화되었습니다."
+            return Response(data=data, status=status.HTTP_200_OK)
 
-        user = authenticate(email=email, password=password)
-
-        if not user:
-            return Response(
-                {"error": "이메일 혹은 패스워드가 일치하지 않습니다."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        refresh = RefreshToken.for_user(user)
-        data = {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }
-
-        user = get_user_model().objects.get(email=email)
-        data["id"] = user.id
-        data["email"] = user.email
-        data["nickname"] = user.nickname
-        data["gender"] = user.gender
-        data["age"] = user.age
-        data["bio"] = user.bio
-
-        if message:
-            data["message"] = message
-
-        return Response(
-            data=data,
-            status=status.HTTP_200_OK,
-        )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserSignoutAPIView(APIView):
@@ -204,3 +204,96 @@ class UserFollowAPIView(APIView):
 class UserProfileAPIView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+
+
+class PaymentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # 결제 정보를 터미널에 출력
+        print(request.data)
+
+        imp_uid = request.data.get("imp_uid")
+        merchant_uid = request.data.get("merchant_uid")
+        name = request.data.get("name")
+        address = request.data.get("address")
+        tel = request.data.get("tel")
+
+        if not imp_uid or not merchant_uid:
+            return Response(
+                {"error": "imp_uid와 merchant_uid는 필수입니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 사전검증
+        iamport_access_token = self.get_access_token()
+        if not iamport_access_token:
+            return Response(
+                {"error": "포트원 인증에 실패했습니다."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # 사후검증
+        payment_data = self.get_payment_data(iamport_access_token, imp_uid)
+        if not payment_data:
+            return Response(
+                {"error": "결제 정보를 가져오지 못했습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 포트원에서 확인한 결제 금액
+        amount_paid = payment_data["amount"]
+        # 서버에서 저장된 결제 금액
+        amount_to_pay = self.get_order_amount(merchant_uid)
+
+        if amount_paid != amount_to_pay:
+            return Response(
+                {"error": "결제 금액이 일치하지 않습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # JWT 토큰에서 이메일 추출
+        email = request.user.email
+
+        # 이메일 전송
+        send_mail(
+            "[WEB 발신] 결제 완료 알림",
+            f"결제가 완료되었습니다.\n이름: {name}\n주소: {address}\n전화번호: {tel}\n",
+            "from@example.com",
+            [email],  # 수신자 이메일
+            fail_silently=False,
+        )
+
+        return Response(
+            {"message": "결제 정보가 성공적으로 전달되었습니다."},
+            status=status.HTTP_200_OK,
+        )
+
+    # 엑세스 키 발급 함수
+    def get_access_token(self):
+        url = "https://api.iamport.kr/users/getToken"
+        data = {"imp_key": settings.IMP_KEY, "imp_secret": settings.IMP_SECRET}
+
+        response = requests.post(url, data=data)
+        if response.status_code != 200:
+            return None
+        result = response.json()
+        return result["response"]["access_token"]
+
+    # 결제정보 조회 함수
+    def get_payment_data(self, access_token, imp_uid):
+        url = f"https://api.iamport.kr/payments/{imp_uid}"
+        headers = {"Authorization": access_token}
+
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            return None
+        result = response.json()
+        return result["response"]
+
+    # 결제금액 확인
+    def get_order_amount(self, merchant_uid):
+        """
+        이후에 실제 상품의 가격을 반환하도록 수정 예정
+        """
+        return 10

@@ -1,0 +1,217 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #333;
+}
+
+h3 {
+    color: darkgreen;
+}
+
+form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+    width: 100%; /* 100%로 통일 */
+    padding: 10px;
+    margin-bottom: 10px; /* textarea 추가 */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type="text"] {
+    width: 80%; /* 텍스트 입력의 경우에만 80% */
+    margin-right: 10px; /* 오른쪽 여백 추가 */
+}
+
+button {
+    background-color: #9a4168;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%; /* 버튼 전체 너비 */
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #5b2532;
+}
+
+.container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+ul {
+    display: flex;
+    overflow-x: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px;
+    white-space: nowrap;
+}
+
+li {
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.movie-card {
+    background: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    text-align: center;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+}
+
+.movie-card:hover {
+    transform: translateY(-10px);
+}
+
+.movie-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.movie-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.movie-card h3 {
+    margin: 10px 0;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.movie-card p {
+    margin: 5px 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.review {
+    border-bottom: 1px solid #ccc; /* 아래쪽에 회색 구분선 */
+    margin-bottom: 10px; /* 리뷰 사이에 여백 추가 */
+    padding-bottom: 10px; /* 구분선 위에 패딩 추가 */
+}
+
+.review:last-child {
+    border-bottom: none;
+}
+
+.header {
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.footer {
+    color: #e05a79;
+}
+
+.comment-delete-text:hover,
+.comment-edit-text:hover,
+.comment-like-text:hover,
+.comment-text:hover,
+.delete-text:hover,
+.like-text:hover,
+.edit-text:hover {
+    color: #007BFF;
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+.report-text{
+    color:rgb(214, 205, 74);
+}
+.report-text:hover{
+    color : red
+}
+.comment-report-text {
+    color:rgb(214, 205, 74);
+}
+.comment-report-text:hover {
+    color : red
+}
+
+.button-container {
+    display: flex; /* Flexbox 사용 */
+    gap: 10px; /* 버튼 간의 간격 조정 */
+    margin-bottom: 10px; /* 버튼 아래 여백 */
+}
+
+.button-container button {
+    flex: 1; /* 버튼들이 동일한 크기로 늘어나도록 설정 */
+}
+
+.spoiler {
+    position: relative;
+    display: block;
+    background-color: black;
+    color: transparent;
+    cursor: pointer;
+    user-select: none;
+}
+
+.spoiler::before {
+    content: "스포일러가 포함된 내용입니다. 클릭하여 확인하세요.";
+    color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    background-color: #e05a79;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.spoiler.revealed {
+    background-color: transparent;
+    color: inherit;
+}
+
+.spoiler.revealed::before {
+    content: "⚠️ [스포일러]";
+    color: red;
+    position: static;
+    display: inline;
+    background-color: transparent;
+    margin-right: 5px;
+    width: auto;
+    height: auto;
+    z-index: 0;
+}

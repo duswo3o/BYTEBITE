@@ -1,6 +1,12 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from .views import ReviewViewSet, CommentViewSet, LikeViewSet
+from .views import (
+    ReviewViewSet,
+    CommentViewSet,
+    LikeViewSet,
+    transform_review,
+    ReportAPIView,
+)
 
 urlpatterns = [
     path(
@@ -37,4 +43,7 @@ urlpatterns = [
         LikeViewSet.as_view({"post": "create"}),
         name="like-comment-create",
     ),
+    path("transform-review/", transform_review, name="transform_review"),
+    path("report/review/<int:review_id>/", ReportAPIView.as_view()),
+    path("report/comment/<int:comment_id>/", ReportAPIView.as_view()),
 ]

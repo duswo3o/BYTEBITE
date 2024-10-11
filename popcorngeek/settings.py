@@ -15,6 +15,7 @@ import os
 from datetime import timedelta
 
 
+
 # Set the project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -35,7 +36,8 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = ["43.201.150.34", "127.0.0.1", "localhost", "172.31.9.248" ]
+ALLOWED_HOSTS = ["43.201.150.34", "127.0.0.1", "localhost", "popcorngeek.store", "api.popcorngeek.store"]
+# ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # third-party
+    'rest_framework',
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
@@ -109,7 +112,6 @@ SIMPLE_JWT = {
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-
     "dev": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
@@ -121,13 +123,15 @@ DATABASES = {
         "PASSWORD": env("POSTGRES_PASSWORD"),
         "HOST": env("POSTGRES_HOST"),
         "PORT": env("POSTGRES_PORT"),
-    }
+    },
 }
 DATABASES["default"] = DATABASES["dev" if DEBUG else "production"]
 
-# API 키 설정
+# 환경변수 로드
 KMDB_API_KEY = env("KMDB_API_KEY")
 KOFIC_API_KEY = env("KOFIC_API_KEY")
+IMP_KEY = env("IMP_KEY")
+IMP_SECRET = env("IMP_SECRET")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -163,15 +167,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')  
+STATIC_URL = "/static/"
+
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
 if DEBUG:
     INSTALLED_APPS += [
@@ -185,3 +194,15 @@ if DEBUG:
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
+
+
+# 이메일 인증 관련 설정
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"  # 메일 호스트 서버
+EMAIL_PORT = 587  # gamil과 통신하는 포트
+EMAIL_HOST_USER = env("EMAIL")  # 발신할 이메일
+EMAIL_HOST_PASSWORD = env("EMAIL_PASSWORD")  # 발신할 이메일의 비밀번호
+EMAIL_USE_TLS = True  # TLS 보안 방법
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
