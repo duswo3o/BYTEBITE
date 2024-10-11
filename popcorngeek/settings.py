@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     # local
     "accounts",
     "movies",
+    "products",
     "reviews",
 ]
 

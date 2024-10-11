@@ -27,7 +27,7 @@ urlpatterns = [
     path("api/v1/accounts/", include("accounts.urls")),
     path("api/v1/movies/", include("movies.urls")),
     path("api/v1/reviews/", include("reviews.urls")),
-    path("api/v1/priducts/", include("priducts.urls")),
+    path("api/v1/products/", include("products.urls")),
 ]
 
 if settings.DEBUG:
