@@ -2,19 +2,28 @@ import requests
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Product
-from .serializers import (ProductSerializer)
+from .serializers import ProductSerializer
 
 
 class ProductAPIView(APIView):
     def get(self, request):
         products = Product.objects.all().order_by('-pk')
         serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# 상품 상세페이지
+class ProductDetailAPIView(APIView):
+    def get(self, request, product_pk):
+        product = get_object_or_404(Product, pk=product_pk)
+        serializer = ProductSerializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
