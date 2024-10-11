@@ -67,256 +67,219 @@ axios.interceptors.response.use(
 );
 
 // 메인페이지 영화 정보 가져오기
-axios.get(`${API_BASE_URL}movies/`)
-    .then(response => {
-        // 박스오피스 순
-        const boxofficeMovies = response.data.boxoffice_movies;
-        const boxofficeList = document.getElementById('boxoffice-movies-list');
+const fetchMovies = () => {
+    axios.get(`${API_BASE_URL}movies/`)
+        .then(response => {
+            const moviepk = urlParams.get('pk');
+            if (moviepk) {
+                fetchMovieDetails(moviepk);
+            }
 
-        boxofficeMovies.forEach(movie => {
-            const li = document.createElement('li');
-            const card = document.createElement('div');
-            card.classList.add('movie-card');
-
-            const boxofficelink = document.createElement('a');
-            boxofficelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.movie_pk}`;
-            boxofficelink.classList.add('movie-link');
-
-            const posterImage = document.createElement('img');
-            posterImage.src = movie.poster;
-            posterImage.alt = `${movie.title} 포스터`;
-
-            const title = document.createElement('h3');
-            title.textContent = movie.title;
-
-            const rank = document.createElement('p');
-            rank.textContent = `${movie.rank}위`;
-
-            boxofficelink.appendChild(posterImage);
-            boxofficelink.appendChild(title);
-            boxofficelink.appendChild(rank);
-            card.appendChild(boxofficelink);
-            li.appendChild(card);
-            boxofficeList.appendChild(li);
+            renderBoxOfficeMovies(response.data.boxoffice_movies); // 박스오피스 순 영화 출력
+            renderGradedMovies(response.data.graded_movies);       // 평균 평점 순 영화 출력
+            renderLikedMovies(response.data.liked_movies);         // 좋아요 순 영화 출력
+            renderComingMovies(response.data.coming_movies);       // 개봉 예정작 출력
+        })
+        .catch(error => {
+            console.error('Error fetching movies:', error);
         });
-
-        // 평균 평점 순
-        const gradedMovies = response.data.graded_movies;
-        const gradedList = document.getElementById('graded-movies-list');
-
-        gradedMovies.forEach(movie => {
-            const li = document.createElement('li');
-            const card = document.createElement('div');
-            card.classList.add('movie-card');
-
-            const gradelink = document.createElement('a');
-            gradelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
-            gradelink.classList.add('movie-link');
-
-            const posterImage = document.createElement('img');
-            posterImage.src = movie.poster;
-            posterImage.alt = `${movie.title} 포스터`;
-
-            const title = document.createElement('h3');
-            title.textContent = movie.title;
-
-            const averageGrade = document.createElement('p');
-            averageGrade.textContent = `Average Grade: ${movie.average_grade || 0}`;
-
-            gradelink.appendChild(posterImage);
-            gradelink.appendChild(title);
-            gradelink.appendChild(averageGrade);
-            card.appendChild(gradelink);
-            li.appendChild(card);
-            gradedList.appendChild(li);
-        });
-
-        // 좋아요 순
-        const likedMovies = response.data.liked_movies;
-        const likedList = document.getElementById('liked-movies-list');
-
-        likedMovies.forEach(movie => {
-            const li = document.createElement('li');
-            const card = document.createElement('div');
-            card.classList.add('movie-card');
-
-            const likelink = document.createElement('a');
-            likelink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
-            likelink.classList.add('movie-link');
-
-            const posterImage = document.createElement('img');
-            posterImage.src = movie.poster;
-            posterImage.alt = `${movie.title} 포스터`;
-
-            const title = document.createElement('h3');
-            title.textContent = movie.title;
-
-            const likes = document.createElement('p');
-            likes.textContent = `Likes: ${movie.like || 0}`;
-
-            likelink.appendChild(posterImage);
-            likelink.appendChild(title);
-            likelink.appendChild(likes);
-            card.appendChild(likelink);
-            li.appendChild(card);
-            likedList.appendChild(li);
-        });
-
-        // 개봉예정작
-        const comingMovies = response.data.coming_movies;
-        const comingList = document.getElementById('coming-movies-list');
-
-        comingMovies.forEach(movie => {
-            const li = document.createElement('li');
-            const card = document.createElement('div');
-            card.classList.add('movie-card');
-
-            const cominglink = document.createElement('a');
-            cominglink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${movie.id}`;
-            cominglink.classList.add('movie-link');
-
-            const posterImage = document.createElement('img');
-            posterImage.src = movie.poster;
-            posterImage.alt = `${movie.title} 포스터`;
-
-            const title = document.createElement('h3');
-            title.textContent = movie.title;
-
-            const releaseInfo = document.createElement('p');
-            releaseInfo.textContent = `Coming: ${movie.release_date}`;
-
-            cominglink.appendChild(posterImage);
-            cominglink.appendChild(title);
-            cominglink.appendChild(releaseInfo);
-            card.appendChild(cominglink);
-            li.appendChild(card);
-            comingList.appendChild(li);
-        });
-    })
-    .catch(error => {
-        console.error('Error fetching movies:', error);
-    });
-
-// 검색 기능
-const searchForm = document.getElementById('searchForm');
-
-if (searchForm) {
-    searchForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-
-        const searchKeyword = document.getElementById('search_keyword').value.trim();
-        const searchType = document.getElementById('lang').value;
-
-        // 검색어가 비어있을 경우
-        if (!searchKeyword) {
-            alert('검색어를 입력하세요.');
-            return;
-        }
-
-        // 페이지 이동
-        const searchUrl = `search.html?search_keyword=${encodeURIComponent(searchKeyword)}&search_type=${searchType}`;
-        window.location.href = searchUrl;
-    });
-}
+};
 
 // url주소에서 데이터 추출
 const urlParams = new URLSearchParams(window.location.search);
 
-// search.html에서 검색 결과 처리
-const searchKeyword = urlParams.get('search_keyword');
-const searchType = urlParams.get('search_type');
+// 영화 상세페이지
+function fetchMovieDetails(moviepk) {
+    axios.get(`${API_BASE_URL}movies/${moviepk}/`)
+        .then(response => {
+            const movie = response.data;
 
-if (searchKeyword) {
+            // 제목, 장르, 줄거리 설정
+            document.getElementById('movie-title').textContent = movie.title;
+            const genreNames = movie.genre.map(genre => genre.name).join(', ');
+            document.getElementById('movie-genre').textContent = genreNames;
+            document.getElementById('movie-plot').textContent = movie.plot;
+
+            // 포스터 설정
+            const posterImage = document.getElementById('movie-poster');
+            const posterUrl = movie.poster.startsWith('http') ? movie.poster : `${API_BASE_URL}${movie.poster}`;
+            posterImage.src = posterUrl;
+            posterImage.alt = `${movie.title} 포스터`;
+
+            // 기타 버튼 및 리뷰 관련 처리 코드...
+        })
+        .catch(error => {
+            console.error('Error fetching movie details:', error);
+        });
+}
+
+// 박스오피스순 출력
+const renderBoxOfficeMovies = (boxofficeMovies) => {
+    const boxofficeList = document.getElementById('boxoffice-movies-list');
+    boxofficeMovies.forEach(movie => {
+        const card = createMovieCard(movie, movie.movie_pk, `${movie.rank}위`);
+        boxofficeList.appendChild(card);
+    });
+};
+
+// 평균 평점순 출력
+const renderGradedMovies = (gradedMovies) => {
+    const gradedList = document.getElementById('graded-movies-list');
+    gradedMovies.forEach(movie => {
+        const card = createMovieCard(movie, movie.id, `Average Grade: ${movie.average_grade || 0}`);
+        gradedList.appendChild(card);
+    });
+};
+
+// 좋아요 많은순 출력
+const renderLikedMovies = (likedMovies) => {
+    const likedList = document.getElementById('liked-movies-list');
+    likedMovies.forEach(movie => {
+        const card = createMovieCard(movie, movie.id, `Likes: ${movie.like || 0}`);
+        likedList.appendChild(card);
+    });
+};
+
+// 개봉예정작 출력
+const renderComingMovies = (comingMovies) => {
+    const comingList = document.getElementById('coming-movies-list');
+    comingMovies.forEach(movie => {
+        const card = createMovieCard(movie, movie.id, `Coming: ${movie.release_date}`);
+        comingList.appendChild(card);
+    });
+};
+
+// 영화 카드 생성
+const createMovieCard = (movie, moviePk, infoText) => {
+    const li = document.createElement('li');
+    const card = document.createElement('div');
+    card.classList.add('movie-card');
+
+    const link = document.createElement('a');
+    link.href = `/front/movies/details.html?pk=${moviePk}`;
+    link.classList.add('movie-link');
+
+    const posterImage = document.createElement('img');
+    posterImage.src = movie.poster;
+    posterImage.alt = `${movie.title} 포스터`;
+
+    const title = document.createElement('h3');
+    title.textContent = movie.title;
+
+    const info = document.createElement('p');
+    info.textContent = infoText;
+
+    link.appendChild(posterImage);
+    link.appendChild(title);
+    link.appendChild(info);
+    card.appendChild(link);
+    li.appendChild(card);
+
+    return li;
+};
+
+// 검색 기능
+function initSearch() {
+    const searchForm = document.getElementById('searchForm');
+
+    if (searchForm) {
+        searchForm.addEventListener('submit', handleSearchSubmit);
+    }
+
+    // URL에서 데이터 추출 및 검색 결과 처리
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchKeyword = urlParams.get('search_keyword');
+    const searchType = urlParams.get('search_type');
+
+    if (searchKeyword) {
+        fetchSearchResults(searchType, searchKeyword);
+    }
+}
+
+// 검색어 제출
+function handleSearchSubmit(event) {
+    event.preventDefault();
+
+    const searchKeyword = document.getElementById('search_keyword').value.trim();
+    const searchType = document.getElementById('lang').value;
+
+    // 검색어가 비어있을 경우
+    if (!searchKeyword) {
+        alert('검색어를 입력하세요.');
+        return;
+    }
+
+    // 페이지 이동
+    const searchUrl = `search.html?search_keyword=${encodeURIComponent(searchKeyword)}&search_type=${searchType}`;
+    window.location.href = searchUrl;
+}
+
+// 검색 결과 가져오기
+function fetchSearchResults(searchType, searchKeyword) {
     axios.get(`${API_BASE_URL}movies/search/?search_type=${searchType}&search_keyword=${encodeURIComponent(searchKeyword)}`)
         .then(response => {
-            const resultsList = document.getElementById('searchresults');
-            resultsList.innerHTML = '';
-
-            // 검색 결과를 출력
-            response.data.forEach(item => {
-                const li = document.createElement('li');
-
-                if (searchType === 'movies') {
-                    const genreNames = item.genre.map(genre => genre.name).join(', ');
-
-                    const searchlink = document.createElement('a');
-                    searchlink.href = `http://127.0.0.1:5500/front/movies/details.html?pk=${item.id}`;
-                    searchlink.textContent = item.title;
-
-                    li.appendChild(searchlink);
-                    li.appendChild(document.createTextNode(`, 장르: ${genreNames}`));
-
-                } else if (searchType === 'staff') {
-                    li.textContent = `이름: ${item.name}`;
-                } else if (searchType === 'member') {
-                    li.textContent = `닉네임: ${item.nickname}`;
-                }
-                resultsList.appendChild(li);
-            });
+            displaySearchResults(response.data, searchType);
         })
         .catch(error => {
             console.error('검색 결과를 가져오는 중 오류 발생:', error);
         });
 }
 
-// 상세 페이지
-const moviepk = urlParams.get('pk');
+// 검색 결과
+function displaySearchResults(results, searchType) {
+    const resultsList = document.getElementById('searchresults');
+    resultsList.innerHTML = '';
 
-axios.get(`${API_BASE_URL}movies/${moviepk}/`)
-    .then(response => {
-        const movie = response.data;
+    // 검색 결과를 출력
+    results.forEach(item => {
+        if (searchType === 'movies') {
+            // 영화 카드 생성
+            const movieCard = document.createElement('div');
+            movieCard.classList.add('movie-card');
 
-        document.getElementById('movie-title').textContent = movie.title;
+            // 영화 포스터
+            const posterUrl = item.poster.startsWith('http') ? item.poster : `${API_BASE_URL}${item.poster}`; // 포스터 URL 설정
 
-        const genreNames = movie.genre.map(genre => genre.name).join(', ');
-        document.getElementById('movie-genre').textContent = genreNames;
-        document.getElementById('movie-plot').textContent = movie.plot;
+            // 영화 링크
+            const movieLink = document.createElement('a');
+            movieLink.href = `/front/movies/details.html?pk=${item.id}`;
 
-        // 포스터 출력
-        const posterImage = document.getElementById('movie-poster');
-        posterImage.src = movie.poster;
+            // 영화 포스터 이미지를 링크에 추가
+            const moviePoster = document.createElement('img');
+            moviePoster.src = posterUrl ? posterUrl : 'placeholder_image_url'; // 포스터가 없으면 기본 이미지 사용
+            moviePoster.alt = `${item.title} 포스터`;
+            movieLink.appendChild(moviePoster); // 포스터를 링크에 추가
 
-        // 보고싶어요,관심없어요
-        const likeButton = document.getElementById('like');
-        const dislikeButton = document.getElementById('dislike');
+            // 영화 제목
+            const movieTitle = document.createElement('h3');
+            movieTitle.textContent = item.title;
 
-        // '보고싶어요'와 '관심없어요' 버튼에 각각 반응 추가
-        handleReaction(likeButton, moviepk, 'like');
-        handleReaction(dislikeButton, moviepk, 'dislike');
+            // 장르 정보
+            const genreNames = item.genre.map(genre => genre.name).join(', ');
+            const movieGenre = document.createElement('p');
+            movieGenre.textContent = `장르: ${genreNames}`;
 
-        // 평점
-        const scoreButton = document.getElementById('score-button');
-        const scoreInput = document.getElementById('score-input');
-        const cancelButton = document.getElementById('cancel-score');
+            // 영화 카드 구성
+            movieCard.appendChild(movieLink); // 영화 링크를 카드에 추가
+            movieCard.appendChild(movieTitle);
+            movieCard.appendChild(movieGenre);
 
-        // 평가하기
-        scoreButton.addEventListener('click', (event) => {
-            event.preventDefault();
-
-            const scoreValue = parseFloat(scoreInput.value);
-            const scoreData = {
-                evaluate: scoreValue
-            };
-
-            sendScoreData(moviepk, scoreData);
-        });
-
-        // 취소하기
-        cancelButton.addEventListener('click', () => {
-            const scoreData = {
-                evaluate: 0
-            };
-            // 리뷰 출력
-            sendScoreData(moviepk, scoreData);
-        });
-
-        refreshReviews(moviepk);
-
-        document.getElementById('postReviewBtn').addEventListener('click', () => {
-            const content = document.getElementById('reviewContent').value;
-            postReview(moviepk, content);
-        });
+            // 카드 추가
+            resultsList.appendChild(movieCard);
+        } else if (searchType === 'staff') {
+            const li = document.createElement('li');
+            li.textContent = `이름: ${item.name}`;
+            resultsList.appendChild(li);
+        } else if (searchType === 'member') {
+            const li = document.createElement('li');
+            li.textContent = `닉네임: ${item.nickname}`;
+            resultsList.appendChild(li);
+        }
     });
+}
+
+// 초기화 함수
+initSearch();
 
 // 보고싶어요, 관심없어요 데이터 전송
 function sendLikeData(moviepk, movieData) {
