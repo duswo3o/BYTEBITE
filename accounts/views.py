@@ -259,12 +259,11 @@ class PaymentAPIView(APIView):
         send_mail(
             "[WEB 발신] 결제 완료 알림",
             f"결제가 완료되었습니다.\n이름: {name}\n주소: {address}\n전화번호: {tel}\n",
-            "from@example.com",  # 발신자 이메일
+            "from@example.com",
             [email],  # 수신자 이메일
             fail_silently=False,
         )
 
-        # 테스트 응답
         return Response(
             {"message": "결제 정보가 성공적으로 전달되었습니다."},
             status=status.HTTP_200_OK,
