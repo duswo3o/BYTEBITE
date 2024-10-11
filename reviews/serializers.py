@@ -6,6 +6,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source="author.nickname")
     review = serializers.PrimaryKeyRelatedField(read_only=True)
     like_count = serializers.SerializerMethodField()
+    is_spoiler = serializers.BooleanField(required=False)
 
     class Meta:
         model = Comment
@@ -17,6 +18,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "like_count",
+            "is_spoiler",
         ]
 
     def get_like_count(self, obj):
@@ -28,6 +30,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
     # comments = CommentSerializer(many=True, read_only=True)
+    is_spoiler = serializers.BooleanField(required=False)
 
     class Meta:
         model = Review
@@ -40,6 +43,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             "created_at",
             "like_count",
             "comment_count",
+            "is_spoiler",
         ]
         read_only_fields = ["author", "movie", "created_at"]
 

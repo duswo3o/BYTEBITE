@@ -412,11 +412,15 @@ async function postReview(moviePk, content) {
         return;
     }
 
+    const isSpoiler= document.getElementById('isSpoiler').checked;
+
     try {
-        await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { content });
+        await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { content, is_spoiler: isSpoiler });
+        
         alert('리뷰 작성 성공');
         await refreshReviews(moviePk);
         document.getElementById('reviewContent').value = ''; // 입력 필드 초기화
+        document.getElementById('isSpoiler').checked = false; // 체크박스 초기화
     } catch (error) {
         handleError('리뷰 작성', error);
     }
@@ -468,9 +472,15 @@ async function postComment(reviewId, content) {
         return;
     }
 
+    const isSpoiler = document.getElementById(`comment-is-spoiler-${reviewId}`).checked;
+
     try {
-        await axios.post(`${API_BASE_URL}reviews/${reviewId}/comments/`, { content });
+        await axios.post(`${API_BASE_URL}reviews/${reviewId}/comments/`, { content, is_spoiler: isSpoiler });
         alert('댓글 작성 성공');
+        // 댓글 작성 후 입력 필드 및 체크박스 초기화
+        document.getElementById(`comment-content-${reviewId}`).value = '';
+        document.getElementById(`comment-is-spoiler-${reviewId}`).checked = false;
+        await refreshReviews(moviepk); 
     } catch (error) {
         handleError('댓글 작성', error);
     }
@@ -532,12 +542,20 @@ function displayReviews(reviews) {
         const reviewDiv = document.createElement('div');
         reviewDiv.classList.add('review');
         reviewDiv.setAttribute('data-review-id', review.id);
+
+        let contentHTML;
+        if (review.is_spoiler) {
+            contentHTML = `<div class="content spoiler" id="review-content-${review.id}">${review.content}</div>`;
+        } else {
+            contentHTML = `<div class="content" id="review-content-${review.id}">${review.content}</div>`;
+        }
+
         reviewDiv.innerHTML = `
             <div class="header">
                 <span class="author">${review.author}</span>
                 <span class="date">${new Date(review.created_at).toLocaleString()}</span>
             </div>
-            <div class="content" id="review-content-${review.id}">${review.content}</div>
+            ${contentHTML}
             <div class="footer">
                 <span class="like-count">좋아요: ${review.like_count}</span>
                 <span class="comment_count">댓글수: ${review.comments.length}</span>
@@ -549,21 +567,33 @@ function displayReviews(reviews) {
                 <span class="comment-text" data-review-id="${review.id}">[댓글 달기]</span>
                 <span class="report-text" data-review-id="${review.id}">[신고]</span>
                 <textarea id="comment-content-${review.id}" style="display:none;" placeholder="댓글을 입력하세요..."></textarea>
+                <label style="display:none;" id="comment-is-spoiler-label-${review.id}">
+                    <input type="checkbox" id="comment-is-spoiler-${review.id}">스포일러 포함</label>
                 <button class="submit-comment-btn" data-review-id="${review.id}" style="display:none;">댓글 작성 완료</button>
                 <div class="comments" id="comments-${review.id}">
-                    ${review.comments.map(comment => `
-                        <div class="comment" id="comment-${comment.id}">
-                            <span class="comment-author">${comment.author}</span>:
-                            <span class="comment-content" id="comment-content-${comment.id}">${comment.content}</span>
-                            <span class="comment-like-count">좋아요: ${comment.like_count}</span>
-                            <span class="comment-like-text" data-comment-id="${comment.id}">[❤]</span>
-                            <span class="comment-edit-text" data-comment-id="${comment.id}">[수정]</span>
-                            <span class="comment-delete-text" data-comment-id="${comment.id}">[삭제]</span>
-                            <span class="comment-report-text" data-comment-id="${comment.id}">[신고]</span>
-                            <textarea id="edit-comment-${comment.id}" style="display:none;"></textarea>
-                            <button class="save-comment-btn" data-comment-id="${comment.id}" style="display:none;">수정 완료</button>
-                        </div>
-                    `).join('')}
+                    ${review.comments.map(comment => {
+                        // 스포일러 여부에 따라 댓글 콘텐츠 처리
+                        let commentContentHTML;
+                        if (comment.is_spoiler) {
+                            commentContentHTML = `<span class="comment-content spoiler" id="comment-content-${comment.id}">${comment.content}</span>`;
+                        } else {
+                            commentContentHTML = `<span class="comment-content" id="comment-content-${comment.id}">${comment.content}</span>`;
+                        }
+
+                        return `
+                            <div class="comment" id="comment-${comment.id}">
+                                <span class="comment-author">${comment.author}</span>:
+                                ${commentContentHTML}
+                                <span class="comment-like-count">좋아요: ${comment.like_count}</span>
+                                <span class="comment-like-text" data-comment-id="${comment.id}">[❤]</span>
+                                <span class="comment-edit-text" data-comment-id="${comment.id}">[수정]</span>
+                                <span class="comment-delete-text" data-comment-id="${comment.id}">[삭제]</span>
+                                <span class="comment-report-text" data-comment-id="${comment.id}">[신고]</span>
+                                <textarea id="edit-comment-${comment.id}" style="display:none;"></textarea>
+                                <button class="save-comment-btn" data-comment-id="${comment.id}" style="display:none;">수정 완료</button>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `;
         responseDiv.appendChild(reviewDiv);
@@ -617,6 +647,12 @@ function addEventListeners() {
         });
     });
 
+    // 스포일러 내용 토글 이벤트 리스너
+    document.querySelectorAll('.spoiler').forEach(element => {
+        element.addEventListener('click', () => {
+            element.classList.toggle('revealed');
+        });
+    });
 
     // 리뷰 신고 버튼 이벤트 리스너
     document.querySelectorAll('.report-text').forEach(button => {
@@ -632,9 +668,11 @@ function addEventListeners() {
             const reviewId = event.target.getAttribute('data-review-id');
             const commentTextArea = document.getElementById(`comment-content-${reviewId}`);
             const submitButton = document.querySelector(`.submit-comment-btn[data-review-id="${reviewId}"]`);
+            const isSpoilerLabel = document.getElementById(`comment-is-spoiler-label-${reviewId}`);
 
             commentTextArea.style.display = 'block';
             submitButton.style.display = 'inline';
+            isSpoilerLabel.style.display = 'inline';
         });
     });
 

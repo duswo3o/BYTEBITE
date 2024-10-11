@@ -127,9 +127,11 @@ DATABASES = {
 }
 DATABASES["default"] = DATABASES["dev" if DEBUG else "production"]
 
-# API 키 설정
+# 환경변수 로드
 KMDB_API_KEY = env("KMDB_API_KEY")
 KOFIC_API_KEY = env("KOFIC_API_KEY")
+IMP_KEY = env("IMP_KEY")
+IMP_SECRET = env("IMP_SECRET")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
