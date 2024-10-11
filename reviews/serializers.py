@@ -17,6 +17,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "like_count",
+            "is_spoiler",
         ]
 
     def get_like_count(self, obj):
@@ -40,6 +41,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             "created_at",
             "like_count",
             "comment_count",
+            "is_spoiler",
         ]
         read_only_fields = ["author", "movie", "created_at"]
 
