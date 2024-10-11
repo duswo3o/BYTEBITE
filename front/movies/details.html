@@ -18,6 +18,7 @@
         <p><strong>장르:</strong> <span id="movie-genre"></span></p>
 
         <p><strong>줄거리:</strong> <span id="movie-plot"></span></p>
+        
         <div class="button-container">
             <button id="like">보고싶어요!</button>
             <button id="dislike">관심없어요...</button>
@@ -51,5 +52,17 @@
 
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="movies.js"></script>
+    
+    <script>
+        // DOMContentLoaded를 사용해 페이지가 로드되었을 때 movie.js의 fetchMovieDetails 호출
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const moviepk = urlParams.get('pk');
+
+            if (moviepk) {
+                fetchMovieDetails(moviepk);  // movie.js 파일에 있는 fetchMovieDetails 함수 호출
+            }
+        });
+    </script>
 </body>
 </html>
