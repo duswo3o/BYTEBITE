@@ -7,6 +7,7 @@ class CommentSerializer(serializers.ModelSerializer):
     review = serializers.PrimaryKeyRelatedField(read_only=True)
     like_count = serializers.SerializerMethodField()
     is_spoiler = serializers.BooleanField(required=False)
+
     class Meta:
         model = Comment
         fields = [
@@ -30,7 +31,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     like_count = serializers.SerializerMethodField()
     # comments = CommentSerializer(many=True, read_only=True)
     is_spoiler = serializers.BooleanField(required=False)
-    
+
     class Meta:
         model = Review
         fields = [
