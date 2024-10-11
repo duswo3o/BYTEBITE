@@ -7,8 +7,18 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .models import Product
+from .serializers import (ProductSerializer)
 
 
+class ProductAPIView(APIView):
+    def get(self, request):
+        products = Product.objects.all().order_by('-pk')
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# 결제 관련 로직
 class PaymentAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
