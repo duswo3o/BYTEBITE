@@ -109,9 +109,11 @@ axios.get(`${API_BASE_URL}movies/`)
             const card = document.createElement('div');
             card.classList.add('movie-card');
 
-            const gradelink = document.createElement('a');
-            gradelink.href = `https://popcorngeek.store/front/movies/details.html?pk=${movie.id}`;
+            const gradelink = document.createElement('div'); // <a> 대신 <div> 사용
             gradelink.classList.add('movie-link');
+            gradelink.onclick = () => {
+            window.location.href = "details.html"; // details.html로 연결
+            };
 
             const posterImage = document.createElement('img');
             posterImage.src = movie.poster;
@@ -141,7 +143,7 @@ axios.get(`${API_BASE_URL}movies/`)
             card.classList.add('movie-card');
 
             const likelink = document.createElement('a');
-            likelink.href = `https://popcorngeek.store/front/movies/details.html?pk=${movie.id}`;
+            likelink.href = `/front/movies/details.html?pk=${movie.id}`;
             likelink.classList.add('movie-link');
 
             const posterImage = document.createElement('img');

@@ -66,7 +66,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "accounts/account_active_email.html",
             {
                 "user": user,
-                "domain": "127.0.0.1:8000",  # 실제 도메인으로 교체
+                "domain": "api.popcorngeek.store",  # 실제 도메인으로 교체
                 "uid": uid,
                 "token": token,
             },
@@ -147,7 +147,7 @@ class UserSigninSerializer(serializers.ModelSerializer):
             "accounts/account_active_email.html",  # 이메일 템플릿 경로
             {
                 "user": user,
-                "domain": "127.0.0.1:8000",  # 도메인 설정
+                "domain": "api.popcorngeek.store",  # 도메인 설정
                 "uid": uid,  # 사용자 ID 인코딩
                 "token": token,  # 활성화 토큰 생성
             },

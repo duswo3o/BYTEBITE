@@ -31,7 +31,7 @@
             // 결제 완료 후 서버로 imp_uid와 merchant_uid 전송
             if (rsp.success) {
               axios({
-                url: "http://127.0.0.1:8000/api/v1/accounts/payments/", // 서버의 결제 정보를 받는 endpoint
+                url: "http://api.popcorngeek.store/api/v1/accounts/payments/", // 서버의 결제 정보를 받는 endpoint
                 method: "post",
                 headers: { "Content-Type": "application/json" },
                 data: {
