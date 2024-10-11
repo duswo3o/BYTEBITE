@@ -60,30 +60,6 @@
                 fetchMovieDetails(moviepk);  // movie.js 파일에 있는 fetchMovieDetails 함수 호출
             }
         });
-
-        // 리뷰 관련 이벤트 추가
-        document.getElementById('postReviewBtn').addEventListener('click', () => {
-            const content = document.getElementById('reviewContent').value;
-            const urlParams = new URLSearchParams(window.location.search);
-            const moviepk = urlParams.get('pk');
-
-            if (moviepk && content) {
-                postReview(moviepk, content);  // movie.js에 있는 postReview 함수 호출
-            }
-        });
-
-        // 조선시대, 평론가, MZ 말투 변환 버튼 이벤트 처리
-        document.getElementById('transformToJoseon').addEventListener('click', () => {
-            transformReviewContent('joseon');  // movie.js에 있는 transformReviewContent 함수 호출
-        });
-
-        document.getElementById('transformToCritic').addEventListener('click', () => {
-            transformReviewContent('critic');  // movie.js에 있는 transformReviewContent 함수 호출
-        });
-
-        document.getElementById('transformToMz').addEventListener('click', () => {
-            transformReviewContent('mz');  // movie.js에 있는 transformReviewContent 함수 호출
-        });
     </script>
 </body>
 </html>

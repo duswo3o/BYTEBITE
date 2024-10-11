@@ -66,6 +66,9 @@ axios.interceptors.response.use(
     }
 );
 
+// url주소에서 데이터 추출
+const urlParams = new URLSearchParams(window.location.search);
+
 // 메인페이지 영화 정보 가져오기
 const fetchMovies = () => {
     axios.get(`${API_BASE_URL}movies/`)
@@ -85,9 +88,6 @@ const fetchMovies = () => {
         });
 };
 
-// url주소에서 데이터 추출
-const urlParams = new URLSearchParams(window.location.search);
-
 // 영화 상세페이지
 function fetchMovieDetails(moviepk) {
     axios.get(`${API_BASE_URL}movies/${moviepk}/`)
@@ -106,7 +106,45 @@ function fetchMovieDetails(moviepk) {
             posterImage.src = posterUrl;
             posterImage.alt = `${movie.title} 포스터`;
 
-            // 기타 버튼 및 리뷰 관련 처리 코드...
+            // 보고싶어요,관심없어요
+            const likeButton = document.getElementById('like');
+            const dislikeButton = document.getElementById('dislike');
+
+            handleReaction(likeButton, moviepk, 'like');
+            handleReaction(dislikeButton, moviepk, 'dislike');
+
+            // 평점
+            const scoreButton = document.getElementById('score-button');
+            const scoreInput = document.getElementById('score-input');
+            const cancelButton = document.getElementById('cancel-score');
+
+            // 평가하기
+            scoreButton.addEventListener('click', (event) => {
+                event.preventDefault();
+
+                const scoreValue = parseFloat(scoreInput.value);
+                const scoreData = {
+                    evaluate: scoreValue
+                };
+
+                sendScoreData(moviepk, scoreData);
+            });
+
+            // 취소하기
+            cancelButton.addEventListener('click', () => {
+                const scoreData = {
+                    evaluate: 0
+                };
+                // 리뷰 출력
+                sendScoreData(moviepk, scoreData);
+            });
+
+            refreshReviews(moviepk);
+
+            document.getElementById('postReviewBtn').addEventListener('click', () => {
+                const content = document.getElementById('reviewContent').value;
+                postReview(moviepk, content);
+            });
         })
         .catch(error => {
             console.error('Error fetching movie details:', error);
