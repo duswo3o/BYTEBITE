@@ -169,3 +169,45 @@ li {
 .button-container button {
     flex: 1; /* 버튼들이 동일한 크기로 늘어나도록 설정 */
 }
+
+.spoiler {
+    position: relative;
+    display: block;
+    background-color: black;
+    color: transparent;
+    cursor: pointer;
+    user-select: none;
+}
+
+.spoiler::before {
+    content: "스포일러가 포함된 내용입니다. 클릭하여 확인하세요.";
+    color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    background-color: #e05a79;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.spoiler.revealed {
+    background-color: transparent;
+    color: inherit;
+}
+
+.spoiler.revealed::before {
+    content: "⚠️ [스포일러]";
+    color: red;
+    position: static;
+    display: inline;
+    background-color: transparent;
+    margin-right: 5px;
+    width: auto;
+    height: auto;
+    z-index: 0;
+}
