@@ -106,6 +106,16 @@ function fetchMovieDetails(moviepk) {
             posterImage.src = posterUrl;
             posterImage.alt = `${movie.title} 포스터`;
 
+            // 태그 출력
+            const tagsElement = document.getElementById('movie-tags');
+            if (movie.tags && movie.tags.length > 0) {
+                const tagsNames = movie.tags.map(tag => tag.name).join(', '); // 태그 이름을 가져와서 쉼표로 구분
+                tagsElement.textContent = tagsNames; // 태그 이름을 출력
+                tagsElement.parentElement.style.display = 'block'; // 태그가 있을 때만 표시
+            } else {
+                tagsElement.parentElement.style.display = 'none'; // 태그가 없을 때 숨김
+            }
+
             // 보고싶어요,관심없어요
             const likeButton = document.getElementById('like');
             const dislikeButton = document.getElementById('dislike');

@@ -1,12 +1,8 @@
 from datetime import datetime, timedelta
 
-import requests
-
-from django.conf import settings
-from django.core.mail import send_mail
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
 from rest_framework.decorators import permission_classes
@@ -16,6 +12,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+import requests
+import os
+from dotenv import load_dotenv
+from django.shortcuts import redirect
+from django.http import JsonResponse
+
 
 from .serializers import (
     ChangePasswordSerializer,
@@ -107,6 +109,23 @@ class UserActivate(APIView):
                 {"message": "링크가 유효하지 않거나 이미 사용되었습니다."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+@api_view(["POST"])
+def delete_user(request):
+    deactivate_users = User.objects.filter(is_active=False)
+    now = datetime.now()
+    delete_cnt = 0
+    for user in deactivate_users:
+        # 테스트용 2분
+        if (now - user.deactivate_time.replace(tzinfo=None)).seconds > 120:
+            user.delete()
+            delete_cnt += 1
+
+    return Response(
+        {"message": f"{delete_cnt}개의 계정이 삭제되었습니다."},
+        status=status.HTTP_200_OK,
+    )
 
 
 class UserSigninAPIView(APIView):
@@ -206,94 +225,112 @@ class UserProfileAPIView(RetrieveAPIView):
     serializer_class = UserProfileSerializer
 
 
-class PaymentAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
+class PaymentAPIView(RetrieveAPIView):
+    def post(self, request, *args, **kwargs):
         # 결제 정보를 터미널에 출력
         print(request.data)
 
-        imp_uid = request.data.get("imp_uid")
-        merchant_uid = request.data.get("merchant_uid")
-        name = request.data.get("name")
-        address = request.data.get("address")
-        tel = request.data.get("tel")
-
-        if not imp_uid or not merchant_uid:
-            return Response(
-                {"error": "imp_uid와 merchant_uid는 필수입니다."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # 사전검증
-        iamport_access_token = self.get_access_token()
-        if not iamport_access_token:
-            return Response(
-                {"error": "포트원 인증에 실패했습니다."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        # 사후검증
-        payment_data = self.get_payment_data(iamport_access_token, imp_uid)
-        if not payment_data:
-            return Response(
-                {"error": "결제 정보를 가져오지 못했습니다."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # 포트원에서 확인한 결제 금액
-        amount_paid = payment_data["amount"]
-        # 서버에서 저장된 결제 금액
-        amount_to_pay = self.get_order_amount(merchant_uid)
-
-        if amount_paid != amount_to_pay:
-            return Response(
-                {"error": "결제 금액이 일치하지 않습니다."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # JWT 토큰에서 이메일 추출
-        email = request.user.email
-
-        # 이메일 전송
-        send_mail(
-            "[WEB 발신] 결제 완료 알림",
-            f"결제가 완료되었습니다.\n이름: {name}\n주소: {address}\n전화번호: {tel}\n",
-            "from@example.com",
-            [email],  # 수신자 이메일
-            fail_silently=False,
-        )
-
+        # 테스트 응답
         return Response(
             {"message": "결제 정보가 성공적으로 전달되었습니다."},
             status=status.HTTP_200_OK,
         )
 
-    # 엑세스 키 발급 함수
-    def get_access_token(self):
-        url = "https://api.iamport.kr/users/getToken"
-        data = {"imp_key": settings.IMP_KEY, "imp_secret": settings.IMP_SECRET}
 
-        response = requests.post(url, data=data)
-        if response.status_code != 200:
-            return None
-        result = response.json()
-        return result["response"]["access_token"]
+# 소셜로그인
+load_dotenv()
+KAKAO_REST_API_KEY = os.getenv("KAKAO_API_KEY")
+BASE_URL = "http://127.0.0.1:8000"
+FRONTEND_BASE_URL = "http://127.0.0.1:5500"
 
-    # 결제정보 조회 함수
-    def get_payment_data(self, access_token, imp_uid):
-        url = f"https://api.iamport.kr/payments/{imp_uid}"
-        headers = {"Authorization": access_token}
 
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            return None
-        result = response.json()
-        return result["response"]
+class KakaoLoginView(APIView):
+    def get(self, request):
+        client_id = KAKAO_REST_API_KEY
+        redirect_uri = f"{BASE_URL}/api/v1/accounts/kakao/callback/"
+        return redirect(
+            f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+        )
 
-    # 결제금액 확인
-    def get_order_amount(self, merchant_uid):
-        """
-        이후에 실제 상품의 가격을 반환하도록 수정 예정
-        """
-        return 10
+
+class KakaoCallbackView(APIView):
+    def get(self, request):
+        code = request.GET.get("code")
+        access_token = self.get_kakao_token(code)
+        user_info = self.get_kakao_user_info(access_token)
+        user_data = self.get_or_create_user(user_info)
+        tokens = self.create_jwt_token(user_data)
+        nickname = user_info["properties"]["nickname"]
+        email = user_info["kakao_account"]["email"]
+
+        redirect_url = (
+            f"{FRONTEND_BASE_URL}/front/accounts/profile.html"
+            f"?access_token={tokens['access']}&refresh_token={tokens['refresh']}"
+            f"&nickname={nickname}&email={email}"
+        )
+        return redirect(redirect_url)
+
+    def get_kakao_token(self, code):
+        client_id = KAKAO_REST_API_KEY
+        redirect_uri = f"{BASE_URL}/api/v1/accounts/kakao/callback/"
+        token_url = "https://kauth.kakao.com/oauth/token"
+        data = {
+            "grant_type": "authorization_code",
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "code": code,
+        }
+        response = requests.post(token_url, data=data)
+        return response.json().get("access_token")
+
+    def get_kakao_user_info(self, access_token):
+        user_info_url = "https://kapi.kakao.com/v2/user/me"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = requests.get(user_info_url, headers=headers)
+        return response.json()
+
+    def get_or_create_user(self, user_info):
+        # 카카오 ID 확인
+        kakao_id = user_info.get("id")
+        if not kakao_id:
+            raise ValueError("Kakao 사용자 정보에서 'id'를 찾을 수 없습니다.")
+
+        # 이메일 확인
+        email = user_info["kakao_account"].get("email")
+        if not email:
+            raise ValueError("Kakao에서 이메일이 제공되지 않았습니다.")
+
+        # 닉네임 확인
+        nickname = user_info["properties"].get("nickname")
+        if not nickname:
+            nickname = user_info["kakao_account"]["profile"].get("nickname")
+
+        if not nickname:
+            raise ValueError("Kakao에서 닉네임을 가져오지 못했습니다.")
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                "email": email,
+                "nickname": nickname,
+            },
+        )
+
+        if created:
+            user.set_unusable_password()
+            user.save()
+
+        return user
+
+    def create_jwt_token(self, user_data):
+        if isinstance(user_data, dict):
+            email = user_data.get("email")
+            user = User.objects.get(email=email)
+        else:
+            user = user_data
+
+        # JWT 토큰 생성
+        refresh = RefreshToken.for_user(user)
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
