@@ -24,6 +24,7 @@ from .serializers import (
     ReviewSerializer,
     LikeSerializer,
 )
+from .sentiment_analysis import predict
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -59,7 +60,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         movie_id = self.kwargs.get("movie_pk")
         movie = Movie.objects.get(pk=movie_id)
-        serializer.save(author=self.request.user, movie=movie)
+        review = serializer.validated_data.get("content")
+        is_positive = predict(review)
+        serializer.save(
+            author=self.request.user,
+            movie=movie,
+            is_positive=is_positive,
+        )
 
 
 class CommentViewSet(viewsets.ModelViewSet):

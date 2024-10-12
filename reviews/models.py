@@ -11,6 +11,7 @@ class Review(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews"
     )
     is_spoiler = models.BooleanField(default=False)
+    is_positive = models.BooleanField(null=True)
 
     def __str__(self):
         return self.content[:20]
