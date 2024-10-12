@@ -5,6 +5,7 @@ import json
 # 서드파티 라이브러리
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import models
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -23,6 +24,7 @@ from .serializers import (
     CommentSerializer,
     ReviewSerializer,
     LikeSerializer,
+    SentimentSerializer,
 )
 from .sentiment_analysis import predict
 from openai import OpenAI
@@ -287,3 +289,27 @@ class ReportAPIView(APIView):
                 {"message": "해당 댓글이 신고 완료되었습니다."},
                 status=status.HTTP_200_OK,
             )
+
+
+class SentimentAPIView(APIView):
+    def get(self, request, movie_pk):
+        positive = (
+            Review.objects.filter(movie=movie_pk, is_positive=1)
+            .annotate(like_count=models.Count("review_likes"))
+            .order_by("-like_count")[:3]
+        )
+        negative = (
+            Review.objects.filter(movie=movie_pk, is_positive=0)
+            .annotate(like_count=models.Count("review_likes"))
+            .order_by("-like_count")[:3]
+        )
+
+        positive_serializer = SentimentSerializer(positive, many=True)
+        negative_serializer = SentimentSerializer(negative, many=True)
+
+        sentiment = {
+            "positive_review": positive_serializer.data,
+            "negative_review": negative_serializer.data,
+        }
+
+        return Response(sentiment, status=status.HTTP_200_OK)

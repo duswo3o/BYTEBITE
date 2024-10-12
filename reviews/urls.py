@@ -4,6 +4,7 @@ from .views import (
     ReviewViewSet,
     CommentViewSet,
     LikeViewSet,
+    SentimentAPIView,
     transform_review,
     ReportAPIView,
 )
@@ -46,4 +47,5 @@ urlpatterns = [
     path("transform-review/", transform_review, name="transform_review"),
     path("report/review/<int:review_id>/", ReportAPIView.as_view()),
     path("report/comment/<int:comment_id>/", ReportAPIView.as_view()),
+    path("sentiment_top/<int:movie_pk>/", SentimentAPIView.as_view()),
 ]
