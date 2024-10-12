@@ -46,8 +46,6 @@ class PaymentAPIView(APIView):
         imp_uid = request.data.get("imp_uid")
         merchant_uid = request.data.get("merchant_uid")
         name = request.data.get("name")
-        address = request.data.get("address")
-        tel = request.data.get("tel")
 
         if not imp_uid or not merchant_uid:
             return Response(
@@ -88,8 +86,7 @@ class PaymentAPIView(APIView):
         # 이메일 전송
         send_mail(
             "[WEB 발신] 결제 완료 알림",
-            f"결제가 완료되었습니다.\n이름: {name}\n주소: {address}\n전화번호: {tel}\n",
-            "from@example.com",
+            f"결제가 완료되었습니다.\n이름: {name}\n주문번호: {merchant_uid}\n",
             [email],  # 수신자 이메일
             fail_silently=False,
         )

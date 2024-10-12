@@ -5,4 +5,4 @@ from .models import Product
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("title", "price")
+    list_display = ("name", "price")

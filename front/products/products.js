@@ -14,8 +14,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     output += `
                         <li class="product-card">
                             <a href="details.html?id=${product.id}" class="product-link"> <!-- 상품 상세 페이지 링크 -->
-                                <img src="${product.image}" alt="${product.title}" class="product-image">
-                                <h2 class="product-title">${product.title}</h2>
+                                <img src="${product.image}" alt="${product.name}" class="product-image">
+                                <h2 class="product-name">${product.name}</h2>
                                 <p class="product-content">${product.content}</p>
                                 <p class="product-price">가격: ${product.price}원</p>
                             </a>

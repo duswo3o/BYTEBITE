@@ -21,11 +21,11 @@ function loadProductDetail() {
             // 상품 상세 정보를 HTML로 출력
             productDetail.innerHTML = `
                 <div class="product-item">
-                    <img src="${product.image}" alt="${product.title}" width="300">
-                    <h2>${product.title}</h2>
+                    <img src="${product.image}" alt="${product.name}" width="300">
+                    <h2>${product.name}</h2>
                     <p>${product.content}</p>
                     <p>가격: ${product.price}원</p>
-                    <button onclick="goToPayment('${product.id}', '${product.title}', ${product.price})">구매하기</button>
+                    <button onclick="goToPayment('${product.id}', '${product.name}', ${product.price})">구매하기</button>
                 </div>
             `;
         })

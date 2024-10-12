@@ -36,7 +36,7 @@ axios.interceptors.request.use(
     async (config) => {
         let token = tokenManager.getAccessToken(); // access token 가져오기
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`; // 헤더에 토큰 추가
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
@@ -92,7 +92,7 @@ function loadProductInfo() {
   axios.get(`${API_BASE_URL}products/${productId}/`)
       .then(response => {
           const product = response.data;
-          const productName = product.title;
+          const productName = product.name;
           const productPrice = product.price;
 
           // 상품명과 가격을 HTML에 설정
@@ -115,19 +115,28 @@ function requestPay() {
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get('productId');
 
-  // purchaseNumber 설정
-  let purchaseNumber = localStorage.getItem('purchaseNumber');
-  if (!purchaseNumber) {
-      purchaseNumber = 1; // 초기값 설정
-  } else {
-      purchaseNumber = parseInt(purchaseNumber) + 1; // 1씩 증가
-  }
-  localStorage.setItem('purchaseNumber', purchaseNumber); 
+// purchaseNumber 설정
+let purchaseNumber = localStorage.getItem('purchaseNumber');
+let lastDate = localStorage.getItem('lastPurchaseDate');
+const currentDate  = new Date().toISOString().split('T')[0]; // 오늘 날짜 (YYYY-MM-DD 형식)
+
+if (lastDate !== currentDate ) {
+    purchaseNumber = 1; // 초기값 설정
+    localStorage.setItem('lastPurchaseDate', currentDate ); // 오늘 날짜 저장
+} else {
+    if (!purchaseNumber) {
+        purchaseNumber = 1; // 초기값 설정
+    } else {
+        purchaseNumber = parseInt(purchaseNumber) + 1; // 1씩 증가
+    }
+}
+
+localStorage.setItem('purchaseNumber', purchaseNumber);
 
   // 현재 날짜 포맷팅 (YYYYMMDD)
   const today = new Date();
   const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+  const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
   const dateString = `${year}${month}${day}`;
 
