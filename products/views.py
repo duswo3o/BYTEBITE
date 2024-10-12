@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Product
+from .models import Product, PurchasedProduct
 from .serializers import ProductSerializer, UserSerializer
 
 
@@ -48,6 +48,8 @@ class PaymentAPIView(APIView):
         name = request.data.get("name")
         product_name = request.data.get("product_name")
         amount = request.data.get("amount")
+        address = request.data.get("address")
+        address2 = request.data.get("address2")
 
         if not imp_uid or not merchant_uid:
             return Response(
@@ -85,13 +87,33 @@ class PaymentAPIView(APIView):
         # JWT 토큰에서 이메일 추출
         email = request.user.email
 
+        # 구매한 상품의 pk 추출
+        product_id = merchant_uid[0]
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response(
+                {"error": "상품을 찾을 수 없습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # 이메일 전송
         send_mail(
             "[WEB 발신] 결제 완료 알림",
-            f"결제가 완료되었습니다.\n구매자명: {name}\n주문상품: {product_name}\n결제금액: {amount}\n주문번호: {merchant_uid}\n",
+            f"결제가 완료되었습니다.\n구매자명: {name}\n주문상품: {product_name}\n결제금액: {amount} 원\n주문번호: {merchant_uid}\n",
             settings.EMAIL_HOST_USER,
             [email],
             fail_silently=False,
+        )
+
+        # PurchasedProduct 테이블에 데이터 저장
+        PurchasedProduct.objects.create(
+            product=product,
+            user=request.user,
+            merchant_uid=merchant_uid,
+            amount=amount,
+            address=address,
+            address2=address2,
         )
 
         return Response(

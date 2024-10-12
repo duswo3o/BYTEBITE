@@ -11,7 +11,7 @@ class Product(models.Model):
     image = models.URLField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return self.name
 
 
 class PurchasedProduct(models.Model):
