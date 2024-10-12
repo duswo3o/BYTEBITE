@@ -422,11 +422,11 @@ async function postReview(moviePk, content) {
         return;
     }
 
-    const isSpoiler= document.getElementById('isSpoiler').checked;
+    const isSpoiler = document.getElementById('isSpoiler').checked;
 
     try {
         await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { content, is_spoiler: isSpoiler });
-        
+
         alert('리뷰 작성 성공');
         await refreshReviews(moviePk);
         document.getElementById('reviewContent').value = ''; // 입력 필드 초기화
@@ -490,7 +490,7 @@ async function postComment(reviewId, content) {
         // 댓글 작성 후 입력 필드 및 체크박스 초기화
         document.getElementById(`comment-content-${reviewId}`).value = '';
         document.getElementById(`comment-is-spoiler-${reviewId}`).checked = false;
-        await refreshReviews(moviepk); 
+        await refreshReviews(moviepk);
     } catch (error) {
         handleError('댓글 작성', error);
     }
@@ -554,11 +554,11 @@ function displayReviews(reviews) {
         reviewDiv.setAttribute('data-review-id', review.id);
 
         let contentHTML;
-        if (review.is_spoiler) {
-            contentHTML = `<div class="content spoiler" id="review-content-${review.id}">${review.content}</div>`;
-        } else {
-            contentHTML = `<div class="content" id="review-content-${review.id}">${review.content}</div>`;
-        }
+            if (review.is_spoiler) {
+                contentHTML = `<div class="content spoiler" id="review-content-${review.id}">${review.content}</div>`;
+            } else {
+                contentHTML = `<div class="content" id="review-content-${review.id}">${review.content}</div>`;
+            }
 
         reviewDiv.innerHTML = `
             <div class="header">
@@ -582,15 +582,15 @@ function displayReviews(reviews) {
                 <button class="submit-comment-btn" data-review-id="${review.id}" style="display:none;">댓글 작성 완료</button>
                 <div class="comments" id="comments-${review.id}">
                     ${review.comments.map(comment => {
-                        // 스포일러 여부에 따라 댓글 콘텐츠 처리
-                        let commentContentHTML;
-                        if (comment.is_spoiler) {
-                            commentContentHTML = `<span class="comment-content spoiler" id="comment-content-${comment.id}">${comment.content}</span>`;
-                        } else {
-                            commentContentHTML = `<span class="comment-content" id="comment-content-${comment.id}">${comment.content}</span>`;
-                        }
+            // 스포일러 여부에 따라 댓글 콘텐츠 처리
+            let commentContentHTML;
+            if (comment.is_spoiler) {
+                commentContentHTML = `<span class="comment-content spoiler" id="comment-content-${comment.id}">${comment.content}</span>`;
+            } else {
+                commentContentHTML = `<span class="comment-content" id="comment-content-${comment.id}">${comment.content}</span>`;
+            }
 
-                        return `
+            return `
                             <div class="comment" id="comment-${comment.id}">
                                 <span class="comment-author">${comment.author}</span>:
                                 ${commentContentHTML}
@@ -603,7 +603,7 @@ function displayReviews(reviews) {
                                 <button class="save-comment-btn" data-comment-id="${comment.id}" style="display:none;">수정 완료</button>
                             </div>
                         `;
-                    }).join('')}
+        }).join('')}
                 </div>
             `;
         responseDiv.appendChild(reviewDiv);
@@ -766,6 +766,66 @@ async function transformReviewContent(style) {
         console.error('말투 변경 중 오류가 발생했습니다:', error);
     }
 }
+
+
+// 긍부정 top3 리뷰
+function sentimentReview(moviepk) {
+    axios.get(`${API_BASE_URL}reviews/sentiment/${moviepk}/`)
+        .then(response => {
+            console.log("top3 response", response);
+            const positiveReviews = response.data.positive_review;
+            console.log("pos", positiveReviews)
+            const negativeReviews = response.data.negative_review;
+
+
+            const postopReviewList = document.getElementById("positive-top3");
+            postopReviewList.innerHTML = ""
+            positiveReviews.forEach(positiveReview => {
+                let posreviewHTML;
+                if (positiveReview.is_spoiler) {
+                    posreviewHTML = `<div class="content spoiler">${positiveReview.content}</div>`;
+                } else {
+                    posreviewHTML = `<div class="content" >${positiveReview.content}</div>`;
+                }
+
+                const positiveReviewDiv = document.createElement("div");
+                positiveReviewDiv.innerHTML = `
+                <div class="container text-center">
+                    <p><strong>${positiveReview.author}</strong> [❤ : ${positiveReview.like_count}]</p>
+                    ${posreviewHTML}
+                </div>
+                `;
+                postopReviewList.appendChild(positiveReviewDiv);
+            })
+
+            const negtopReviewList = document.getElementById("negative-top3");
+            negtopReviewList.innerHTML = ""
+            negativeReviews.forEach(negativeReview => {
+                let megReviewHTML;
+                if (negativeReview.is_spoiler) {
+                    megReviewHTML = `<div class="content spoiler">${negativeReview.content}</div>`;
+                } else {
+                    megReviewHTML = `<div class="content" >${negativeReview.content}</div>`;
+                }
+                const negativeReviewDiv = document.createElement("div");
+                negativeReviewDiv.innerHTML = `
+                <div class="container text-center">
+                    <p><strong>${negativeReview.author}</strong> [❤ : ${negativeReview.like_count}]</p>
+                    <p>${negativeReview.content}</p>
+                </div>
+                `;
+                negtopReviewList.appendChild(negativeReviewDiv);
+            })
+
+
+        })
+        .catch(error => {
+            console.log(error)
+        })
+
+}
+
+document.addEventListener("DOMContentLoaded", sentimentReview(urlParams.get('pk')))
 
 // 버튼별로 말투 스타일을 전달
 document.getElementById('transformToJoseon').addEventListener('click', () => {

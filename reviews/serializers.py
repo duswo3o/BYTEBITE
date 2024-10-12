@@ -44,8 +44,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             "like_count",
             "comment_count",
             "is_spoiler",
+            "is_positive",
         ]
-        read_only_fields = ["author", "movie", "created_at"]
+        read_only_fields = ["author", "movie", "created_at", "is_positive"]
 
     def get_like_count(self, obj):
         return Like.objects.filter(review=obj).count()
@@ -64,3 +65,15 @@ class LikeSerializer(serializers.ModelSerializer):
             "author",
             "review",
         ]
+
+
+class SentimentSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source="author.nickname")
+    like_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Review
+        fields = ["id", "content", "author", "like_count", "is_spoiler"]
+
+    def get_like_count(self, obj):
+        return Like.objects.filter(review=obj).count()

@@ -6,7 +6,7 @@
 # local
 .idea
 config.py
-
+sentiment_analysis_model/
 
 ### macOS ###
 # General
