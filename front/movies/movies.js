@@ -544,11 +544,11 @@ function displayReviews(reviews) {
         reviewDiv.setAttribute('data-review-id', review.id);
 
         let contentHTML;
-        if (review.is_spoiler) {
-            contentHTML = `<div class="content spoiler" id="review-content-${review.id}">${review.content}</div>`;
-        } else {
-            contentHTML = `<div class="content" id="review-content-${review.id}">${review.content}</div>`;
-        }
+            if (review.is_spoiler) {
+                contentHTML = `<div class="content spoiler" id="review-content-${review.id}">${review.content}</div>`;
+            } else {
+                contentHTML = `<div class="content" id="review-content-${review.id}">${review.content}</div>`;
+            }
 
         reviewDiv.innerHTML = `
             <div class="header">
@@ -758,17 +758,6 @@ async function transformReviewContent(style) {
 }
 
 
-// // 영화 평가하기 데이터 전송
-// function sendScoreData(moviepk, scoreData) {
-//     axios.post(`${API_BASE_URL}movies/${moviepk}/score/`, scoreData)
-//         .then(response => {
-//             console.log('성공적으로 전송되었습니다:', response.data);
-//         })
-//         .catch(error => {
-//             console.error('전송 중 오류가 발생했습니다:', error);
-//         });
-// // 
-
 // 긍부정 top3 리뷰
 function sentimentReview(moviepk) {
     axios.get(`${API_BASE_URL}reviews/sentiment/${moviepk}/`)
@@ -782,11 +771,18 @@ function sentimentReview(moviepk) {
             const postopReviewList = document.getElementById("positive-top3");
             postopReviewList.innerHTML = ""
             positiveReviews.forEach(positiveReview => {
+                let posreviewHTML;
+                if (positiveReview.is_spoiler) {
+                    posreviewHTML = `<div class="content spoiler">${positiveReview.content}</div>`;
+                } else {
+                    posreviewHTML = `<div class="content" >${positiveReview.content}</div>`;
+                }
+
                 const positiveReviewDiv = document.createElement("div");
                 positiveReviewDiv.innerHTML = `
                 <div class="container text-center">
                     <p><strong>${positiveReview.author}</strong> [❤ : ${positiveReview.like_count}]</p>
-                    <p>${positiveReview.content}</p>
+                    ${posreviewHTML}
                 </div>
                 `;
                 postopReviewList.appendChild(positiveReviewDiv);
@@ -795,6 +791,12 @@ function sentimentReview(moviepk) {
             const negtopReviewList = document.getElementById("negative-top3");
             negtopReviewList.innerHTML = ""
             negativeReviews.forEach(negativeReview => {
+                let megReviewHTML;
+                if (negativeReview.is_spoiler) {
+                    megReviewHTML = `<div class="content spoiler">${negativeReview.content}</div>`;
+                } else {
+                    megReviewHTML = `<div class="content" >${negativeReview.content}</div>`;
+                }
                 const negativeReviewDiv = document.createElement("div");
                 negativeReviewDiv.innerHTML = `
                 <div class="container text-center">
