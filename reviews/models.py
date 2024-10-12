@@ -10,6 +10,7 @@ class Review(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews"
     )
+    is_spoiler = models.BooleanField(default=False)
 
     def __str__(self):
         return self.content[:20]
@@ -35,6 +36,7 @@ class Comment(models.Model):
         null=True,
         blank=True,
     )
+    is_spoiler = models.BooleanField(default=False)
 
     def __str__(self):
         return self.content[:20]
