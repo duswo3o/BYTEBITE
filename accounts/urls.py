@@ -11,5 +11,4 @@ urlpatterns = [
     path("password/", views.UserChangePasswordAPIView().as_view()),
     path("<int:pk>/", views.UserProfileAPIView().as_view()),
     path("<int:user_pk>/follow/", views.UserFollowAPIView().as_view()),
-    path("payments/", views.PaymentAPIView().as_view()),
 ]

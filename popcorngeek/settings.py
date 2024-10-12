@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     # local
     "accounts",
     "movies",
+    "products",
     "reviews",
 ]
 
@@ -125,12 +126,6 @@ DATABASES = {
 }
 DATABASES["default"] = DATABASES["dev" if DEBUG else "production"]
 
-# 환경변수 로드
-KMDB_API_KEY = env("KMDB_API_KEY")
-KOFIC_API_KEY = env("KOFIC_API_KEY")
-IMP_KEY = env("IMP_KEY")
-IMP_SECRET = env("IMP_SECRET")
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -191,6 +186,11 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
+# 환경변수 로드
+KMDB_API_KEY = env("KMDB_API_KEY")
+KOFIC_API_KEY = env("KOFIC_API_KEY")
+IMP_KEY = env("IMP_KEY")
+IMP_SECRET = env("IMP_SECRET")
 
 # 이메일 인증 관련 설정
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
