@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Product
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, UserSerializer
 
 
 class ProductAPIView(APIView):
@@ -17,6 +17,15 @@ class ProductAPIView(APIView):
         products = Product.objects.all().order_by('-pk')
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class LoginUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
 
 
 # 상품 상세페이지
@@ -32,7 +41,6 @@ class PaymentAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # 결제 정보를 터미널에 출력
         print(request.data)
 
         imp_uid = request.data.get("imp_uid")
@@ -115,7 +123,10 @@ class PaymentAPIView(APIView):
 
     # 결제금액 확인
     def get_order_amount(self, merchant_uid):
-        """
-        이후에 실제 상품의 가격을 반환하도록 수정 예정
-        """
-        return 10
+        product_id = merchant_uid[0]
+
+        try:
+            product = Product.objects.get(id=product_id)
+            return product.price
+        except Product.DoesNotExist:
+            return None

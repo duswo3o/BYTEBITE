@@ -25,6 +25,7 @@ function loadProductDetail() {
                     <h2>${product.title}</h2>
                     <p>${product.content}</p>
                     <p>가격: ${product.price}원</p>
+                    <button onclick="goToPayment('${product.id}', '${product.title}', ${product.price})">구매하기</button>
                 </div>
             `;
         })
@@ -34,10 +35,22 @@ function loadProductDetail() {
         });
 }
 
+// 결제 페이지로 이동하는 함수
+function goToPayment(productId) {
+
+    const paymentURL = `payment.html?productId=${productId}`;
+    window.location.href = paymentURL; // 결제 페이지로 이동
+}
+
 // 페이지가 로드될 때 상품 상세 정보를 가져옴
 document.addEventListener('DOMContentLoaded', loadProductDetail);
 
 // 뒤로가기 버튼 클릭 시 이전 페이지로 이동
 function goBack() {
     window.history.back();
+}
+
+// 세션에서 구매자 이메일을 가져오는 함수
+function getBuyerEmailFromSession() {
+    return 'buyer@example.com'; // 테스트용 이메일
 }
