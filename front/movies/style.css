@@ -211,3 +211,32 @@ li {
     height: auto;
     z-index: 0;
 }
+
+/* 부모 컨테이너에 flexbox 적용 */
+.review-container {
+    display: flex; /* 두 리뷰 섹션을 가로로 배치 */
+    justify-content: space-between; /* 공간을 골고루 배분 */
+    /*align-items: flex-start; /* 상단을 기준으로 정렬 */
+    gap: 20px; /* 섹션 간의 간격 */
+    padding: 10px;
+    width: 100%;
+    margin: 0 auto /* 중앙 정렬 */
+}
+
+/* 각각의 리뷰 섹션 스타일 */
+.review-section {
+    flex: 1; /* 각 섹션이 같은 비율로 공간을 차지하도록 설정 */
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+
+}
+
+/* 텍스트 정렬 및 추가적인 스타일 */
+.review-section p {
+    /* font-weight: bold; */
+    text-align: center;
+    margin-bottom: 10px;
+}
