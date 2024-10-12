@@ -12,7 +12,7 @@ const followBtn = document.getElementById("followUserBtn");
 const tokenManager = {
     getAccessToken: () => sessionStorage.getItem('jwtAccessToken'),
     getRefreshToken: () => sessionStorage.getItem('jwtRefreshToken'),
-    setTokens: ({ access, refresh }) => {
+    setTokens: ({access, refresh}) => {
         sessionStorage.setItem('jwtAccessToken', access);
         sessionStorage.setItem('jwtRefreshToken', refresh);
     },
@@ -144,15 +144,13 @@ const signinUser = () => {
         })
         .catch(error => {
             console.log(error)
-            if(error.response.data.non_field_errors){
+            if (error.response.data.non_field_errors) {
                 alert(error.response.data.non_field_errors)
-            }
-            else if(error.response.data.email){
+            } else if (error.response.data.email) {
                 alert(error.response.data.email)
             }
         })
 }
-
 
 
 // 로그아웃
@@ -178,7 +176,6 @@ const signoutUser = () => {
             // alert("로그아웃 실패")
         })
 }
-
 
 
 // 프로필 조회
@@ -313,8 +310,7 @@ const followUser = (event) => {
     event.preventDefault();  // 기본 동작 방지 (페이지 새로고침 방지)
     var userPK = document.getElementById("userpk").value
 
-    axios.post(`${API_BASE_URL}/accounts/${userPK}/follow/`, {
-    })
+    axios.post(`${API_BASE_URL}/accounts/${userPK}/follow/`, {})
         .then(response => {
             console.log(response)
             alert(response.data.message)
@@ -334,19 +330,23 @@ const updateProfileBtn = document.getElementById("update-profile-btn")
 const updateNickname = document.getElementById("updateNickname")
 if (updateNickname) {
     updateNickname.value = localStorage.getItem('nickname')
-};
+}
+;
 const updateGender = document.getElementById("updateGender")
 if (updateGender) {
     updateGender.value = localStorage.getItem('gender')
-};
+}
+;
 const updateAge = document.getElementById("updateAge")
 if (updateAge) {
     updateAge.value = localStorage.getItem('age')
-};
+}
+;
 const updateBio = document.getElementById("updateBio")
 if (updateBio) {
     updateBio.value = localStorage.getItem('bio')
-};
+}
+;
 
 
 const updateProfile = () => {
@@ -431,6 +431,47 @@ const withdrawUser = () => {
             alert("error : 탈퇴에 실패하였습니다")
         })
 }
+
+
+// 페이지가 완전히 로드된 후에 실행되는 함수
+document.addEventListener('DOMContentLoaded', () => {
+    // 카카오 로그인 버튼 이벤트 리스너 설정
+    const kakaoLoginButton = document.getElementById('kakao-login-btn');
+    if (kakaoLoginButton) {
+        kakaoLoginButton.onclick = function() {
+            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/kakao/login/';
+        };
+    }
+
+    // URL 파라미터 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('access_token');
+    const refreshToken = urlParams.get('refresh_token');
+    const nickname = urlParams.get('nickname');
+    const email = urlParams.get('email');
+
+    // 토큰과 사용자 정보가 있을 경우 처리
+    if (accessToken && refreshToken && nickname && email) {
+        handleTokens(accessToken, refreshToken, nickname, email);
+    }
+});
+
+// 토큰 처리 함수
+const handleTokens = (accessToken, refreshToken, nickname, email) => {
+    // 세션 스토리지에 토큰 저장
+    sessionStorage.setItem('jwtAccessToken', accessToken);
+    sessionStorage.setItem('jwtRefreshToken', refreshToken);
+    console.log("Tokens saved to sessionStorage");
+
+    // 로컬 스토리지에 사용자 정보 저장
+    localStorage.setItem('nickname', nickname);
+    localStorage.setItem('email', email);
+    console.log("User information saved to localStorage");
+
+    // 프로필 페이지로 리다이렉트
+    window.location.href = "profile.html";
+};
+
 
 // 버튼 확인
 if (signupBtn) {

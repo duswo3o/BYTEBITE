@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
 from rest_framework.decorators import permission_classes
@@ -12,6 +12,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+import requests
+import os
+from dotenv import load_dotenv
+from django.shortcuts import redirect
+from django.http import JsonResponse
+
 
 from .serializers import (
     ChangePasswordSerializer,
@@ -103,6 +109,23 @@ class UserActivate(APIView):
                 {"message": "링크가 유효하지 않거나 이미 사용되었습니다."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+@api_view(["POST"])
+def delete_user(request):
+    deactivate_users = User.objects.filter(is_active=False)
+    now = datetime.now()
+    delete_cnt = 0
+    for user in deactivate_users:
+        # 테스트용 2분
+        if (now - user.deactivate_time.replace(tzinfo=None)).seconds > 120:
+            user.delete()
+            delete_cnt += 1
+
+    return Response(
+        {"message": f"{delete_cnt}개의 계정이 삭제되었습니다."},
+        status=status.HTTP_200_OK,
+    )
 
 
 class UserSigninAPIView(APIView):
@@ -200,3 +223,114 @@ class UserFollowAPIView(APIView):
 class UserProfileAPIView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+
+
+class PaymentAPIView(RetrieveAPIView):
+    def post(self, request, *args, **kwargs):
+        # 결제 정보를 터미널에 출력
+        print(request.data)
+
+        # 테스트 응답
+        return Response(
+            {"message": "결제 정보가 성공적으로 전달되었습니다."},
+            status=status.HTTP_200_OK,
+        )
+
+
+# 소셜로그인
+load_dotenv()
+KAKAO_REST_API_KEY = os.getenv("KAKAO_API_KEY")
+BASE_URL = "http://127.0.0.1:8000"
+FRONTEND_BASE_URL = "http://127.0.0.1:5500"
+
+
+class KakaoLoginView(APIView):
+    def get(self, request):
+        client_id = KAKAO_REST_API_KEY
+        redirect_uri = f"{BASE_URL}/api/v1/accounts/kakao/callback/"
+        return redirect(
+            f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+        )
+
+
+class KakaoCallbackView(APIView):
+    def get(self, request):
+        code = request.GET.get("code")
+        access_token = self.get_kakao_token(code)
+        user_info = self.get_kakao_user_info(access_token)
+        user_data = self.get_or_create_user(user_info)
+        tokens = self.create_jwt_token(user_data)
+        nickname = user_info["properties"]["nickname"]
+        email = user_info["kakao_account"]["email"]
+
+        redirect_url = (
+            f"{FRONTEND_BASE_URL}/front/accounts/profile.html"
+            f"?access_token={tokens['access']}&refresh_token={tokens['refresh']}"
+            f"&nickname={nickname}&email={email}"
+        )
+        return redirect(redirect_url)
+
+    def get_kakao_token(self, code):
+        client_id = KAKAO_REST_API_KEY
+        redirect_uri = f"{BASE_URL}/api/v1/accounts/kakao/callback/"
+        token_url = "https://kauth.kakao.com/oauth/token"
+        data = {
+            "grant_type": "authorization_code",
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "code": code,
+        }
+        response = requests.post(token_url, data=data)
+        return response.json().get("access_token")
+
+    def get_kakao_user_info(self, access_token):
+        user_info_url = "https://kapi.kakao.com/v2/user/me"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = requests.get(user_info_url, headers=headers)
+        return response.json()
+
+    def get_or_create_user(self, user_info):
+        # 카카오 ID 확인
+        kakao_id = user_info.get("id")
+        if not kakao_id:
+            raise ValueError("Kakao 사용자 정보에서 'id'를 찾을 수 없습니다.")
+
+        # 이메일 확인
+        email = user_info["kakao_account"].get("email")
+        if not email:
+            raise ValueError("Kakao에서 이메일이 제공되지 않았습니다.")
+
+        # 닉네임 확인
+        nickname = user_info["properties"].get("nickname")
+        if not nickname:
+            nickname = user_info["kakao_account"]["profile"].get("nickname")
+
+        if not nickname:
+            raise ValueError("Kakao에서 닉네임을 가져오지 못했습니다.")
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                "email": email,
+                "nickname": nickname,
+            },
+        )
+
+        if created:
+            user.set_unusable_password()
+            user.save()
+
+        return user
+
+    def create_jwt_token(self, user_data):
+        if isinstance(user_data, dict):
+            email = user_data.get("email")
+            user = User.objects.get(email=email)
+        else:
+            user = user_data
+
+        # JWT 토큰 생성
+        refresh = RefreshToken.for_user(user)
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
