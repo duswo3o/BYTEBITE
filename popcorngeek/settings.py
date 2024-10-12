@@ -191,6 +191,7 @@ KMDB_API_KEY = env("KMDB_API_KEY")
 KOFIC_API_KEY = env("KOFIC_API_KEY")
 IMP_KEY = env("IMP_KEY")
 IMP_SECRET = env("IMP_SECRET")
+OPENAI_API_KEY = env("OPENAI_API_KEY")
 
 # 이메일 인증 관련 설정
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
