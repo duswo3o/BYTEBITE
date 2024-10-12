@@ -21,8 +21,8 @@ class Command(BaseCommand):
         movie_cd = kwargs["movie_cd"]
         try:
             movie = Movie.objects.get(id=movie_cd)
-            movie_info = self.print_movie_info(movie)
-            tags = self.print_tags()
+            movie_info = self.movie_info(movie)
+            tags = self.tags()
 
         except Movie.DoesNotExist:
             self.stdout.write(
@@ -31,12 +31,11 @@ class Command(BaseCommand):
 
         ai_tags = self.auto_tagging(movie_info, tags)
         ai_tags = [tag.strip() for tag in ai_tags.split(",")]
-        print(ai_tags)
 
         self.update_tags(movie, ai_tags)
 
     # 특정 영화
-    def print_movie_info(self, movie):
+    def movie_info(self, movie):
         movie_info = {
             "title": movie.title,
             "plot": movie.plot,
@@ -45,7 +44,7 @@ class Command(BaseCommand):
         return movie_info
 
     # 모든 태그 정보
-    def print_tags(self):
+    def tags(self):
         tags = Tag.objects.all()
         tags = [tag.name for tag in tags]
         return tags
