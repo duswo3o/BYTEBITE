@@ -4,7 +4,7 @@ from rest_framework import serializers
 # Django 기능 및 프로젝트 관련
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from .models import Genre, Movie, Ranking, Staff
+from .models import Genre, Movie, Ranking, Staff, Tag
 
 
 class PosterSerializer(serializers.ModelSerializer):
@@ -34,8 +34,15 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ["name"]
 
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['name']
+
+
 class MovieSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
+    tags = TagSerializer(many=True, read_only=True)
     poster = serializers.SerializerMethodField()
 
     class Meta:
