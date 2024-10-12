@@ -163,12 +163,14 @@ localStorage.setItem('purchaseNumber', purchaseNumber);
                   method: "post",
                   headers: { "Content-Type": "application/json" },
                   data: {
-                      imp_uid: rsp.imp_uid,
-                      merchant_uid: rsp.merchant_uid,
-                      name: name,
-                      address: address,
-                      address2: address2 // address2를 올바르게 전송
-                  }
+                    imp_uid: rsp.imp_uid,
+                    merchant_uid: rsp.merchant_uid,
+                    name: name,           // 구매자 이름
+                    address: address,     // 구매자 주소
+                    address2: address2,   // 구매자 추가 주소
+                    product_name: document.getElementById('product-name').textContent, // 상품명
+                    amount: document.getElementById('product-price').textContent        // 상품 가격
+                }
               })
               .then(function (response) {
                   alert("결제가 성공적으로 완료되었습니다!");
