@@ -105,23 +105,6 @@ class UserActivate(APIView):
             )
 
 
-@api_view(["POST"])
-def delete_user(request):
-    deactivate_users = User.objects.filter(is_active=False)
-    now = datetime.now()
-    delete_cnt = 0
-    for user in deactivate_users:
-        # 테스트용 2분
-        if (now - user.deactivate_time.replace(tzinfo=None)).seconds > 120:
-            user.delete()
-            delete_cnt += 1
-
-    return Response(
-        {"message": f"{delete_cnt}개의 계정이 삭제되었습니다."},
-        status=status.HTTP_200_OK,
-    )
-
-
 class UserSigninAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
@@ -217,15 +200,3 @@ class UserFollowAPIView(APIView):
 class UserProfileAPIView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
-
-
-class PaymentAPIView(RetrieveAPIView):
-    def post(self, request, *args, **kwargs):
-        # 결제 정보를 터미널에 출력
-        print(request.data)
-
-        # 테스트 응답
-        return Response(
-            {"message": "결제 정보가 성공적으로 전달되었습니다."},
-            status=status.HTTP_200_OK,
-        )

@@ -295,13 +295,11 @@ class Command(BaseCommand):
                         title=title, release_date=release_date
                     ).first()
 
-                    movie_pk = movie.pk if movie else None
-
                     Ranking.objects.create(
                         title=title,
                         rank=rank,
                         crawling_date=crawling_date,
-                        movie_pk=movie_pk,
+                        movie_pk=movie,
                     )
 
             else:
