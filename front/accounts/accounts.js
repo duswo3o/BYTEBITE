@@ -439,23 +439,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const kakaoLoginButton = document.getElementById('kakao-login-btn');
     if (kakaoLoginButton) {
         kakaoLoginButton.onclick = function() {
-            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/kakao/login/';
+            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/kakao/';
         };
     }
+
     // 네이버 로그인 버튼 이벤트 리스너 설정
     const naverLoginButton = document.getElementById('naver-login-btn');
     if (naverLoginButton) {
         naverLoginButton.onclick = function() {
-            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/naver/login/';
+            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/naver/';
         };
     }
-        // 구글 로그인 버튼 이벤트 리스너 설정
+
+    // 구글 로그인 버튼 이벤트 리스너 설정
     const googleLoginButton = document.getElementById('google-login-btn');
     if (googleLoginButton) {
         googleLoginButton.onclick = function() {
-            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/google/login/';
+            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/google/';
         };
     }
+
     // URL 파라미터 확인
     const urlParams = new URLSearchParams(window.location.search);
     const accessToken = urlParams.get('access_token');
