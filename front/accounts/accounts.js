@@ -463,6 +463,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
+// 토큰 처리 함수
+const handleTokens = (accessToken, refreshToken, nickname, email) => {
+    // 세션 스토리지에 토큰 저장
+    sessionStorage.setItem('jwtAccessToken', accessToken);
+    sessionStorage.setItem('jwtRefreshToken', refreshToken);
+    console.log("Tokens saved to sessionStorage");
+
+    // 로컬 스토리지에 사용자 정보 저장
+    localStorage.setItem('nickname', nickname);
+    localStorage.setItem('email', email);
+    console.log("User information saved to localStorage");
+
+    // 프로필 페이지로 리다이렉트
+    window.location.href = "profile.html";
+};
+
+
 // 버튼 확인
 if (signupBtn) {
     signupBtn.addEventListener('click', signupUser)
