@@ -442,7 +442,14 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/kakao/login/';
         };
     }
-
+    // 네이버 로그인 버튼 이벤트 리스너 설정
+    const naverLoginButton = document.getElementById('naver-login-btn');
+    if (naverLoginButton) {
+        naverLoginButton.onclick = function() {
+            console.log("네이버 로그인 버튼 클릭됨."); // 로그 추가
+            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/naver/login/';
+        };
+    }
     // URL 파라미터 확인
     const urlParams = new URLSearchParams(window.location.search);
     const accessToken = urlParams.get('access_token');
@@ -455,23 +462,6 @@ document.addEventListener('DOMContentLoaded', () => {
         handleTokens(accessToken, refreshToken, nickname, email);
     }
 });
-
-// 토큰 처리 함수
-const handleTokens = (accessToken, refreshToken, nickname, email) => {
-    // 세션 스토리지에 토큰 저장
-    sessionStorage.setItem('jwtAccessToken', accessToken);
-    sessionStorage.setItem('jwtRefreshToken', refreshToken);
-    console.log("Tokens saved to sessionStorage");
-
-    // 로컬 스토리지에 사용자 정보 저장
-    localStorage.setItem('nickname', nickname);
-    localStorage.setItem('email', email);
-    console.log("User information saved to localStorage");
-
-    // 프로필 페이지로 리다이렉트
-    window.location.href = "profile.html";
-};
-
 
 // 버튼 확인
 if (signupBtn) {

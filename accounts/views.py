@@ -240,6 +240,8 @@ class PaymentAPIView(RetrieveAPIView):
 # 소셜로그인
 load_dotenv()
 KAKAO_REST_API_KEY = os.getenv("KAKAO_API_KEY")
+NAVER_REST_API_KEY = os.getenv("NAVER_API_KEY")
+NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
 BASE_URL = "http://127.0.0.1:8000"
 FRONTEND_BASE_URL = "http://127.0.0.1:5500"
 
@@ -329,6 +331,94 @@ class KakaoCallbackView(APIView):
             user = user_data
 
         # JWT 토큰 생성
+        refresh = RefreshToken.for_user(user)
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+
+
+class NaverLoginView(APIView):
+    def get(self, request):
+        client_id = NAVER_REST_API_KEY
+        redirect_uri = f"{BASE_URL}/api/v1/accounts/naver/callback/"
+        return redirect(
+            f"https://nid.naver.com/oauth2.0/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+        )
+
+
+class NaverCallbackView(APIView):
+    def get(self, request):
+        code = request.GET.get("code")
+        access_token = self.get_naver_token(code)
+        user_info = self.get_naver_user_info(access_token)
+        user_data = self.get_or_create_naveruser(user_info)
+        tokens = self.create_jwt_token(user_data)
+        nickname = user_info["response"]["nickname"]
+        email = user_info["response"]["email"]
+        redirect_url = (
+            f"{FRONTEND_BASE_URL}/front/accounts/profile.html"
+            f"?access_token={tokens['access']}&refresh_token={tokens['refresh']}"
+            f"&nickname={nickname}&email={email}"
+        )
+        return redirect(redirect_url)
+
+    def get_naver_token(self, code):
+        client_id = NAVER_REST_API_KEY
+        redirect_uri = f"{BASE_URL}/api/v1/accounts/naver/callback/"
+        token_url = "https://nid.naver.com/oauth2.0/token"
+        data = {
+            "grant_type": "authorization_code",
+            "client_secret": os.getenv("NAVER_CLIENT_SECRET"),
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "code": code,
+        }
+        response = requests.post(token_url, data=data)
+        print(f"Access Token 요청 응답 코드: {response.status_code}")
+        print(f"Access Token 요청 응답 내용: {response.text}")
+        return response.json().get("access_token")
+
+    def get_naver_user_info(self, access_token):
+        user_info_url = "https://openapi.naver.com/v1/nid/me"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = requests.get(user_info_url, headers=headers)
+        return response.json()
+
+    def get_or_create_naveruser(self, user_info):
+        response_data = user_info.get("response", {})
+        naver_id = response_data.get("id")
+        if not naver_id:
+            raise ValueError("naver 사용자 정보에서 'id'를 찾을 수 없습니다.")
+
+        email = response_data.get("email")
+        if not email:
+            raise ValueError("naver에서 이메일이 제공되지 않았습니다.")
+
+        nickname = response_data.get("nickname")
+        if not nickname:
+            raise ValueError("naver에서 닉네임을 가져오지 못했습니다.")
+
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                "nickname": nickname,
+            },
+        )
+
+        if created:
+            user.set_unusable_password()
+            user.save()
+
+        return user
+
+    def create_jwt_token(self, user_data):
+        if isinstance(user_data, dict):
+            email = user_data.get("email")
+            user = User.objects.get(email=email)
+        else:
+            user = user_data
+
         refresh = RefreshToken.for_user(user)
         return {
             "refresh": str(refresh),
