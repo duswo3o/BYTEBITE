@@ -446,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const naverLoginButton = document.getElementById('naver-login-btn');
     if (naverLoginButton) {
         naverLoginButton.onclick = function() {
-            console.log("네이버 로그인 버튼 클릭됨."); // 로그 추가
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/naver/login/';
         };
     }
