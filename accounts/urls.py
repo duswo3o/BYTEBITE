@@ -9,6 +9,10 @@ urlpatterns = [
     path("kakao/callback/", views.KakaoCallbackView.as_view(), name="kakao_callback"),
     path("naver/login/", views.NaverLoginView.as_view(), name="naver_login"),
     path("naver/callback/", views.NaverCallbackView.as_view(), name="naver_callback"),
+    path("google/login/", views.GoogleLoginView.as_view(), name="google_login"),
+    path(
+        "google/callback/", views.GoogleCallbackView.as_view(), name="google_callback"
+    ),
     path("activate/<uidb64>/<str:token>/", views.UserActivate.as_view()),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("signout/", views.UserSignoutAPIView().as_view()),

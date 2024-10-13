@@ -449,6 +449,13 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/naver/login/';
         };
     }
+        // 구글 로그인 버튼 이벤트 리스너 설정
+    const googleLoginButton = document.getElementById('google-login-btn');
+    if (googleLoginButton) {
+        googleLoginButton.onclick = function() {
+            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/google/login/';
+        };
+    }
     // URL 파라미터 확인
     const urlParams = new URLSearchParams(window.location.search);
     const accessToken = urlParams.get('access_token');
