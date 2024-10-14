@@ -896,7 +896,7 @@ function sentimentReview(moviepk) {
                     posreviewHTML = `<div class="content" >${positiveReview.content}</div>`;
                 }
 
-                const positiveReviewDiv = document.createElement("div");
+                const positiveReviewDiv = document.createElement("p");
                 positiveReviewDiv.innerHTML = `
                 <div class="container text-center">
                     <p><strong>${positiveReview.author}</strong> [❤ : ${positiveReview.like_count}]</p>
@@ -915,11 +915,11 @@ function sentimentReview(moviepk) {
                 } else {
                     megReviewHTML = `<div class="content" >${negativeReview.content}</div>`;
                 }
-                const negativeReviewDiv = document.createElement("div");
+                const negativeReviewDiv = document.createElement("p");
                 negativeReviewDiv.innerHTML = `
                 <div class="container text-center">
                     <p><strong>${negativeReview.author}</strong> [❤ : ${negativeReview.like_count}]</p>
-                    <p>${negativeReview.content}</p>
+                    ${megReviewHTML}
                 </div>
                 `;
                 negtopReviewList.appendChild(negativeReviewDiv);
@@ -947,3 +947,36 @@ document.getElementById('transformToCritic').addEventListener('click', () => {
 document.getElementById('transformToMz').addEventListener('click', () => {
     transformReviewContent('Mz');
 });
+
+
+
+
+
+
+// 로그아웃
+const signoutBtn = document.getElementById("signoutBtn")
+
+const signoutUser = (event) => {
+    event.preventDefault()
+    const refreshToken = tokenManager.getRefreshToken();
+
+    axios.post(`${API_BASE_URL}/accounts/signout/`, {
+        refresh: refreshToken
+    })
+        .then(response => {
+            sessionStorage.clear()
+            localStorage.clear()
+            console.log(response)
+            alert("로그아웃 되었습니다")
+        })
+        .catch(error => {
+            console.log(error)
+            sessionStorage.clear()
+            localStorage.clear()
+            // alert("로그아웃 실패")
+        })
+}
+
+if (signoutBtn) {
+    signoutBtn.addEventListener('click', signoutUser)
+}
