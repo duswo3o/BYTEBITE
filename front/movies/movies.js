@@ -100,6 +100,35 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+// 로그아웃
+const signoutBtn = document.getElementById("signoutBtn")
+
+const signoutUser = (event) => {
+    event.preventDefault()
+    const refreshToken = tokenManager.getRefreshToken();
+
+    axios.post(`${API_BASE_URL}accounts/signout/`, {
+        refresh: refreshToken
+    })
+        .then(response => {
+            sessionStorage.clear()
+            localStorage.clear()
+            console.log(response)
+            alert("로그아웃 되었습니다")
+        })
+        .catch(error => {
+            console.log(error)
+            sessionStorage.clear()
+            localStorage.clear()
+            // alert("로그아웃 실패")
+        })
+}
+
+if (signoutBtn) {
+    signoutBtn.addEventListener('click', signoutUser)
+}
+
+
 
 // url주소에서 데이터 추출
 const urlParams = new URLSearchParams(window.location.search);
@@ -933,7 +962,9 @@ function sentimentReview(moviepk) {
 
 }
 
-document.addEventListener("DOMContentLoaded", sentimentReview(urlParams.get('pk')))
+if (urlParams.get('pk')) {
+    document.addEventListener("DOMContentLoaded", sentimentReview(urlParams.get('pk')))
+}
 
 // 버튼별로 말투 스타일을 전달
 document.getElementById('transformToJoseon').addEventListener('click', () => {
@@ -948,35 +979,3 @@ document.getElementById('transformToMz').addEventListener('click', () => {
     transformReviewContent('Mz');
 });
 
-
-
-
-
-
-// 로그아웃
-const signoutBtn = document.getElementById("signoutBtn")
-
-const signoutUser = (event) => {
-    event.preventDefault()
-    const refreshToken = tokenManager.getRefreshToken();
-
-    axios.post(`${API_BASE_URL}/accounts/signout/`, {
-        refresh: refreshToken
-    })
-        .then(response => {
-            sessionStorage.clear()
-            localStorage.clear()
-            console.log(response)
-            alert("로그아웃 되었습니다")
-        })
-        .catch(error => {
-            console.log(error)
-            sessionStorage.clear()
-            localStorage.clear()
-            // alert("로그아웃 실패")
-        })
-}
-
-if (signoutBtn) {
-    signoutBtn.addEventListener('click', signoutUser)
-}
