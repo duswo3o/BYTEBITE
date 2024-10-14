@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const kakaoLoginButton = document.getElementById('kakao-login-btn');
     if (kakaoLoginButton) {
         kakaoLoginButton.onclick = function() {
-            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/kakao/';
+            window.location.href = 'http://api.popcorngeek.store/api/v1/accounts/social/login/kakao/';
         };
     }
 
@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const naverLoginButton = document.getElementById('naver-login-btn');
     if (naverLoginButton) {
         naverLoginButton.onclick = function() {
-            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/naver/';
+            window.location.href = 'http://api.popcorngeek.store/api/v1/accounts/social/login/naver/';
         };
     }
 
@@ -455,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const googleLoginButton = document.getElementById('google-login-btn');
     if (googleLoginButton) {
         googleLoginButton.onclick = function() {
-            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/google/';
+            window.location.href = 'http://api.popcorngeek.store/api/v1/accounts/social/login/google/';
         };
     }
 
