@@ -323,6 +323,20 @@ const userProfile = () => {
                 myRatingList.appendChild(ratingdiv);
             });
 
+            // 로컬 스토리지 또는 서버에서 로그인한 사용자의 정보를 가져옴
+            const loggedInUser = localStorage.getItem('nickname'); // 예: 로그인한 사용자 닉네임
+            const viewedProfileUser = response.data.nickname; // 예: 조회한 프로필 닉네임 (이 값을 서버에서 받아온다고 가정)
+
+            // 버튼 요소 가져오기
+            const profileBtn = document.getElementById('profile-btn');
+
+            // 로그인한 사용자와 조회한 프로필 사용자가 같을 때만 버튼을 표시
+            if (loggedInUser === viewedProfileUser) {
+                profileBtn.style.display = 'block'; // 버튼 보이게 설정
+            } else {
+                profileBtn.style.display = 'none'; // 버튼 숨기기
+            }
+
 
         })
         .catch(error => {
