@@ -52,3 +52,6 @@ tqdm==4.66.5
 transformers==4.45.2
 typing_extensions==4.12.2
 urllib3==2.2.3
+
+openai~=1.51.0
+python-dotenv~=1.0.1
