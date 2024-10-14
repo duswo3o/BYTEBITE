@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://api.popcorngeek.store/api/v1/';
+const API_BASE_URL = 'https://api.popcorngeek.store/api/v1/';
 
 document.addEventListener('DOMContentLoaded', function () {
     const productList = document.getElementById('product-list');
