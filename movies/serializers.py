@@ -37,7 +37,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ['name']
+        fields = ["name"]
 
 
 class MovieSerializer(serializers.ModelSerializer):
