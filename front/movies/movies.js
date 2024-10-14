@@ -947,3 +947,36 @@ document.getElementById('transformToCritic').addEventListener('click', () => {
 document.getElementById('transformToMz').addEventListener('click', () => {
     transformReviewContent('Mz');
 });
+
+
+
+
+
+
+// 로그아웃
+const signoutBtn = document.getElementById("signoutBtn")
+
+const signoutUser = (event) => {
+    event.preventDefault()
+    const refreshToken = tokenManager.getRefreshToken();
+
+    axios.post(`${API_BASE_URL}/accounts/signout/`, {
+        refresh: refreshToken
+    })
+        .then(response => {
+            sessionStorage.clear()
+            localStorage.clear()
+            console.log(response)
+            alert("로그아웃 되었습니다")
+        })
+        .catch(error => {
+            console.log(error)
+            sessionStorage.clear()
+            localStorage.clear()
+            // alert("로그아웃 실패")
+        })
+}
+
+if (signoutBtn) {
+    signoutBtn.addEventListener('click', signoutUser)
+}
