@@ -12,7 +12,7 @@ const followBtn = document.getElementById("followUserBtn");
 const tokenManager = {
     getAccessToken: () => sessionStorage.getItem('jwtAccessToken'),
     getRefreshToken: () => sessionStorage.getItem('jwtRefreshToken'),
-    setTokens: ({access, refresh}) => {
+    setTokens: ({ access, refresh }) => {
         sessionStorage.setItem('jwtAccessToken', access);
         sessionStorage.setItem('jwtRefreshToken', refresh);
     },
@@ -87,6 +87,36 @@ axios.interceptors.response.use(
     }
 );
 
+// 버튼 보여주기 설정
+document.addEventListener('DOMContentLoaded', function () {
+    const accessToken = sessionStorage.getItem('jwtAccessToken');
+    // 로컬스토리지에 토큰이 있는 경우
+    if (accessToken) {
+        // 로그아웃 버튼만 보여주기
+        document.getElementById('signinBtn').style.display = 'none';
+        document.getElementById('signupBtn').style.display = 'none';
+        document.getElementById('signoutBtn').style.display = 'block';
+    }
+    // 로컬스토리지에 토큰이 없는 경우 
+    else {
+        document.getElementById('signinBtn').style.display = 'block';
+        document.getElementById('signupBtn').style.display = 'block';
+        document.getElementById('signoutBtn').style.display = 'none';
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const helloUser = document.getElementById("helloUser");
+    const nickname = localStorage.getItem("nickname")
+    if (nickname) {
+        var userMessage = "hello, " + localStorage.getItem("nickname")
+    } else {
+        var userMessage = "welcome!"
+    }
+    helloUser.innerHTML = `
+<span>${userMessage}</span>
+`;
+});
 
 // 회원가입
 const signupUser = () => {
@@ -157,7 +187,8 @@ const signinUser = () => {
 
 const signoutBtn = document.getElementById("signoutBtn")
 
-const signoutUser = () => {
+const signoutUser = (event) => {
+    event.preventDefault()
     const refreshToken = tokenManager.getRefreshToken();
 
     axios.post(`${API_BASE_URL}/accounts/signout/`, {
@@ -291,6 +322,20 @@ const userProfile = () => {
             `;
                 myRatingList.appendChild(ratingdiv);
             });
+
+            // 로컬 스토리지 또는 서버에서 로그인한 사용자의 정보를 가져옴
+            const loggedInUser = localStorage.getItem('nickname'); // 예: 로그인한 사용자 닉네임
+            const viewedProfileUser = response.data.nickname; // 예: 조회한 프로필 닉네임 (이 값을 서버에서 받아온다고 가정)
+
+            // 버튼 요소 가져오기
+            const profileBtn = document.getElementById('profile-btn');
+
+            // 로그인한 사용자와 조회한 프로필 사용자가 같을 때만 버튼을 표시
+            if (loggedInUser === viewedProfileUser) {
+                profileBtn.style.display = 'block'; // 버튼 보이게 설정
+            } else {
+                profileBtn.style.display = 'none'; // 버튼 숨기기
+            }
 
 
         })
@@ -438,7 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 카카오 로그인 버튼 이벤트 리스너 설정
     const kakaoLoginButton = document.getElementById('kakao-login-btn');
     if (kakaoLoginButton) {
-        kakaoLoginButton.onclick = function() {
+        kakaoLoginButton.onclick = function () {
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/kakao/';
         };
     }
@@ -446,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 네이버 로그인 버튼 이벤트 리스너 설정
     const naverLoginButton = document.getElementById('naver-login-btn');
     if (naverLoginButton) {
-        naverLoginButton.onclick = function() {
+        naverLoginButton.onclick = function () {
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/naver/';
         };
     }
@@ -454,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 구글 로그인 버튼 이벤트 리스너 설정
     const googleLoginButton = document.getElementById('google-login-btn');
     if (googleLoginButton) {
-        googleLoginButton.onclick = function() {
+        googleLoginButton.onclick = function () {
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/google/';
         };
     }
