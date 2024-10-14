@@ -248,116 +248,58 @@ BASE_URL = "http://127.0.0.1:8000"
 FRONTEND_BASE_URL = "http://127.0.0.1:5500"
 
 
-class KakaoLoginView(APIView):
-    def get(self, request):
-        client_id = KAKAO_REST_API_KEY
-        redirect_uri = f"{BASE_URL}/api/v1/accounts/kakao/callback/"
-        return redirect(
-            f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
-        )
-
-
-class KakaoCallbackView(APIView):
-    def get(self, request):
-        code = request.GET.get("code")
-        access_token = self.get_kakao_token(code)
-        user_info = self.get_kakao_user_info(access_token)
-        user_data = self.get_or_create_user(user_info)
-        tokens = self.create_jwt_token(user_data)
-        nickname = user_info["properties"]["nickname"]
-        email = user_info["kakao_account"]["email"]
-
-        redirect_url = (
-            f"{FRONTEND_BASE_URL}/front/accounts/profile.html"
-            f"?access_token={tokens['access']}&refresh_token={tokens['refresh']}"
-            f"&nickname={nickname}&email={email}"
-        )
-        return redirect(redirect_url)
-
-    def get_kakao_token(self, code):
-        client_id = KAKAO_REST_API_KEY
-        redirect_uri = f"{BASE_URL}/api/v1/accounts/kakao/callback/"
-        token_url = "https://kauth.kakao.com/oauth/token"
-        data = {
-            "grant_type": "authorization_code",
-            "client_id": client_id,
-            "redirect_uri": redirect_uri,
-            "code": code,
-        }
-        response = requests.post(token_url, data=data)
-        return response.json().get("access_token")
-
-    def get_kakao_user_info(self, access_token):
-        user_info_url = "https://kapi.kakao.com/v2/user/me"
-        headers = {"Authorization": f"Bearer {access_token}"}
-        response = requests.get(user_info_url, headers=headers)
-        return response.json()
-
-    def get_or_create_user(self, user_info):
-        # 카카오 ID 확인
-        kakao_id = user_info.get("id")
-        if not kakao_id:
-            raise ValueError("Kakao 사용자 정보에서 'id'를 찾을 수 없습니다.")
-
-        # 이메일 확인
-        email = user_info["kakao_account"].get("email")
-        if not email:
-            raise ValueError("Kakao에서 이메일이 제공되지 않았습니다.")
-
-        # 닉네임 확인
-        nickname = user_info["properties"].get("nickname")
-        if not nickname:
-            nickname = user_info["kakao_account"]["profile"].get("nickname")
-
-        if not nickname:
-            raise ValueError("Kakao에서 닉네임을 가져오지 못했습니다.")
-        user, created = User.objects.get_or_create(
-            email=email,
-            defaults={
-                "email": email,
-                "nickname": nickname,
-            },
-        )
-
-        if created:
-            user.set_unusable_password()
-            user.save()
-
-        return user
-
-    def create_jwt_token(self, user_data):
-        if isinstance(user_data, dict):
-            email = user_data.get("email")
-            user = User.objects.get(email=email)
+class SocialLoginView(APIView):
+    def get(self, request, provider):
+        if provider == "kakao":
+            client_id = KAKAO_REST_API_KEY
+            redirect_uri = f"{BASE_URL}/api/v1/accounts/social/callback/{provider}/"
+            auth_url = (
+                f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}"
+                f"&redirect_uri={redirect_uri}&response_type=code"
+            )
+        elif provider == "naver":
+            client_id = NAVER_REST_API_KEY
+            redirect_uri = f"{BASE_URL}/api/v1/accounts/social/callback/{provider}/"
+            auth_url = (
+                f"https://nid.naver.com/oauth2.0/authorize?client_id={client_id}"
+                f"&redirect_uri={redirect_uri}&response_type=code"
+            )
+        elif provider == "google":
+            client_id = GOOGLE_CLIENT_ID
+            redirect_uri = f"{BASE_URL}/api/v1/accounts/social/callback/{provider}/"
+            scope = "email profile"
+            auth_url = (
+                f"https://accounts.google.com/o/oauth2/auth?client_id={client_id}"
+                f"&redirect_uri={redirect_uri}&response_type=code&scope={scope}"
+            )
         else:
-            user = user_data
+            return Response(
+                {"error": "지원되지 않는 소셜 로그인 제공자입니다."}, status=400
+            )
 
-        # JWT 토큰 생성
-        refresh = RefreshToken.for_user(user)
-        return {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }
+        return redirect(auth_url)
 
 
-class NaverLoginView(APIView):
-    def get(self, request):
-        client_id = NAVER_REST_API_KEY
-        redirect_uri = f"{BASE_URL}/api/v1/accounts/naver/callback/"
-        return redirect(
-            f"https://nid.naver.com/oauth2.0/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
-        )
-
-
-class NaverCallbackView(APIView):
-    def get(self, request):
+class SocialCallbackView(APIView):
+    def get(self, request, provider):
         code = request.GET.get("code")
-        access_token = self.get_naver_token(code)
-        user_info = self.get_naver_user_info(access_token)
-        user_data = self.get_or_create_naveruser(user_info)
+
+        access_token = self.get_token(provider, code)
+        user_info = self.get_user_info(provider, access_token)
+
+        if provider == "kakao":
+            email = user_info["kakao_account"]["email"]
+            nickname = user_info["properties"]["nickname"]
+        elif provider == "naver":
+            email = user_info["response"]["email"]
+            nickname = user_info["response"]["nickname"]
+        elif provider == "google":
+            email = user_info["email"]
+            nickname = user_info["name"]
+
+        user_data = self.get_or_create_user(provider, email, nickname)
         tokens = self.create_jwt_token(user_data)
-        nickname = user_info["response"]["nickname"]
-        email = user_info["response"]["email"]
+
         redirect_url = (
             f"{FRONTEND_BASE_URL}/front/accounts/profile.html"
             f"?access_token={tokens['access']}&refresh_token={tokens['refresh']}"
@@ -365,140 +307,54 @@ class NaverCallbackView(APIView):
         )
         return redirect(redirect_url)
 
-    def get_naver_token(self, code):
-        client_id = NAVER_REST_API_KEY
-        redirect_uri = f"{BASE_URL}/api/v1/accounts/naver/callback/"
-        token_url = "https://nid.naver.com/oauth2.0/token"
-        data = {
-            "grant_type": "authorization_code",
-            "client_secret": os.getenv("NAVER_CLIENT_SECRET"),
-            "client_id": client_id,
-            "redirect_uri": redirect_uri,
-            "code": code,
-        }
-        response = requests.post(token_url, data=data)
-        print(f"Access Token 요청 응답 코드: {response.status_code}")
-        print(f"Access Token 요청 응답 내용: {response.text}")
-        return response.json().get("access_token")
-
-    def get_naver_user_info(self, access_token):
-        user_info_url = "https://openapi.naver.com/v1/nid/me"
-        headers = {"Authorization": f"Bearer {access_token}"}
-        response = requests.get(user_info_url, headers=headers)
-        return response.json()
-
-    def get_or_create_naveruser(self, user_info):
-        response_data = user_info.get("response", {})
-        naver_id = response_data.get("id")
-        if not naver_id:
-            raise ValueError("naver 사용자 정보에서 'id'를 찾을 수 없습니다.")
-
-        email = response_data.get("email")
-        if not email:
-            raise ValueError("naver에서 이메일이 제공되지 않았습니다.")
-
-        nickname = response_data.get("nickname")
-        if not nickname:
-            raise ValueError("naver에서 닉네임을 가져오지 못했습니다.")
-
-        user, created = User.objects.get_or_create(
-            email=email,
-            defaults={
-                "nickname": nickname,
-            },
-        )
-
-        if created:
-            user.set_unusable_password()
-            user.save()
-
-        return user
-
-    def create_jwt_token(self, user_data):
-        if isinstance(user_data, dict):
-            email = user_data.get("email")
-            user = User.objects.get(email=email)
+    def get_token(self, provider, code):
+        if provider == "kakao":
+            token_url = "https://kauth.kakao.com/oauth/token"
+            client_id = KAKAO_REST_API_KEY
+        elif provider == "naver":
+            token_url = "https://nid.naver.com/oauth2.0/token"
+            client_id = NAVER_REST_API_KEY
+        elif provider == "google":
+            token_url = "https://oauth2.googleapis.com/token"
+            client_id = GOOGLE_CLIENT_ID
         else:
-            user = user_data
+            raise ValueError("지원되지 않는 소셜 로그인 제공자입니다.")
 
-        refresh = RefreshToken.for_user(user)
-        return {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }
-
-
-class GoogleLoginView(APIView):
-    def get(self, request):
-        client_id = GOOGLE_CLIENT_ID
-        redirect_uri = f"{BASE_URL}/api/v1/accounts/google/callback/"
-        scope = "email profile"
-        return redirect(
-            f"https://accounts.google.com/o/oauth2/auth"
-            f"?client_id={client_id}"
-            f"&redirect_uri={redirect_uri}"
-            f"&response_type=code"
-            f"&scope={scope}"
-        )
-
-
-class GoogleCallbackView(APIView):
-    def get(self, request):
-        code = request.GET.get("code")
-        access_token = self.get_google_token(code)
-        user_info = self.get_google_user_info(access_token)
-        user_data = self.get_or_create_googleuser(user_info)
-        tokens = self.create_jwt_token(user_data)
-        nickname = user_info.get("name")
-        email = user_info.get("email")
-
-        redirect_url = (
-            f"{FRONTEND_BASE_URL}/front/accounts/profile.html"
-            f"?access_token={tokens['access']}&refresh_token={tokens['refresh']}"
-            f"&nickname={nickname}&email={email}"
-        )
-        return redirect(redirect_url)
-
-    def get_google_token(self, code):
-        client_id = GOOGLE_CLIENT_ID
-        redirect_uri = f"{BASE_URL}/api/v1/accounts/google/callback/"
-        token_url = "https://oauth2.googleapis.com/token"
+        redirect_uri = f"{BASE_URL}/api/v1/accounts/social/callback/{provider}/"
         data = {
             "grant_type": "authorization_code",
-            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
             "client_id": client_id,
             "redirect_uri": redirect_uri,
             "code": code,
         }
+
+        if provider in ["naver", "google"]:
+            data["client_secret"] = os.getenv(f"{provider.upper()}_CLIENT_SECRET")
+
         response = requests.post(token_url, data=data)
         return response.json().get("access_token")
 
-    def get_google_user_info(self, access_token):
-        user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+    def get_user_info(self, provider, access_token):
+        if provider == "kakao":
+            user_info_url = "https://kapi.kakao.com/v2/user/me"
+        elif provider == "naver":
+            user_info_url = "https://openapi.naver.com/v1/nid/me"
+        elif provider == "google":
+            user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+        else:
+            raise ValueError("지원되지 않는 소셜 로그인 제공자입니다.")
+
         headers = {"Authorization": f"Bearer {access_token}"}
         response = requests.get(user_info_url, headers=headers)
         return response.json()
 
-    def get_or_create_googleuser(self, user_info):
-        google_id = user_info.get("sub")
-        if not google_id:
-            raise ValueError("Google 사용자 정보에서 'id'를 찾을 수 없습니다.")
-
-        email = user_info.get("email")
-        if not email:
-            raise ValueError("Google에서 이메일이 제공되지 않았습니다.")
-
-        nickname = user_info.get("name")
-        if not nickname:
-            raise ValueError("Google에서 닉네임을 가져오지 못했습니다.")
-
+    def get_or_create_user(self, provider, email, nickname):
         user, created = User.objects.get_or_create(
             email=email,
             defaults={
                 "nickname": nickname,
             },
         )
-
         if created:
             user.set_unusable_password()
             user.save()
