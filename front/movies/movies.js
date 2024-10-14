@@ -608,7 +608,7 @@ function displayReviews(reviews) {
                                 <span class="comment-report-text" data-comment-id="${comment.id}">[신고]</span>
                                     <div class="dropdown" id="dropdown-comment-${comment.id}" style="display: none">
                                         <ul>
-                                            ${!comment.is_spoiler ? `<li class="report-item" data-review-id="${comment.id}" data-report-type="spoiler">스포일러 신고</li>` : ''}
+                                            ${!comment.is_spoiler ? `<li class="comment-report-item" data-comment-id="${comment.id}" data-report-type="spoiler">스포일러 신고</li>` : ''}
                                             <li class="comment-report-item" data-comment-id="${comment.id}" data-report-type="inappropriate">부적절한 표현 신고</li>
                                         </ul>
                                     </div>
@@ -678,12 +678,6 @@ function addEventListeners() {
     });
 
     // 리뷰 신고 버튼 이벤트 리스너
-    // document.querySelectorAll('.report-text').forEach(button => {
-    //     button.addEventListener('click', async (event) => {
-    //         const reviewId = event.target.getAttribute('data-review-id');
-    //         await reportReview(reviewId);
-    //     })
-    // })
     document.querySelectorAll('.report-item').forEach(item => {
         item.addEventListener('click', (event) => {
             const reviewId = event.target.getAttribute('data-review-id');
@@ -694,6 +688,7 @@ function addEventListeners() {
         });
     });
 
+    // 신고 드롭다운 이벤트 리스너
     document.querySelectorAll('.report-text').forEach(reportText => {
         reportText.addEventListener('click', (event) => {
             const reviewId = event.target.getAttribute('data-review-id');
@@ -787,14 +782,7 @@ function addEventListeners() {
         });
     });
 
-    // // 댓글 신고 버튼 이벤트 리스너
-    // document.querySelectorAll('.comment-report-text').forEach(button => {
-    //     button.addEventListener('click', async (event) => {
-    //         const commentId = event.target.getAttribute('data-comment-id');
-    //         await reportComment(commentId);
-    //     })
-    // })
-
+    // 댓글 신고 버튼 이벤트 리스너
     document.querySelectorAll('.comment-report-item').forEach(item => {
         item.addEventListener('click', (event) => {
             const commentId = event.target.getAttribute('data-comment-id');
@@ -805,7 +793,7 @@ function addEventListeners() {
         });
     });
 
-
+    // 댓글 신고 드롭다운 이벤트 리스너
     document.querySelectorAll('.comment-report-text').forEach(reportText => {
         reportText.addEventListener('click', (event) => {
             const commentId = event.target.getAttribute('data-comment-id');

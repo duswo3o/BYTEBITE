@@ -209,7 +209,7 @@ class ReportAPIView(APIView):
                 ).count()
                 writer = review.author
 
-                if report_count == 1:  # 테스트용 1회
+                if report_count == 7:
                     review.is_spoiler = True
                     review.save()
                     send_mail(
@@ -222,7 +222,7 @@ class ReportAPIView(APIView):
                     spoiled_reports = Report.objects.filter(review=review)
                     spoiled_reports.delete()
 
-                    return Response({"message": "해당 리뷰가 신고 완료되었습니다."})
+                return Response({"message": "해당 리뷰가 신고 완료되었습니다."})
 
             if comment_id:
                 comment = get_object_or_404(Comment, id=comment_id)
@@ -244,23 +244,27 @@ class ReportAPIView(APIView):
                 ).count()
                 writer = comment.author
 
-                if report_count == 1:  # 테스트용 1회
+                if report_count == 7:
                     comment.is_spoiler = True
                     comment.save()
                     send_mail(
                         subject="popcorngeek에서 작성한 리뷰가 스포방지 처리 되었습니다.",
-                        message=f"귀하의 리뷰('{comment.movie}')가 {report_count}회 신고되어 스포방지 처리 되었습니다.",
+                        message=f"귀하의 리뷰('{comment.content}')가 {report_count}회 신고되어 스포방지 처리 되었습니다.",
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[writer.email],
                         fail_silently=False,
                     )
+                    spoiled_reports = Report.objects.filter(review=comment)
+                    spoiled_reports.delete()
 
-                    return Response({"message": "해당 리뷰가 신고 완료되었습니다."})
+                return Response({"message": "해당 댓글이 신고 완료되었습니다."})
 
         else:
             if review_id:
                 review = get_object_or_404(Review, id=review_id)
-                report = Report.objects.filter(reporter=reporter, review=review).first()
+                report = Report.objects.filter(
+                    reporter=reporter, review=review, report_type=report_type
+                ).first()
                 if report:
                     return Response(
                         {"message": "이미 신고한 리뷰입니다"},
@@ -316,7 +320,7 @@ class ReportAPIView(APIView):
             elif comment_id:
                 comment = get_object_or_404(Comment, id=comment_id)
                 report = Report.objects.filter(
-                    reporter=reporter, comment=comment
+                    reporter=reporter, comment=comment, report_type=report_type
                 ).first()
                 if report:
                     return Response(
