@@ -34,7 +34,6 @@ class Command(BaseCommand):
         for batch_start in range(0, len(total_data), BATCH_SIZE):
             batch = total_data[batch_start:batch_start + BATCH_SIZE]
             self.save_to_database(batch)
-            print(f'{batch_start+1000}개 입력완료')
 
         # 앞으로 7일간 개봉할 영화의 개봉일 입력
         release_data = self.initial_release_date()
