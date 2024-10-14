@@ -544,11 +544,34 @@ async function reportComment(commentId, reportType) {
     }
 }
 
+function loadReviews(section) {
+    const moviepk = urlParams.get('pk'); // Get movie ID from URL
+
+    let reviewUrl = `${API_BASE_URL}reviews/${moviepk}/`;
+
+    // Modify URL based on selected section (private, public, following)
+    if (section === 'private') {
+        reviewUrl = `${API_BASE_URL}reviews/${moviepk}/?section=private`;  // Private 
+    } else if (section === 'following') {
+        reviewUrl = `${API_BASE_URL}reviews/${moviepk}/?section=following`;  // Following 
+    } else {
+        reviewUrl = `${API_BASE_URL}reviews/${moviepk}/?section=public`;  // Public reviews 디폴트
+    }
+
+    axios.get(reviewUrl)
+        .then(response => {
+            displayReviews(response.data);  // 디폴트 출력
+        })
+        .catch(error => {
+            console.error(`${section} 리뷰 가져오기 오류:`, error);
+        });
+}
 
 // 리뷰 표시 함수
 function displayReviews(reviews) {
     const responseDiv = document.getElementById('response');
-    responseDiv.innerHTML = ''; // 기존 결과 초기화
+    responseDiv.innerHTML = ''; // Clear existing reviews
+
     reviews.forEach(review => {
         const reviewDiv = document.createElement('div');
         reviewDiv.classList.add('review');
@@ -561,9 +584,18 @@ function displayReviews(reviews) {
             contentHTML = `<div class="content" id="review-content-${review.id}">${review.content}</div>`;
         }
 
+        // Check if review is private or for followers only
+        let visibilityTag = '';
+        if (review.is_private) {
+            visibilityTag = '<span class="private-tag">(비공개)</span>'; // Private tag
+        } else if (review.followers_only) {
+            visibilityTag = '<span class="followers-only-tag">(팔로워 전용)</span>'; // Followers only tag
+        }
+
         reviewDiv.innerHTML = `
             <div class="header">
                 <span class="author">${review.author}</span>
+                ${visibilityTag}
                 <span class="date">${new Date(review.created_at).toLocaleString()}</span>
             </div>
             ${contentHTML}
@@ -577,19 +609,12 @@ function displayReviews(reviews) {
                 <button class="save-btn" data-review-id="${review.id}" style="display:none;">수정 완료</button>
                 <span class="comment-text" data-review-id="${review.id}">[댓글 달기]</span>
                 <span class="report-text" data-review-id="${review.id}">[신고]</span>
-                    <div class="dropdown" id="dropdown-${review.id}" style="display: none">
-                        <ul>
-                            ${!review.is_spoiler ? `<li class="report-item" data-review-id="${review.id}" data-report-type="spoiler">스포일러 신고</li>` : ''}
-                            <li class="report-item" data-review-id="${review.id}" data-report-type="inappropriate">부적절한 표현 신고</li>
-                        </ul>
-                    </div>
                 <textarea id="comment-content-${review.id}" style="display:none;" placeholder="댓글을 입력하세요..."></textarea>
                 <label style="display:none;" id="comment-is-spoiler-label-${review.id}">
-                <input type="checkbox" id="comment-is-spoiler-${review.id}">스포일러 포함</label>
+                    <input type="checkbox" id="comment-is-spoiler-${review.id}">스포일러 포함</label>
                 <button class="submit-comment-btn" data-review-id="${review.id}" style="display:none;">댓글 작성 완료</button>
                 <div class="comments" id="comments-${review.id}">
                     ${review.comments.map(comment => {
-            // 스포일러 여부에 따라 댓글 콘텐츠 처리
             let commentContentHTML;
             if (comment.is_spoiler) {
                 commentContentHTML = `<span class="comment-content spoiler" id="comment-content-${comment.id}">${comment.content}</span>`;
@@ -606,12 +631,6 @@ function displayReviews(reviews) {
                                 <span class="comment-edit-text" data-comment-id="${comment.id}">[수정]</span>
                                 <span class="comment-delete-text" data-comment-id="${comment.id}">[삭제]</span>
                                 <span class="comment-report-text" data-comment-id="${comment.id}">[신고]</span>
-                                    <div class="dropdown" id="dropdown-comment-${comment.id}" style="display: none">
-                                        <ul>
-                                            ${!comment.is_spoiler ? `<li class="comment-report-item" data-comment-id="${comment.id}" data-report-type="spoiler">스포일러 신고</li>` : ''}
-                                            <li class="comment-report-item" data-comment-id="${comment.id}" data-report-type="inappropriate">부적절한 표현 신고</li>
-                                        </ul>
-                                    </div>
                                 <textarea id="edit-comment-${comment.id}" style="display:none;"></textarea>
                                 <button class="save-comment-btn" data-comment-id="${comment.id}" style="display:none;">수정 완료</button>
                             </div>
@@ -622,8 +641,7 @@ function displayReviews(reviews) {
         responseDiv.appendChild(reviewDiv);
     });
 
-    // 이벤트 리스너 추가
-    addEventListeners();
+    addEventListeners(); 
 }
 
 
@@ -911,4 +929,21 @@ document.getElementById('transformToCritic').addEventListener('click', () => {
 
 document.getElementById('transformToMz').addEventListener('click', () => {
     transformReviewContent('Mz');
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('private-section').addEventListener('click', () => {
+        loadReviews('private');
+    });
+
+    document.getElementById('public-section').addEventListener('click', () => {
+        loadReviews('public');
+    });
+
+    document.getElementById('following-section').addEventListener('click', () => {
+        loadReviews('following');
+    });
+
+    // 디폴트 퍼블릭 출력
+    loadReviews('public');
 });
