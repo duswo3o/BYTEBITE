@@ -1,0 +1,28 @@
+name: Django CD
+
+on:
+  workflow_run:
+    workflows: ["Django CI"]
+    types:
+      - completed
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: connect ec2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DB_HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: 22
+          script: |
+            cd /home/ubuntu/BYTEBITE
+            git pull
+            sudo docker-compose up -d --build
+            python3 manage.py makemigrations
+            python3 manage.py migrate
+            sudo systemctl restart nginx
+            sudo systemctl restart gunicorn
