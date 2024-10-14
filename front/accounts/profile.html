@@ -15,15 +15,34 @@
 
 <body>
 
+    <div class="navbar">
+        <!-- <a href="#">Home</a>
+            <a href="#">About</a> -->
+        <a href="profile.html">
+            <div class="user-info">
+                <img src="./BYTEBITE.png" alt="" style="width:50px;">
+                <p id="helloUser"></p>
+            </div>
+        </a>
+        <h3 onclick='location.href="../movies/mainpage.html"'><strong>POPCORNGEEK</strong></h3>
+        <!-- <a href="#">Contact</a> -->
+
+        <div>
+            <a href='signin.html' class="right" id="signinBtn">sign in</a>
+            <a href="signup.html" id="signupBtn">sign up</a>
+            <a href="#" id="signoutBtn" style="display: none;">sign out</a>
+        </div>
+    </div>
+
 
 
     <div class="container mb-4 p-5">
         <h3>프로필</h3>
 
         <div class="d-grid gap-2 d-md-flex justify-content-md-end p-1">
-            <button type="button" class="btn btn-secondary" id="signinBtn"
+            <!-- <button type="button" class="btn btn-secondary" id="signinBtn"
                 onclick="location.href='signin.html'">signin</button>
-            <button type="button" class="btn btn-secondary" id="signoutBtn" style="display: none;">signout</button>
+            <button type="button" class="btn btn-secondary" id="signoutBtn" style="display: none;">signout</button> -->
         </div>
 
 
@@ -287,23 +306,6 @@
 
     </div>
 
-    <script>
-        // 버튼 보여주기 설정
-        document.addEventListener('DOMContentLoaded', function () {
-            const accessToken = sessionStorage.getItem('jwtAccessToken');
-            // 로컬스토리지에 토큰이 있는 경우
-            if (accessToken) {
-                // 로그아웃 버튼만 보여주기
-                document.getElementById('signinBtn').style.display = 'none';
-                document.getElementById('signoutBtn').style.display = 'block';
-            }
-            // 로컬스토리지에 토큰이 없는 경우 
-            else {
-                document.getElementById('signinBtn').style.display = 'block';
-                document.getElementById('signoutBtn').style.display = 'none';
-            }
-        });
-    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
