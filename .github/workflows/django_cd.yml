@@ -20,9 +20,10 @@ jobs:
           port: 22
           script: |
             cd /home/ubuntu/BYTEBITE
-            git pull
+            git pull origin main
             sudo docker-compose up -d --build
             python3 manage.py makemigrations
             python3 manage.py migrate
+            sudo systemctl daemon-reload
             sudo systemctl restart nginx
             sudo systemctl restart gunicorn
