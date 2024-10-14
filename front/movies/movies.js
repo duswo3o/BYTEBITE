@@ -579,7 +579,7 @@ function displayReviews(reviews) {
                 <span class="report-text" data-review-id="${review.id}">[신고]</span>
                     <div class="dropdown" id="dropdown-${review.id}" style="display: none">
                         <ul>
-                            <li class="report-item" data-review-id="${review.id}" data-report-type="spoiler">스포일러 신고</li>
+                            ${!review.is_spoiler ? `<li class="report-item" data-review-id="${review.id}" data-report-type="spoiler">스포일러 신고</li>` : ''}
                             <li class="report-item" data-review-id="${review.id}" data-report-type="inappropriate">부적절한 표현 신고</li>
                         </ul>
                     </div>
@@ -608,7 +608,7 @@ function displayReviews(reviews) {
                                 <span class="comment-report-text" data-comment-id="${comment.id}">[신고]</span>
                                     <div class="dropdown" id="dropdown-comment-${comment.id}" style="display: none">
                                         <ul>
-                                            <li class="comment-report-item" data-comment-id="${comment.id}" data-report-type="spoiler">스포일러 신고</li>
+                                            ${!comment.is_spoiler ? `<li class="report-item" data-review-id="${comment.id}" data-report-type="spoiler">스포일러 신고</li>` : ''}
                                             <li class="comment-report-item" data-comment-id="${comment.id}" data-report-type="inappropriate">부적절한 표현 신고</li>
                                         </ul>
                                     </div>
