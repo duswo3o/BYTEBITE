@@ -16,6 +16,26 @@
 </head>
 
 <body>
+
+    <div class="navbar">
+        <!-- <a href="#">Home</a>
+            <a href="#">About</a> -->
+        <a href="profile.html">
+            <div class="user-info">
+                <img src="../BYTEBITE.png" alt="" style="width:50px;">
+                <p id="helloUser"></p>
+            </div>
+        </a>
+        <h3 onclick='location.href="../movies/mainpage.html"'><strong>POPCORNGEEK</strong></h3>
+        <!-- <a href="#">Contact</a> -->
+
+        <div>
+            <a href='signin.html' class="right" id="signinBtn">sign in</a>
+            <a href="signup.html" id="signupBtn">sign up</a>
+            <a href="#" id="signoutBtn" style="display: none;">sign out</a>
+        </div>
+    </div>
+
     <div class="container mb-4 p-5">
         <div class="container mb-4">
             <h3>로그인</h3>
@@ -33,13 +53,16 @@
 
                 <button type="button" class="btn btn-primary" id="signin-btn">팝콘긱 로그인</button>
                 <hr>
-                <button type="button" id="kakao-login-btn" style="border: none; outline: none; background: none; padding: 0;">
+                <button type="button" id="kakao-login-btn"
+                    style="border: none; outline: none; background: none; padding: 0;">
                     <img src="/static/images/kakao.png" alt="카카오 로그인" style="width: 150px; height: auto;">
                 </button>
-                <button type="button" id="naver-login-btn" style="border: none; outline: none; background: none; padding: 0;">
+                <button type="button" id="naver-login-btn"
+                    style="border: none; outline: none; background: none; padding: 0;">
                     <img src="/static/images/naver.png" alt="네이버 로그인" style="width: 140px; height: auto;">
                 </button>
-                <button type="button" id="google-login-btn" style="border: none; outline: none; background: none; padding: 0;">
+                <button type="button" id="google-login-btn"
+                    style="border: none; outline: none; background: none; padding: 0;">
                     <img src="/static/images/google.png" alt="구글 로그인" style="width: 160px; height: auto;">
                 </button>
             </form>
@@ -52,4 +75,5 @@
 
     <script type="module" src="./accounts.js"></script>
 </body>
+
 </html>

@@ -66,6 +66,70 @@ axios.interceptors.response.use(
     }
 );
 
+
+
+// 버튼 보여주기 설정
+document.addEventListener('DOMContentLoaded', function () {
+    const accessToken = sessionStorage.getItem('jwtAccessToken');
+    // 로컬스토리지에 토큰이 있는 경우
+    if (accessToken) {
+        // 로그아웃 버튼만 보여주기
+        document.getElementById('signinBtn').style.display = 'none';
+        document.getElementById('signupBtn').style.display = 'none';
+        document.getElementById('signoutBtn').style.display = 'block';
+    }
+    // 로컬스토리지에 토큰이 없는 경우 
+    else {
+        document.getElementById('signinBtn').style.display = 'block';
+        document.getElementById('signupBtn').style.display = 'block';
+        document.getElementById('signoutBtn').style.display = 'none';
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const helloUser = document.getElementById("helloUser");
+    const nickname = localStorage.getItem("nickname")
+    if (nickname) {
+        var userMessage = "hello, " + localStorage.getItem("nickname")
+    } else {
+        var userMessage = "welcome!"
+    }
+    helloUser.innerHTML = `
+<span>${userMessage}</span>
+`;
+});
+
+
+// 로그아웃
+const signoutBtn = document.getElementById("signoutBtn")
+
+const signoutUser = (event) => {
+    event.preventDefault()
+    const refreshToken = tokenManager.getRefreshToken();
+
+    axios.post(`${API_BASE_URL}accounts/signout/`, {
+        refresh: refreshToken
+    })
+        .then(response => {
+            sessionStorage.clear()
+            localStorage.clear()
+            console.log(response)
+            alert("로그아웃 되었습니다")
+        })
+        .catch(error => {
+            console.log(error)
+            sessionStorage.clear()
+            localStorage.clear()
+            // alert("로그아웃 실패")
+        })
+}
+
+if (signoutBtn) {
+    signoutBtn.addEventListener('click', signoutUser)
+}
+
+
+
 // url주소에서 데이터 추출
 const urlParams = new URLSearchParams(window.location.search);
 
@@ -861,7 +925,7 @@ function sentimentReview(moviepk) {
                     posreviewHTML = `<div class="content" >${positiveReview.content}</div>`;
                 }
 
-                const positiveReviewDiv = document.createElement("div");
+                const positiveReviewDiv = document.createElement("p");
                 positiveReviewDiv.innerHTML = `
                 <div class="container text-center">
                     <p><strong>${positiveReview.author}</strong> [❤ : ${positiveReview.like_count}]</p>
@@ -880,11 +944,11 @@ function sentimentReview(moviepk) {
                 } else {
                     megReviewHTML = `<div class="content" >${negativeReview.content}</div>`;
                 }
-                const negativeReviewDiv = document.createElement("div");
+                const negativeReviewDiv = document.createElement("p");
                 negativeReviewDiv.innerHTML = `
                 <div class="container text-center">
                     <p><strong>${negativeReview.author}</strong> [❤ : ${negativeReview.like_count}]</p>
-                    <p>${negativeReview.content}</p>
+                    ${megReviewHTML}
                 </div>
                 `;
                 negtopReviewList.appendChild(negativeReviewDiv);
@@ -898,7 +962,9 @@ function sentimentReview(moviepk) {
 
 }
 
-document.addEventListener("DOMContentLoaded", sentimentReview(urlParams.get('pk')))
+if (urlParams.get('pk')) {
+    document.addEventListener("DOMContentLoaded", sentimentReview(urlParams.get('pk')))
+}
 
 // 버튼별로 말투 스타일을 전달
 document.getElementById('transformToJoseon').addEventListener('click', () => {
@@ -912,3 +978,4 @@ document.getElementById('transformToCritic').addEventListener('click', () => {
 document.getElementById('transformToMz').addEventListener('click', () => {
     transformReviewContent('Mz');
 });
+

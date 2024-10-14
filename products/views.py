@@ -47,7 +47,7 @@ class PaymentAPIView(APIView):
         merchant_uid = request.data.get("merchant_uid")
         name = request.data.get("name")
         product_name = request.data.get("product_name")
-        amount = request.data.get("amount")
+        price = request.data.get("amount")
         address = request.data.get("address")
         address2 = request.data.get("address2")
 
@@ -100,7 +100,7 @@ class PaymentAPIView(APIView):
         # 이메일 전송
         send_mail(
             "[WEB 발신] 결제 완료 알림",
-            f"결제가 완료되었습니다.\n구매자명: {name}\n주문상품: {product_name}\n결제금액: {amount} 원\n주문번호: {merchant_uid}\n",
+            f"결제가 완료되었습니다.\n구매자명: {name}\n주문상품: {product_name}\n결제금액: {price} 원\n주문번호: {merchant_uid}\n",
             settings.EMAIL_HOST_USER,
             [email],
             fail_silently=False,
@@ -111,7 +111,7 @@ class PaymentAPIView(APIView):
             product=product,
             user=request.user,
             merchant_uid=merchant_uid,
-            amount=amount,
+            price=price,
             address=address,
             address2=address2,
         )

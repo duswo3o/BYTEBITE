@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:8000/api/v1/'
+const API_BASE_URL = 'http://api.popcorngeek.store/api/v1/'
 
 // 토큰 저장 및 관리 함수
 const tokenManager = {
