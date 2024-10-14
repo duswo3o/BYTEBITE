@@ -11,6 +11,9 @@ body {
 .navbar {
     background-color: bisque;
     overflow: hidden;
+    display: flex;
+    justify-content:space-between; /* 요소 간의 공간 분배 */
+    align-items: center; /* 세로 정렬 */
 
 }
 
