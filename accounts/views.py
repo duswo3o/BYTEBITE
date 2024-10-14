@@ -242,6 +242,8 @@ load_dotenv()
 KAKAO_REST_API_KEY = os.getenv("KAKAO_API_KEY")
 NAVER_REST_API_KEY = os.getenv("NAVER_API_KEY")
 NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 BASE_URL = "http://127.0.0.1:8000"
 FRONTEND_BASE_URL = "http://127.0.0.1:5500"
 
@@ -398,6 +400,97 @@ class NaverCallbackView(APIView):
         nickname = response_data.get("nickname")
         if not nickname:
             raise ValueError("naver에서 닉네임을 가져오지 못했습니다.")
+
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                "nickname": nickname,
+            },
+        )
+
+        if created:
+            user.set_unusable_password()
+            user.save()
+
+        return user
+
+    def create_jwt_token(self, user_data):
+        if isinstance(user_data, dict):
+            email = user_data.get("email")
+            user = User.objects.get(email=email)
+        else:
+            user = user_data
+
+        refresh = RefreshToken.for_user(user)
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+
+
+class GoogleLoginView(APIView):
+    def get(self, request):
+        client_id = GOOGLE_CLIENT_ID
+        redirect_uri = f"{BASE_URL}/api/v1/accounts/google/callback/"
+        scope = "email profile"
+        return redirect(
+            f"https://accounts.google.com/o/oauth2/auth"
+            f"?client_id={client_id}"
+            f"&redirect_uri={redirect_uri}"
+            f"&response_type=code"
+            f"&scope={scope}"
+        )
+
+
+class GoogleCallbackView(APIView):
+    def get(self, request):
+        code = request.GET.get("code")
+        access_token = self.get_google_token(code)
+        user_info = self.get_google_user_info(access_token)
+        user_data = self.get_or_create_googleuser(user_info)
+        tokens = self.create_jwt_token(user_data)
+        nickname = user_info.get("name")
+        email = user_info.get("email")
+
+        redirect_url = (
+            f"{FRONTEND_BASE_URL}/front/accounts/profile.html"
+            f"?access_token={tokens['access']}&refresh_token={tokens['refresh']}"
+            f"&nickname={nickname}&email={email}"
+        )
+        return redirect(redirect_url)
+
+    def get_google_token(self, code):
+        client_id = GOOGLE_CLIENT_ID
+        redirect_uri = f"{BASE_URL}/api/v1/accounts/google/callback/"
+        token_url = "https://oauth2.googleapis.com/token"
+        data = {
+            "grant_type": "authorization_code",
+            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "code": code,
+        }
+        response = requests.post(token_url, data=data)
+        return response.json().get("access_token")
+
+    def get_google_user_info(self, access_token):
+        user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = requests.get(user_info_url, headers=headers)
+        return response.json()
+
+    def get_or_create_googleuser(self, user_info):
+        google_id = user_info.get("sub")
+        if not google_id:
+            raise ValueError("Google 사용자 정보에서 'id'를 찾을 수 없습니다.")
+
+        email = user_info.get("email")
+        if not email:
+            raise ValueError("Google에서 이메일이 제공되지 않았습니다.")
+
+        nickname = user_info.get("name")
+        if not nickname:
+            raise ValueError("Google에서 닉네임을 가져오지 못했습니다.")
 
         user, created = User.objects.get_or_create(
             email=email,
