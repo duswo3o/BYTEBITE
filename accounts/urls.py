@@ -7,6 +7,8 @@ urlpatterns = [
     path("signin/", views.UserSigninAPIView().as_view()),
     path("kakao/login/", views.KakaoLoginView.as_view(), name="kakao_login"),
     path("kakao/callback/", views.KakaoCallbackView.as_view(), name="kakao_callback"),
+    path("naver/login/", views.NaverLoginView.as_view(), name="naver_login"),
+    path("naver/callback/", views.NaverCallbackView.as_view(), name="naver_callback"),
     path("activate/<uidb64>/<str:token>/", views.UserActivate.as_view()),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("signout/", views.UserSignoutAPIView().as_view()),

@@ -442,7 +442,13 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/kakao/login/';
         };
     }
-
+    // 네이버 로그인 버튼 이벤트 리스너 설정
+    const naverLoginButton = document.getElementById('naver-login-btn');
+    if (naverLoginButton) {
+        naverLoginButton.onclick = function() {
+            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/naver/login/';
+        };
+    }
     // URL 파라미터 확인
     const urlParams = new URLSearchParams(window.location.search);
     const accessToken = urlParams.get('access_token');
@@ -455,6 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
         handleTokens(accessToken, refreshToken, nickname, email);
     }
 });
+
 
 // 토큰 처리 함수
 const handleTokens = (accessToken, refreshToken, nickname, email) => {
