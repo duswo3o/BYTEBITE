@@ -93,6 +93,8 @@ class Report(models.Model):
         related_name="reported_comment",
     )
 
+    report_type = models.CharField(max_length=13, default="inappropriate")
+
     class Meta:
         # 중복 신고가 불가능하도록 여러 필드에 대해 unique 옵션 설정
         unique_together = ["reporter", "review", "comment"]

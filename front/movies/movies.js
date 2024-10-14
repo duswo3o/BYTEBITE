@@ -462,9 +462,9 @@ async function deleteReview(reviewId) {
 }
 
 // 리뷰 신고 함수
-async function reportReview(reviewId) {
+async function reportReview(reviewId, reportType) {
     try {
-        const response = await axios.post(`${API_BASE_URL}reviews/report/review/${reviewId}/`);
+        const response = await axios.post(`${API_BASE_URL}reviews/report/review/${reviewId}/`, { report_type: reportType });
         console.log(response);
         alert(response.data.message);
 
@@ -532,9 +532,9 @@ async function toggleCommentLike(commentId) {
 }
 
 // 댓글 신고 함수
-async function reportComment(commentId) {
+async function reportComment(commentId, reportType) {
     try {
-        const response = await axios.post(`${API_BASE_URL}reviews/report/comment/${commentId}/`);
+        const response = await axios.post(`${API_BASE_URL}reviews/report/comment/${commentId}/`, { report_type: reportType });
         console.log(response);
         alert(response.data.message);
 
@@ -543,6 +543,7 @@ async function reportComment(commentId) {
         alert(error.response.data.message)
     }
 }
+
 
 // 리뷰 표시 함수
 function displayReviews(reviews) {
@@ -554,11 +555,11 @@ function displayReviews(reviews) {
         reviewDiv.setAttribute('data-review-id', review.id);
 
         let contentHTML;
-            if (review.is_spoiler) {
-                contentHTML = `<div class="content spoiler" id="review-content-${review.id}">${review.content}</div>`;
-            } else {
-                contentHTML = `<div class="content" id="review-content-${review.id}">${review.content}</div>`;
-            }
+        if (review.is_spoiler) {
+            contentHTML = `<div class="content spoiler" id="review-content-${review.id}">${review.content}</div>`;
+        } else {
+            contentHTML = `<div class="content" id="review-content-${review.id}">${review.content}</div>`;
+        }
 
         reviewDiv.innerHTML = `
             <div class="header">
@@ -576,9 +577,15 @@ function displayReviews(reviews) {
                 <button class="save-btn" data-review-id="${review.id}" style="display:none;">수정 완료</button>
                 <span class="comment-text" data-review-id="${review.id}">[댓글 달기]</span>
                 <span class="report-text" data-review-id="${review.id}">[신고]</span>
+                    <div class="dropdown" id="dropdown-${review.id}" style="display: none">
+                        <ul>
+                            <li class="report-item" data-review-id="${review.id}" data-report-type="spoiler">스포일러 신고</li>
+                            <li class="report-item" data-review-id="${review.id}" data-report-type="inappropriate">부적절한 표현 신고</li>
+                        </ul>
+                    </div>
                 <textarea id="comment-content-${review.id}" style="display:none;" placeholder="댓글을 입력하세요..."></textarea>
                 <label style="display:none;" id="comment-is-spoiler-label-${review.id}">
-                    <input type="checkbox" id="comment-is-spoiler-${review.id}">스포일러 포함</label>
+                <input type="checkbox" id="comment-is-spoiler-${review.id}">스포일러 포함</label>
                 <button class="submit-comment-btn" data-review-id="${review.id}" style="display:none;">댓글 작성 완료</button>
                 <div class="comments" id="comments-${review.id}">
                     ${review.comments.map(comment => {
@@ -599,6 +606,12 @@ function displayReviews(reviews) {
                                 <span class="comment-edit-text" data-comment-id="${comment.id}">[수정]</span>
                                 <span class="comment-delete-text" data-comment-id="${comment.id}">[삭제]</span>
                                 <span class="comment-report-text" data-comment-id="${comment.id}">[신고]</span>
+                                    <div class="dropdown" id="dropdown-comment-${comment.id}" style="display: none">
+                                        <ul>
+                                            <li class="comment-report-item" data-comment-id="${comment.id}" data-report-type="spoiler">스포일러 신고</li>
+                                            <li class="comment-report-item" data-comment-id="${comment.id}" data-report-type="inappropriate">부적절한 표현 신고</li>
+                                        </ul>
+                                    </div>
                                 <textarea id="edit-comment-${comment.id}" style="display:none;"></textarea>
                                 <button class="save-comment-btn" data-comment-id="${comment.id}" style="display:none;">수정 완료</button>
                             </div>
@@ -665,12 +678,47 @@ function addEventListeners() {
     });
 
     // 리뷰 신고 버튼 이벤트 리스너
-    document.querySelectorAll('.report-text').forEach(button => {
-        button.addEventListener('click', async (event) => {
+    // document.querySelectorAll('.report-text').forEach(button => {
+    //     button.addEventListener('click', async (event) => {
+    //         const reviewId = event.target.getAttribute('data-review-id');
+    //         await reportReview(reviewId);
+    //     })
+    // })
+    document.querySelectorAll('.report-item').forEach(item => {
+        item.addEventListener('click', (event) => {
             const reviewId = event.target.getAttribute('data-review-id');
-            await reportReview(reviewId);
-        })
-    })
+            const reportType = event.target.getAttribute('data-report-type');
+
+            // 신고 처리 로직
+            reportReview(reviewId, reportType);
+        });
+    });
+
+    document.querySelectorAll('.report-text').forEach(reportText => {
+        reportText.addEventListener('click', (event) => {
+            const reviewId = event.target.getAttribute('data-review-id');
+            const dropdown = document.getElementById(`dropdown-${reviewId}`);
+
+            // 다른 열린 드롭다운이 있으면 닫기
+            document.querySelectorAll('.dropdown').forEach(drop => {
+                if (drop !== dropdown) {
+                    drop.style.display = 'none';
+                }
+            });
+
+            // 현재 드롭다운 토글 (보였다가 사라지고, 숨겼다가 보이게)
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        });
+    });
+
+    // 페이지 외부를 클릭했을 때 드롭다운을 닫기
+    document.addEventListener('click', function (event) {
+        if (!event.target.matches('.report-text')) {
+            document.querySelectorAll('.dropdown').forEach(dropdown => {
+                dropdown.style.display = 'none';
+            });
+        }
+    }, true);
 
     // 댓글 달기 버튼 이벤트 리스너
     document.querySelectorAll('.comment-text').forEach(button => {
@@ -739,13 +787,50 @@ function addEventListeners() {
         });
     });
 
-    // 댓글 신고 버튼 이벤트 리스너
-    document.querySelectorAll('.comment-report-text').forEach(button => {
-        button.addEventListener('click', async (event) => {
+    // // 댓글 신고 버튼 이벤트 리스너
+    // document.querySelectorAll('.comment-report-text').forEach(button => {
+    //     button.addEventListener('click', async (event) => {
+    //         const commentId = event.target.getAttribute('data-comment-id');
+    //         await reportComment(commentId);
+    //     })
+    // })
+
+    document.querySelectorAll('.comment-report-item').forEach(item => {
+        item.addEventListener('click', (event) => {
             const commentId = event.target.getAttribute('data-comment-id');
-            await reportComment(commentId);
-        })
-    })
+            const reportType = event.target.getAttribute('data-report-type');
+
+            // 신고 처리 로직
+            reportComment(commentId, reportType);
+        });
+    });
+
+
+    document.querySelectorAll('.comment-report-text').forEach(reportText => {
+        reportText.addEventListener('click', (event) => {
+            const commentId = event.target.getAttribute('data-comment-id');
+            const dropdown = document.getElementById(`dropdown-comment-${commentId}`);
+
+            // 다른 열린 드롭다운이 있으면 닫기
+            document.querySelectorAll('.dropdown').forEach(drop => {
+                if (drop !== dropdown) {
+                    drop.style.display = 'none';
+                }
+            });
+
+            // 현재 드롭다운 토글 (보였다가 사라지고, 숨겼다가 보이게)
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        });
+    });
+
+    // 페이지 외부를 클릭했을 때 드롭다운을 닫기
+    document.addEventListener('click', function (event) {
+        if (!event.target.matches('.comment-report-text')) {
+            document.querySelectorAll('.dropdown').forEach(dropdown => {
+                dropdown.style.display = 'none';
+            });
+        }
+    }, true);
 }
 
 async function transformReviewContent(style) {
