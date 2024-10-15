@@ -34,6 +34,7 @@ const tokenManager = {
         } catch (error) {
             console.error('토큰 갱신 실패:', error.response ? error.response.data : error.message);
             this.clearTokens(); // 실패 시 토큰 제거
+            localStorage.clear()
             throw error;
         }
     }
@@ -72,8 +73,9 @@ axios.interceptors.response.use(
                 return axios(originalRequest); // 원래 요청 다시 시도
             } catch (err) {
                 console.error('새로운 토큰으로 재요청 실패:', err);
-                console.log("로컬 스토리지를 삭제합니다.")
+                console.log("세션 스토리지를 삭제합니다.")
                 sessionStorage.clear()
+                localStorage.clear()
 
                 alert("토큰이 만료되었습니다. 다시 로그인해주세요.")
                 window.location.href = "signin.html"

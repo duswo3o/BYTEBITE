@@ -346,6 +346,10 @@ class SocialCallbackView(APIView):
             user.set_unusable_password()
             user.save()
 
+        if user:
+            user.is_active = True
+            user.save()
+
         return user
 
     def create_jwt_token(self, user_data):
