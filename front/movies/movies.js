@@ -396,10 +396,10 @@ initSearch();
 function sendLikeData(moviepk, movieData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/`, movieData)
         .then(response => {
-            console.log('영화 정보가 성공적으로 전송되었습니다:', response.data);
+            alert(response.data.detail);
         })
         .catch(error => {
-            console.error('영화 정보 전송 중 오류가 발생했습니다:', error);
+            alert('오류가 발생했습니다.');
         });
 }
 
@@ -416,10 +416,10 @@ function handleReaction(button, moviepk, reactionType) {
 function sendScoreData(moviepk, scoreData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/score/`, scoreData)
         .then(response => {
-            console.log('성공적으로 전송되었습니다:', response.data);
+            alert('평가 완료!');
         })
         .catch(error => {
-            console.error('전송 중 오류가 발생했습니다:', error);
+            alert('오류가 발생했습니다.');
         });
 }
 
