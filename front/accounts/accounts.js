@@ -34,6 +34,7 @@ const tokenManager = {
         } catch (error) {
             console.error('토큰 갱신 실패:', error.response ? error.response.data : error.message);
             this.clearTokens(); // 실패 시 토큰 제거
+            localStorage.clear()
             throw error;
         }
     }
@@ -72,8 +73,9 @@ axios.interceptors.response.use(
                 return axios(originalRequest); // 원래 요청 다시 시도
             } catch (err) {
                 console.error('새로운 토큰으로 재요청 실패:', err);
-                console.log("로컬 스토리지를 삭제합니다.")
+                console.log("세션 스토리지를 삭제합니다.")
                 sessionStorage.clear()
+                localStorage.clear()
 
                 alert("토큰이 만료되었습니다. 다시 로그인해주세요.")
                 window.location.href = "signin.html"
@@ -458,22 +460,24 @@ const changePassword = () => {
 // 회원탈퇴
 const withdrawBtn = document.getElementById('withdrawUser')
 const withdrawUser = () => {
-    axios({
-        method: "delete",
-        url: `${API_BASE_URL}/accounts/`,
-        data: {
-            password: document.getElementById("withdrawPassword").value
-        }
+    const password = document.getElementById("withdrawPassword").value
+    axios.delete(`${API_BASE_URL}/accounts/`, {
+        data: { password: password }
     })
         .then(response => {
             console.log(response)
             sessionStorage.clear()
+            localStorage.clear()
             window.location.href = 'profile.html'
         })
         .catch(error => {
-            console.log(error)
-            console.log(document.getElementById("withdrawPassword").value)
-            alert("error : 탈퇴에 실패하였습니다")
+            if (error.response) {
+                console.error("Response error:", error);
+                alert("탈퇴에 실패하였습니다: " + error.response.data.password);
+            } else {
+                console.error("Error:", error.message);
+                alert("탈퇴 요청 중 오류가 발생했습니다.");
+            }
         })
 }
 

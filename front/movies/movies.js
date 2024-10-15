@@ -166,8 +166,8 @@ function fetchMovieDetails(moviepk) {
 
             // 포스터 설정
             const posterImage = document.getElementById('movie-poster');
-            const posterUrl = movie.poster.startsWith('http') ? movie.poster : `${API_BASE_URL}${movie.poster}`;
-            posterImage.src = posterUrl;
+            posterImage.src = movie.poster;
+            posterImage.src = movie.poster;
             posterImage.alt = `${movie.title} 포스터`;
 
             // 태그 출력
@@ -350,7 +350,7 @@ function displaySearchResults(results, searchType) {
             movieCard.classList.add('movie-card');
 
             // 영화 포스터
-            const posterUrl = item.poster.startsWith('http') ? item.poster : `${API_BASE_URL}${item.poster}`; // 포스터 URL 설정
+            const posterUrl = item.poster;
 
             // 영화 링크
             const movieLink = document.createElement('a');
@@ -397,10 +397,10 @@ initSearch();
 function sendLikeData(moviepk, movieData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/`, movieData)
         .then(response => {
-            console.log('영화 정보가 성공적으로 전송되었습니다:', response.data);
+            alert(response.data.detail);
         })
         .catch(error => {
-            console.error('영화 정보 전송 중 오류가 발생했습니다:', error);
+            alert('오류가 발생했습니다.');
         });
 }
 
@@ -417,10 +417,10 @@ function handleReaction(button, moviepk, reactionType) {
 function sendScoreData(moviepk, scoreData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/score/`, scoreData)
         .then(response => {
-            console.log('성공적으로 전송되었습니다:', response.data);
+            alert('평가 완료!');
         })
         .catch(error => {
-            console.error('전송 중 오류가 발생했습니다:', error);
+            alert('오류가 발생했습니다.');
         });
 }
 

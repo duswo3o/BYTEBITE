@@ -24,17 +24,17 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        # 전체 데이터 베이스를 입력하는 함수(배포시 주석해제)
-        # total_data = self.database_initial_setup()
+        # 전체 데이터 베이스를 입력하는 함수(배포시 주석해제) 이거 주석 해제
+        total_data = self.database_initial_setup()
 
-        # 테스트 데이터를 입력하는 함수(배포시 주석처리)
-        total_data = self.test_setup()
+        # 테스트 데이터를 입력하는 함수(배포시 주석처리) 이거 주석
+        # total_data = self.test_setup()
 
         BATCH_SIZE = 1000
         for batch_start in range(0, len(total_data), BATCH_SIZE):
-            batch = total_data[batch_start:batch_start + BATCH_SIZE]
+            batch = total_data[batch_start : batch_start + BATCH_SIZE]
             self.save_to_database(batch)
-
+            print(batch_start)
         # 앞으로 7일간 개봉할 영화의 개봉일 입력
         release_data = self.initial_release_date()
 
@@ -66,7 +66,7 @@ class Command(BaseCommand):
         total_data = []
 
         # 0 ~ 40000까지 입력
-        first_count = 0
+        first_count = 97000
         while True:
             params = {
                 # 다른 api키 필요
@@ -85,64 +85,10 @@ class Command(BaseCommand):
                     f"{first_count}번째 요청에서 데이터 누락, 다음 요청으로 넘어갑니다."
                 )
 
-            if first_count == 40000:
+            if first_count == 107000:
                 break
 
             first_count += 1000
-
-            time.sleep(3)
-
-        # 40000 ~ 80000까지 입력
-        second_count = 40000
-        while True:
-            params = {
-                # 다른 api키 필요
-                "ServiceKey": settings.KMDB_API_KEY_EX2,
-                "listCount": 1000,
-                "startCount": second_count,
-                "detail": "Y",
-            }
-
-            data = self.fetch_data_from_api(self.API_URL, params)
-
-            if data:
-                total_data.extend(data)
-            else:
-                print(
-                    f"{second_count}번째 요청에서 데이터 누락, 다음 요청으로 넘어갑니다."
-                )
-
-            if second_count == 80000:
-                break
-
-            second_count += 1000
-
-            time.sleep(3)
-
-        # 80000 ~ 입력
-        last_count = 80000
-        while True:
-            params = {
-                # 다른 api키 필요
-                "ServiceKey": settings.KMDB_API_KEY,
-                "listCount": 1000,
-                "startCount": last_count,
-                "detail": "Y",
-            }
-
-            data = self.fetch_data_from_api(self.API_URL, params)
-
-            if data:
-                total_data.extend(data)
-            else:
-                print(
-                    f"{last_count}번째 요청에서 데이터 누락, 다음 요청으로 넘어갑니다."
-                )
-
-            if len(data) < 1000:
-                break
-
-            last_count += 1000
 
             time.sleep(3)
 
