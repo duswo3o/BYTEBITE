@@ -167,7 +167,6 @@ function fetchMovieDetails(moviepk) {
             // 포스터 설정
             const posterImage = document.getElementById('movie-poster');
             posterImage.src = movie.poster;
-            posterImage.src = movie.poster;
             posterImage.alt = `${movie.title} 포스터`;
 
             // 태그 출력
