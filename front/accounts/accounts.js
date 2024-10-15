@@ -458,22 +458,24 @@ const changePassword = () => {
 // 회원탈퇴
 const withdrawBtn = document.getElementById('withdrawUser')
 const withdrawUser = () => {
-    axios({
-        method: "delete",
-        url: `${API_BASE_URL}/accounts/`,
-        data: {
-            password: document.getElementById("withdrawPassword").value
-        }
+    const password = document.getElementById("withdrawPassword").value
+    axios.delete(`${API_BASE_URL}/accounts/`, {
+        data: { password: password }
     })
         .then(response => {
             console.log(response)
             sessionStorage.clear()
+            localStorage.clear()
             window.location.href = 'profile.html'
         })
         .catch(error => {
-            console.log(error)
-            console.log(document.getElementById("withdrawPassword").value)
-            alert("error : 탈퇴에 실패하였습니다")
+            if (error.response) {
+                console.error("Response error:", error);
+                alert("탈퇴에 실패하였습니다: " + error.response.data.password);
+            } else {
+                console.error("Error:", error.message);
+                alert("탈퇴 요청 중 오류가 발생했습니다.");
+            }
         })
 }
 
