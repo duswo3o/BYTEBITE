@@ -9,7 +9,33 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="search.js" defer></script>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* 추가한 CSS 스타일 */
+        .movie-card-container {
+            display: flex;
+            flex-wrap: wrap;
+            /* 줄 바꿈을 허용 */
+            justify-content: space-between;
+            /* 여백 균일하게 배치 */
+        }
+
+        .movie-card {
+            width: calc(20% - 10px);
+            /* 5개씩 보여주기 위해 너비 설정 */
+            margin-bottom: 20px;
+            /* 카드 사이의 세로 여백 */
+            text-align: center;
+            /* 카드 내용 중앙 정렬 */
+        }
+
+        .movie-card img {
+            width: 100%;
+            /* 카드 내 이미지가 카드 너비에 맞도록 */
+            height: auto;
+            /* 비율 유지 */
+        }
+    </style>
 </head>
 
 <body>
@@ -23,7 +49,7 @@
                 <p id="helloUser"></p>
             </div>
         </a>
-        <h3 onclick='location.href="./mainpage.html"'><strong>POPCORNGEEK</strong></h3>
+        <h3 onclick='location.href="https://popcorngeek.store/"'><strong>POPCORNGEEK</strong></h3>
         <!-- <a href="#">Contact</a> -->
 
         <div>

@@ -1,51 +1,51 @@
-h3 {
-    color: darkgreen;
+/* 컬러 팔레트 */
+:root {
+    --color-primary: #ffffff; /* 다크 블루 */
+    --color-secondary: #E84545; /* 밝은 레드 */
+    --color-accent1: #903749; /* 다크 레드 */
+    --color-accent2: #53354A; /* 다크 퍼플 */
+    --color-text: #000000; /* 화이트 */
 }
 
-
+/* 스타일 */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
+    background-color: var(--color-primary);
+    color: var(--color-text);
+}
+
+h3 {
+    color: var(--color-secondary);
 }
 
 .navbar {
-    background-color: bisque;
-    overflow: hidden;
+    background-color: var(--color-primary);
     display: flex;
-    justify-content:space-between; /* 요소 간의 공간 분배 */
-    align-items: center; /* 세로 정렬 */
-
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px; /* 패딩 추가 */
 }
 
 .navbar a {
-    float: left;
-    display: block;
-    color: gray;
+    color: var(--color-secondary);
     text-align: center;
-    padding: 14px 20px;
+    padding: 8px 16px;
     text-decoration: none;
+    transition: background-color 0.3s; /* 호버 애니메이션 추가 */
 }
 
 .navbar a:hover {
-    background-color: #ddd;
-    color: black;
+    background-color: var(--color-secondary);
+    color: var(--color-text);
 }
-
-.navbar .right {
-    float: right;
-}
-
 
 .user-info {
     display: flex;
-    /* Flexbox 사용 */
     align-items: center;
-    /* 수직 중앙 정렬 */
-    justify-content: center;
-    /* 수평 가운데 정렬 */
 }
 
 #helloUser {
     margin: 0;
-    line-height: 50px; /* 텍스트의 줄 높이를 이미지 높이와 맞추기 */
+    line-height: 1.5; /* line-height를 상대 값으로 변경 */
 }
