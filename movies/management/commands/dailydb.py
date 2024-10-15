@@ -8,7 +8,13 @@ import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
+from django.db.models import Func
 from movies.models import Genre, Movie, Ranking, Staff
+
+
+class UpperReplace(Func):
+    function = "REPLACE"
+    template = "%(function)s(%(expressions)s, ' ', '')"
 
 
 class Command(BaseCommand):
@@ -73,7 +79,14 @@ class Command(BaseCommand):
             crawling_date = self.YESTERDAY.strftime("%Y-%m-%d")
             release_date = item["openDt"]
 
-            movie = Movie.objects.filter(title=title, release_date=release_date).first()
+            movie = (
+                Movie.objects.annotate(processed_title=UpperReplace("title"))
+                .filter(
+                    processed_title__iexact=title.replace(" ", "").upper(),
+                    release_date=release_date,
+                )
+                .first()
+            )
 
             Ranking.objects.create(
                 title=title,

@@ -166,8 +166,7 @@ function fetchMovieDetails(moviepk) {
 
             // 포스터 설정
             const posterImage = document.getElementById('movie-poster');
-            const posterUrl = movie.poster.startsWith('http') ? movie.poster : `${API_BASE_URL}${movie.poster}`;
-            posterImage.src = posterUrl;
+            posterImage.src = movie.poster;
             posterImage.alt = `${movie.title} 포스터`;
 
             // 태그 출력
@@ -350,7 +349,7 @@ function displaySearchResults(results, searchType) {
             movieCard.classList.add('movie-card');
 
             // 영화 포스터
-            const posterUrl = item.poster.startsWith('http') ? item.poster : `${API_BASE_URL}${item.poster}`; // 포스터 URL 설정
+            const posterUrl = item.poster;
 
             // 영화 링크
             const movieLink = document.createElement('a');
