@@ -359,7 +359,7 @@ function displaySearchResults(results, searchType) {
 
             // 영화 포스터 이미지를 링크에 추가
             const moviePoster = document.createElement('img');
-            moviePoster.src = posterUrl ? posterUrl : 'placeholder_image_url'; // 포스터가 없으면 기본 이미지 사용
+            moviePoster.src = posterUrl
             moviePoster.alt = `${item.title} 포스터`;
             movieLink.appendChild(moviePoster); // 포스터를 링크에 추가
 
@@ -374,15 +374,70 @@ function displaySearchResults(results, searchType) {
 
             // 영화 카드 구성
             movieCard.appendChild(movieLink); // 영화 링크를 카드에 추가
-            movieCard.appendChild(movieTitle);
             movieCard.appendChild(movieGenre);
+            movieCard.appendChild(movieTitle);
 
             // 카드 추가
             resultsList.appendChild(movieCard);
+
         } else if (searchType === 'staff') {
-            const li = document.createElement('li');
-            li.textContent = `이름: ${item.name}`;
-            resultsList.appendChild(li);
+            // 영화인 정보 표시
+            const staffItem = document.createElement('div');
+            staffItem.classList.add('staff-item');
+
+            // 이름과 역할 출력
+            const staffName = document.createElement('h3');
+            staffName.textContent = `이름: ${item.name}`;
+
+            const staffRole = document.createElement('p');
+            staffRole.textContent = `역할: ${item.role}`;
+
+            // 필모그래피 출력
+            const filmographyTitle = document.createElement('h4');
+            filmographyTitle.textContent = '필모그래피';
+
+            const filmographyList = document.createElement('ul');
+            item.filmographys.forEach(film => {
+                const filmItem = document.createElement('li');
+                const filmLink = document.createElement('a');
+                filmLink.href = `/front/movies/details.html?pk=${film.id}`;
+
+                // 영화 포스터 이미지
+                const filmPoster = document.createElement('img');
+                filmPoster.src = film.poster
+                filmPoster.alt = `${film.title} 포스터`;
+                filmPoster.style.width = '50px'; // 이미지 크기를 조정
+
+                // 영화 제목
+                const filmTitle = document.createElement('span');
+                filmTitle.textContent = film.title;
+
+                // 구성 요소 추가
+                filmLink.appendChild(filmPoster);
+                filmItem.appendChild(filmLink);
+
+                // 줄바꿈 추가
+                const br = document.createElement('br');
+                filmItem.appendChild(br);
+
+                // 영화 제목 추가
+                const titleLink = document.createElement('a');
+                titleLink.href = filmLink.href; // 영화 링크를 그대로 사용
+                titleLink.textContent = film.title; // 영화 제목
+
+                filmItem.appendChild(titleLink);
+                filmographyList.appendChild(filmItem);
+            });
+
+            // 영화인 정보를 구성
+            staffItem.appendChild(staffName);
+            staffItem.appendChild(staffRole);
+            staffItem.appendChild(filmographyTitle);
+            staffItem.appendChild(filmographyList);
+
+            // 결과 목록에 추가
+            resultsList.appendChild(staffItem);
+
         } else if (searchType === 'member') {
             const li = document.createElement('li');
             li.textContent = `닉네임: ${item.nickname}`;

@@ -119,7 +119,7 @@ class MovieSearchAPIView(APIView):
 
         # 영화인 검색(이름)
         elif search_type == "staff":
-            search_data = Staff.objects.filter(name__icontains=search_keyword)
+            search_data = Staff.objects.filter(name__iexact=search_keyword)
 
             serializer_class = StaffSerializer
 
