@@ -65,6 +65,11 @@ OTT 플랫폼의 성장과 영화가 현대 문화에서 차지하는 비중이 
 - **댓글 좋아요**: `POST /api/v1/reviews/likes/comment/<int:comment_id>/`
 - **댓글 신고**: `POST /api/v1/reviews/report/comment/<int:comment_id>/`
 
+### 상품 관련 API
+- **상품 목록 조회**: `GET /api/v1/products/`
+- **상품 상세페이지 조회**: `GET /api/v1/products/<int:product_pk>/`
+- **상품 결제**: `GET /api/v1/products/payments/`
+
 ---
 
 ## 문제 해결
