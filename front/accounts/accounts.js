@@ -139,11 +139,13 @@ const signupUser = () => {
     })
         .then(response => {
             console.log(response);
+            alert("이메일을 확인하여 인증을 진행해주세요")
             // 이동할 페이지
-            window.location.href = "profile.html"
+            window.location.href = "signin.html"
         })
         .catch(error => {
             console.log(error)
+            alert(error.response.data.message || "회원가입에 실패하였습니다")
             // alert(email)
         })
 
@@ -216,9 +218,9 @@ const profileBtn = document.getElementById("searchUserBtn")
 
 const userProfile = () => {
 
-    var userPK = document.getElementById("userpk").value
+    var userNickname = document.getElementById("userNickname").value || localStorage.getItem("nickname")
 
-    axios.get(`${API_BASE_URL}/accounts/${userPK}/`)
+    axios.get(`${API_BASE_URL}/accounts/${userNickname}/`)
         .then(response => {
             console.log(response)
 
@@ -355,9 +357,9 @@ const userProfile = () => {
 // 팔로우
 const followUser = (event) => {
     event.preventDefault();  // 기본 동작 방지 (페이지 새로고침 방지)
-    var userPK = document.getElementById("userpk").value
+    var userNickname = document.getElementById("userNickname").value
 
-    axios.post(`${API_BASE_URL}/accounts/${userPK}/follow/`, {})
+    axios.post(`${API_BASE_URL}/accounts/${userNickname}/follow/`, {})
         .then(response => {
             console.log(response)
             alert(response.data.message)
@@ -552,8 +554,9 @@ if (signoutBtn) {
     signoutBtn.addEventListener('click', signoutUser)
 }
 
-if (profileBtn) {
+if (profileBtn && localStorage.getItem("nickname")) {
     profileBtn.addEventListener('click', userProfile)
+    window.addEventListener('DOMContentLoaded', userProfile);
 }
 
 if (followBtn) {
