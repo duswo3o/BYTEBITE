@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Avg, FloatField, Q, Value
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Round
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from .models import Movie, Ranking, Rating, Staff
@@ -42,8 +42,9 @@ class MovieListApiView(APIView):
 
         # 평균 평점 순 출력
         graded_movies = Movie.objects.annotate(
-            average_grade=Coalesce(
-                Avg("ratings__score"), Value(0), output_field=FloatField()
+            average_grade=Round(
+                Coalesce(Avg("ratings__score"), Value(0), output_field=FloatField()),
+                1  # 소수점 첫 번째 자리까지 반올림
             )
         ).order_by("-average_grade")[:10]
 
