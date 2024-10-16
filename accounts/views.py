@@ -183,8 +183,8 @@ class UserChangePasswordAPIView(APIView):
 class UserFollowAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, user_pk):
-        user = get_object_or_404(User, pk=user_pk)
+    def post(self, request, nickname):
+        user = get_object_or_404(User, nickname=nickname)
         me = request.user
 
         if me == user:
