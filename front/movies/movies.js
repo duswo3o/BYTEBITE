@@ -22,9 +22,9 @@ const tokenManager = {
                 refresh: refreshToken
             });
             this.setTokens(response.data); // 새로운 토큰 저장
-            console.log('토큰이 갱신되었습니다:', response.data.access);
+            // console.log('토큰이 갱신되었습니다:', response.data.access);
         } catch (error) {
-            console.error('토큰 갱신 실패:', error.response ? error.response.data : error.message);
+            // console.error('토큰 갱신 실패:', error.response ? error.response.data : error.message);
             this.clearTokens(); // 실패 시 토큰 제거
             throw error;
         }
@@ -57,7 +57,7 @@ axios.interceptors.response.use(
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`; // 새로운 토큰 설정
                 return axios(originalRequest); // 원래 요청 다시 시도
             } catch (err) {
-                console.error('새로운 토큰으로 재요청 실패:', err);
+                // console.error('새로운 토큰으로 재요청 실패:', err);
                 return Promise.reject(error);
             }
         }
@@ -65,6 +65,68 @@ axios.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+
+// 버튼 보여주기 설정
+document.addEventListener('DOMContentLoaded', function () {
+    const accessToken = sessionStorage.getItem('jwtAccessToken');
+    // 로컬스토리지에 토큰이 있는 경우
+    if (accessToken) {
+        // 로그아웃 버튼만 보여주기
+        document.getElementById('signinBtn').style.display = 'none';
+        document.getElementById('signupBtn').style.display = 'none';
+        document.getElementById('signoutBtn').style.display = 'block';
+    }
+    // 로컬스토리지에 토큰이 없는 경우 
+    else {
+        document.getElementById('signinBtn').style.display = 'block';
+        document.getElementById('signupBtn').style.display = 'block';
+        document.getElementById('signoutBtn').style.display = 'none';
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const helloUser = document.getElementById("helloUser");
+    const nickname = localStorage.getItem("nickname")
+    if (nickname) {
+        var userMessage = "hello, " + localStorage.getItem("nickname")
+    } else {
+        var userMessage = "welcome!"
+    }
+    helloUser.innerHTML = `
+<span>${userMessage}</span>
+`;
+});
+
+
+// 로그아웃
+const signoutBtn = document.getElementById("signoutBtn")
+
+const signoutUser = (event) => {
+    event.preventDefault()
+    const refreshToken = tokenManager.getRefreshToken();
+
+    axios.post(`${API_BASE_URL}accounts/signout/`, {
+        refresh: refreshToken
+    })
+        .then(response => {
+            sessionStorage.clear()
+            localStorage.clear()
+            // console.log(response)
+            alert("로그아웃 되었습니다")
+        })
+        .catch(error => {
+            // console.log(error)
+            sessionStorage.clear()
+            localStorage.clear()
+            // alert("로그아웃 실패")
+        })
+}
+
+if (signoutBtn) {
+    signoutBtn.addEventListener('click', signoutUser)
+}
+
 
 // url주소에서 데이터 추출
 const urlParams = new URLSearchParams(window.location.search);
@@ -84,7 +146,7 @@ const fetchMovies = () => {
             renderComingMovies(response.data.coming_movies);       // 개봉 예정작 출력
         })
         .catch(error => {
-            console.error('Error fetching movies:', error);
+            // console.error('Error fetching movies:', error);
         });
 };
 
@@ -102,8 +164,7 @@ function fetchMovieDetails(moviepk) {
 
             // 포스터 설정
             const posterImage = document.getElementById('movie-poster');
-            const posterUrl = movie.poster.startsWith('http') ? movie.poster : `${API_BASE_URL}${movie.poster}`;
-            posterImage.src = posterUrl;
+            posterImage.src = movie.poster;
             posterImage.alt = `${movie.title} 포스터`;
 
             // 태그 출력
@@ -119,6 +180,8 @@ function fetchMovieDetails(moviepk) {
             // 보고싶어요,관심없어요
             const likeButton = document.getElementById('like');
             const dislikeButton = document.getElementById('dislike');
+            likeButton.textContent = `보고싶어요! [${movie.like_users.length}]`;
+            dislikeButton.textContent = `관심없어요... [${movie.dislike_users.length}]`;
 
             handleReaction(likeButton, moviepk, 'like');
             handleReaction(dislikeButton, moviepk, 'dislike');
@@ -157,7 +220,7 @@ function fetchMovieDetails(moviepk) {
             });
         })
         .catch(error => {
-            console.error('Error fetching movie details:', error);
+            // console.error('Error fetching movie details:', error);
         });
 }
 
@@ -269,7 +332,7 @@ function fetchSearchResults(searchType, searchKeyword) {
             displaySearchResults(response.data, searchType);
         })
         .catch(error => {
-            console.error('검색 결과를 가져오는 중 오류 발생:', error);
+            // console.error('검색 결과를 가져오는 중 오류 발생:', error);
         });
 }
 
@@ -286,7 +349,7 @@ function displaySearchResults(results, searchType) {
             movieCard.classList.add('movie-card');
 
             // 영화 포스터
-            const posterUrl = item.poster.startsWith('http') ? item.poster : `${API_BASE_URL}${item.poster}`; // 포스터 URL 설정
+            const posterUrl = item.poster;
 
             // 영화 링크
             const movieLink = document.createElement('a');
@@ -294,7 +357,7 @@ function displaySearchResults(results, searchType) {
 
             // 영화 포스터 이미지를 링크에 추가
             const moviePoster = document.createElement('img');
-            moviePoster.src = posterUrl ? posterUrl : 'placeholder_image_url'; // 포스터가 없으면 기본 이미지 사용
+            moviePoster.src = posterUrl
             moviePoster.alt = `${item.title} 포스터`;
             movieLink.appendChild(moviePoster); // 포스터를 링크에 추가
 
@@ -309,15 +372,70 @@ function displaySearchResults(results, searchType) {
 
             // 영화 카드 구성
             movieCard.appendChild(movieLink); // 영화 링크를 카드에 추가
-            movieCard.appendChild(movieTitle);
             movieCard.appendChild(movieGenre);
+            movieCard.appendChild(movieTitle);
 
             // 카드 추가
             resultsList.appendChild(movieCard);
+
         } else if (searchType === 'staff') {
-            const li = document.createElement('li');
-            li.textContent = `이름: ${item.name}`;
-            resultsList.appendChild(li);
+            // 영화인 정보 표시
+            const staffItem = document.createElement('div');
+            staffItem.classList.add('staff-item');
+
+            // 이름과 역할 출력
+            const staffName = document.createElement('h3');
+            staffName.textContent = `이름: ${item.name}`;
+
+            const staffRole = document.createElement('p');
+            staffRole.textContent = `역할: ${item.role}`;
+
+            // 필모그래피 출력
+            const filmographyTitle = document.createElement('h4');
+            filmographyTitle.textContent = '필모그래피';
+
+            const filmographyList = document.createElement('ul');
+            item.filmographys.forEach(film => {
+                const filmItem = document.createElement('li');
+                const filmLink = document.createElement('a');
+                filmLink.href = `/front/movies/details.html?pk=${film.id}`;
+
+                // 영화 포스터 이미지
+                const filmPoster = document.createElement('img');
+                filmPoster.src = film.poster
+                filmPoster.alt = `${film.title} 포스터`;
+                filmPoster.style.width = '50px'; // 이미지 크기를 조정
+
+                // 영화 제목
+                const filmTitle = document.createElement('span');
+                filmTitle.textContent = film.title;
+
+                // 구성 요소 추가
+                filmLink.appendChild(filmPoster);
+                filmItem.appendChild(filmLink);
+
+                // 줄바꿈 추가
+                const br = document.createElement('br');
+                filmItem.appendChild(br);
+
+                // 영화 제목 추가
+                const titleLink = document.createElement('a');
+                titleLink.href = filmLink.href; // 영화 링크를 그대로 사용
+                titleLink.textContent = film.title; // 영화 제목
+
+                filmItem.appendChild(titleLink);
+                filmographyList.appendChild(filmItem);
+            });
+
+            // 영화인 정보를 구성
+            staffItem.appendChild(staffName);
+            staffItem.appendChild(staffRole);
+            staffItem.appendChild(filmographyTitle);
+            staffItem.appendChild(filmographyList);
+
+            // 결과 목록에 추가
+            resultsList.appendChild(staffItem);
+
         } else if (searchType === 'member') {
             const li = document.createElement('li');
             li.textContent = `닉네임: ${item.nickname}`;
@@ -333,10 +451,11 @@ initSearch();
 function sendLikeData(moviepk, movieData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/`, movieData)
         .then(response => {
-            console.log('영화 정보가 성공적으로 전송되었습니다:', response.data);
+            alert(response.data.detail);
+            window.location.reload();
         })
         .catch(error => {
-            console.error('영화 정보 전송 중 오류가 발생했습니다:', error);
+            alert('오류가 발생했습니다.');
         });
 }
 
@@ -353,10 +472,11 @@ function handleReaction(button, moviepk, reactionType) {
 function sendScoreData(moviepk, scoreData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/score/`, scoreData)
         .then(response => {
-            console.log('성공적으로 전송되었습니다:', response.data);
+            alert('평가 완료!');
+            window.location.reload();
         })
         .catch(error => {
-            console.error('전송 중 오류가 발생했습니다:', error);
+            alert('오류가 발생했습니다.');
         });
 }
 
@@ -377,10 +497,10 @@ async function getReviews(moviePk) {
             review.comments = commentResponses[index].data;
         });
 
-        console.log('리뷰 및 댓글 가져오기 성공:', reviews);
+        // console.log('리뷰 및 댓글 가져오기 성공:', reviews);
         return reviews;
     } catch (error) {
-        console.error('리뷰 가져오기 실패:', error);
+        // console.error('리뷰 가져오기 실패:', error);
         throw error;
     }
 }
@@ -391,7 +511,7 @@ async function refreshReviews(moviePk) {
         const reviews = await getReviews(moviePk);
         displayReviews(reviews);
     } catch (error) {
-        console.error('리뷰 목록 갱신 실패:', error);
+        // console.error('리뷰 목록 갱신 실패:', error);
         alert('리뷰 목록을 가져오는데 실패했습니다.');
     }
 }
@@ -400,7 +520,7 @@ async function refreshReviews(moviePk) {
 function handleError(action, error) {
     // Axios 오류만 처리
     if (error.isAxiosError) {
-        console.error(`${action} 실패:`, error.response ? error.response.data : error.message);
+        // console.error(`${action} 실패:`, error.response ? error.response.data : error.message);
         alert(`${action} 실패`);
     }
 }
@@ -465,11 +585,11 @@ async function deleteReview(reviewId) {
 async function reportReview(reviewId, reportType) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/report/review/${reviewId}/`, { report_type: reportType });
-        console.log(response);
+        // console.log(response);
         alert(response.data.message);
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         alert(error.response.data.message)
     }
 }
@@ -535,11 +655,11 @@ async function toggleCommentLike(commentId) {
 async function reportComment(commentId, reportType) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/report/comment/${commentId}/`, { report_type: reportType });
-        console.log(response);
+        // console.log(response);
         alert(response.data.message);
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         alert(error.response.data.message)
     }
 }
@@ -854,7 +974,7 @@ async function transformReviewContent(style) {
         document.getElementById('reviewContent').value = response.data.transformedContent;
         alert('말투가 변환되었습니다.');
     } catch (error) {
-        console.error('말투 변경 중 오류가 발생했습니다:', error);
+        // console.error('말투 변경 중 오류가 발생했습니다:', error);
     }
 }
 
@@ -863,9 +983,9 @@ async function transformReviewContent(style) {
 function sentimentReview(moviepk) {
     axios.get(`${API_BASE_URL}reviews/sentiment/${moviepk}/`)
         .then(response => {
-            console.log("top3 response", response);
+            // console.log("top3 response", response);
             const positiveReviews = response.data.positive_review;
-            console.log("pos", positiveReviews)
+            // console.log("pos", positiveReviews)
             const negativeReviews = response.data.negative_review;
 
 
@@ -879,7 +999,7 @@ function sentimentReview(moviepk) {
                     posreviewHTML = `<div class="content" >${positiveReview.content}</div>`;
                 }
 
-                const positiveReviewDiv = document.createElement("div");
+                const positiveReviewDiv = document.createElement("p");
                 positiveReviewDiv.innerHTML = `
                 <div class="container text-center">
                     <p><strong>${positiveReview.author}</strong> [❤ : ${positiveReview.like_count}]</p>
@@ -898,11 +1018,11 @@ function sentimentReview(moviepk) {
                 } else {
                     megReviewHTML = `<div class="content" >${negativeReview.content}</div>`;
                 }
-                const negativeReviewDiv = document.createElement("div");
+                const negativeReviewDiv = document.createElement("p");
                 negativeReviewDiv.innerHTML = `
                 <div class="container text-center">
                     <p><strong>${negativeReview.author}</strong> [❤ : ${negativeReview.like_count}]</p>
-                    <p>${negativeReview.content}</p>
+                    ${megReviewHTML}
                 </div>
                 `;
                 negtopReviewList.appendChild(negativeReviewDiv);
@@ -911,12 +1031,14 @@ function sentimentReview(moviepk) {
 
         })
         .catch(error => {
-            console.log(error)
+            // console.log(error)
         })
 
 }
 
-document.addEventListener("DOMContentLoaded", sentimentReview(urlParams.get('pk')))
+if (urlParams.get('pk')) {
+    document.addEventListener("DOMContentLoaded", sentimentReview(urlParams.get('pk')))
+}
 
 // 버튼별로 말투 스타일을 전달
 document.getElementById('transformToJoseon').addEventListener('click', () => {

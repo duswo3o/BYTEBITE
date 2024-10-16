@@ -1,5 +1,6 @@
 # 표준 라이브러리
 from datetime import datetime, timedelta
+import json
 import time
 
 # 서드파티 라이브러리
@@ -9,7 +10,7 @@ import requests
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand
-from django.db import IntegrityError
+from django.db import IntegrityError, OperationalError, transaction
 from movies.models import Genre, Movie, Ranking, Staff
 
 
@@ -29,7 +30,10 @@ class Command(BaseCommand):
         # 테스트 데이터를 입력하는 함수(배포시 주석처리)
         total_data = self.test_setup()
 
-        self.save_to_database(total_data)
+        BATCH_SIZE = 1000
+        for batch_start in range(0, len(total_data), BATCH_SIZE):
+            batch = total_data[batch_start : batch_start + BATCH_SIZE]
+            self.save_to_database(batch)
 
         # 앞으로 7일간 개봉할 영화의 개봉일 입력
         release_data = self.initial_release_date()
@@ -39,6 +43,25 @@ class Command(BaseCommand):
         # 이전 7일간의 박스오피스 순위 입력
         self.save_to_rank_database()
 
+    def fetch_data_from_api(self, url, params):
+        try:
+            response = requests.get(url, params=params)
+
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    return data["Data"][0]["Result"]
+                except json.JSONDecodeError as e:
+                    print(f"JSON 파싱 오류: {e}")
+                    return None
+            else:
+                print("API 요청에 실패했습니다.")
+                return None
+
+        except requests.RequestException as e:
+            print(f"요청 예외 발생: {e}")
+            return None
+
     def database_initial_setup(self):
         total_data = []
 
@@ -47,56 +70,54 @@ class Command(BaseCommand):
         while True:
             params = {
                 # 다른 api키 필요
-                "ServiceKey": settings.KMDB_API_KEY,
+                "ServiceKey": settings.KMDB_API_KEY_EX1,
                 "listCount": 1000,
                 "startCount": first_count,
                 "detail": "Y",
             }
 
-            response = requests.get(self.API_URL, params=params)
+            data = self.fetch_data_from_api(self.API_URL, params)
 
-            if response.status_code == 200:
-                data = response.json()["Data"][0]["Result"]
+            if data:
                 total_data.extend(data)
-
-                if first_count == 40000:
-                    break
-
-                first_count += 1000
-
-                time.sleep(3)
-
             else:
-                self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
-                return
+                print(
+                    f"{first_count}번째 요청에서 데이터 누락, 다음 요청으로 넘어갑니다."
+                )
+
+            if first_count == 40000:
+                break
+
+            first_count += 1000
+
+            time.sleep(3)
 
         # 40000 ~ 80000까지 입력
         second_count = 40000
         while True:
             params = {
                 # 다른 api키 필요
-                "ServiceKey": settings.KMDB_API_KEY,
+                "ServiceKey": settings.KMDB_API_KEY_EX2,
                 "listCount": 1000,
                 "startCount": second_count,
                 "detail": "Y",
             }
 
-            response = requests.get(self.API_URL, params=params)
+            data = self.fetch_data_from_api(self.API_URL, params)
 
-            if response.status_code == 200:
-                data = response.json()["Data"][0]["Result"]
+            if data:
                 total_data.extend(data)
-
-                if second_count == 80000:
-                    break
-
-                second_count += 1000
-
-                time.sleep(3)
-
             else:
-                self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
-                return
+                print(
+                    f"{second_count}번째 요청에서 데이터 누락, 다음 요청으로 넘어갑니다."
+                )
+
+            if second_count == 80000:
+                break
+
+            second_count += 1000
+
+            time.sleep(3)
 
         # 80000 ~ 입력
         last_count = 80000
@@ -109,22 +130,21 @@ class Command(BaseCommand):
                 "detail": "Y",
             }
 
-            response = requests.get(self.API_URL, params=params)
+            data = self.fetch_data_from_api(self.API_URL, params)
 
-            if response.status_code == 200:
-                data = response.json()["Data"][0]["Result"]
+            if data:
                 total_data.extend(data)
-
-                if len(data) < 1000:
-                    break
-
-                last_count += 1000
-
-                time.sleep(3)
-
             else:
-                self.stdout.write(self.style.ERROR("API에 연결하는 데 실패했습니다."))
-                return
+                print(
+                    f"{last_count}번째 요청에서 데이터 누락, 다음 요청으로 넘어갑니다."
+                )
+
+            if len(data) < 1000:
+                break
+
+            last_count += 1000
+
+            time.sleep(3)
 
         return total_data
 
@@ -178,6 +198,12 @@ class Command(BaseCommand):
 
         return release_data
 
+    def validate_date(self, date_str):
+        try:
+            return datetime.strptime(date_str, "%Y%m%d").date()
+        except ValueError:
+            return datetime(1900, 1, 1).date()
+
     def save_to_database(self, total_data):
         for item in total_data:
             movie_cd = item["movieSeq"]
@@ -188,14 +214,8 @@ class Command(BaseCommand):
             poster = item["posters"].split("|")[0] if item["posters"] else None
 
             release_date = item["repRlsDate"]
-
-            if len(release_date) == 8:
-                year = release_date[:4]
-                month = release_date[4:6]
-                day = release_date[6:8]
-                release_date = f"{year}-{month}-{day}"
-            else:
-                release_date = None
+            release_date = self.validate_date(release_date)
+            release_date = release_date.strftime("%Y-%m-%d")
 
             genres = item["genre"].split(",")
             genre_objects = []

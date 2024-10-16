@@ -11,7 +11,30 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="navbar">
+        <!-- <a href="#">Home</a>
+            <a href="#">About</a> -->
+        <a href="../accounts/profile.html">
+            <div class="user-info">
+                <img src="../BYTEBITE.png" alt="" style="width:50px;">
+                <p id="helloUser"></p>
+            </div>
+        </a>
+        <h3 onclick='location.href="./mainpage.html"'><strong>POPCORNGEEK</strong></h3>
+        <!-- <a href="#">Contact</a> -->
+
+        <div>
+            <a href='../accounts/signin.html' class="right" id="signinBtn">sign in</a>
+            <a href="../accounts/signup.html" id="signupBtn">sign up</a>
+            <a href="#" id="signoutBtn" style="display: none;">sign out</a>
+        </div>
+    </div>
+
     <h1>POPCORNGEEK</h1>
+
+    <h2>
+        <a href="http://127.0.0.1:5500/front/products/products.html" class="button">제품 페이지로 이동</a>
+    </h2>
 
     <!-- 검색기능 -->
     <form id="searchForm">
@@ -35,7 +58,10 @@
 
     <h2>개봉예정작</h2>
     <ul id="coming-movies-list"></ul>
-
+    <footer>
+        <p>&copy; 2024 POPCORNGEEK. All rights reserved.</p>
+        <p><a href="/front/accounts/privacy.html">개인정보 처리방침</a> | <a href="/front/accounts/service.html">이용약관</a></p>
+    </footer>
     <script>
         // 페이지 로드 시 영화 목록 불러오기
         document.addEventListener('DOMContentLoaded', () => {

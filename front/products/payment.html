@@ -14,6 +14,25 @@
         <title>결제 테스트</title>
     </head>
 <body>
+    <div class="navbar">
+        <!-- <a href="#">Home</a>
+            <a href="#">About</a> -->
+        <a href="../accounts/profile.html">
+            <div class="user-info">
+                <img src="../BYTEBITE.png" alt="" style="width:50px;">
+                <p id="helloUser"></p>
+            </div>
+        </a>
+        <h3 onclick='location.href="../movies/mainpage.html"'><strong>POPCORNGEEK</strong></h3>
+        <!-- <a href="#">Contact</a> -->
+
+        <div>
+            <a href='../accounts/signin.html' class="right" id="signinBtn">sign in</a>
+            <a href="../accounts/signin.html" id="signupBtn">sign up</a>
+            <a href="#" id="signoutBtn" style="display: none;">sign out</a>
+        </div>
+    </div>
+
     <div class="container">
         <h1>결제 테스트</h1>
         <!-- 결제 폼 -->
@@ -49,16 +68,6 @@
 
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script>
-        // 주소 검색 함수
-        function openPostcode() {
-            new daum.Postcode({
-                oncomplete: function(data) {
-                    // 선택된 주소를 입력 필드에 설정
-                    document.getElementById('address').value = data.address;
-                }
-            }).open();
-        }
-
         // URL 파라미터에서 상품 정보 가져오기
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('productId');
@@ -69,7 +78,17 @@
         // 상품 정보 출력
         document.getElementById('product-name').textContent = productName;
         document.getElementById('product-price').textContent = productPrice;
-        document.getElementById('buyer-email').textContent = buyerEmail;
+        document.getElementById('user-email').textContent = buyerEmail;
+
+        // 주소 검색 함수
+        function openPostcode() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    // 선택된 주소를 입력 필드에 설정
+                    document.getElementById('address').value = data.address;
+                }
+            }).open();
+        }
 
         // 결제 요청 함수
         function requestPay() {

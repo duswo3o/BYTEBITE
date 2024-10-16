@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,29 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
+    <div class="navbar">
+        <!-- <a href="#">Home</a>
+            <a href="#">About</a> -->
+        <a href="profile.html">
+            <div class="user-info">
+                <img src="../BYTEBITE.png" alt="" style="width:50px;">
+                <p id="helloUser"></p>
+            </div>
+        </a>
+        <h3 onclick='location.href="../movies/mainpage.html"'><strong>POPCORNGEEK</strong></h3>
+        <!-- <a href="#">Contact</a> -->
+
+        <div>
+            <a href='signin.html' class="right" id="signinBtn">sign in</a>
+            <a href="signup.html" id="signupBtn">sign up</a>
+            <a href="#" id="signoutBtn" style="display: none;">sign out</a>
+        </div>
+    </div>
+
+
 
     <div class="container mb-4 p-5">
         <div class="container mb-4">
@@ -36,4 +59,5 @@
         crossorigin="anonymous"></script>
     <script type="module" src="./accounts.js"></script>
 </body>
+
 </html>

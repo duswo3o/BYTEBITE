@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.shortcuts import get_object_or_404, render
 from django.utils.http import urlsafe_base64_decode
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import permission_classes
 from rest_framework.decorators import api_view
@@ -61,18 +63,20 @@ class UserAPIView(APIView):
     def delete(self, request):
         password = request.data.get("password")
 
-        if not request.user.check_password(password):
+        if (not request.user.has_usable_password()) or (
+            request.user.check_password(password)
+        ):
+            request.user.is_active = False
+            request.user.deactivate_time = timezone.now()  # 현재시간
+            request.user.save()
             return Response(
-                {"password": "패스워드가 일치하지 않습니다."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"message": "회원정보가 비활성화 되었습니다."},
+                status=status.HTTP_200_OK,
             )
 
-        request.user.is_active = False
-        # 9시간을 더해줘야 한국 표준시가 됨
-        request.user.deactivate_time = datetime.now() + timedelta(hours=9)  # 현재시간
-        request.user.save()
         return Response(
-            {"message": "회원정보가 비활성화 되었습니다."}, status=status.HTTP_200_OK
+            {"password": "패스워드가 일치하지 않습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     @permission_classes([IsAuthenticated])
@@ -109,23 +113,6 @@ class UserActivate(APIView):
                 {"message": "링크가 유효하지 않거나 이미 사용되었습니다."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-
-@api_view(["POST"])
-def delete_user(request):
-    deactivate_users = User.objects.filter(is_active=False)
-    now = datetime.now()
-    delete_cnt = 0
-    for user in deactivate_users:
-        # 테스트용 2분
-        if (now - user.deactivate_time.replace(tzinfo=None)).seconds > 120:
-            user.delete()
-            delete_cnt += 1
-
-    return Response(
-        {"message": f"{delete_cnt}개의 계정이 삭제되었습니다."},
-        status=status.HTTP_200_OK,
-    )
 
 
 class UserSigninAPIView(APIView):
@@ -196,8 +183,8 @@ class UserChangePasswordAPIView(APIView):
 class UserFollowAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, user_pk):
-        user = get_object_or_404(User, pk=user_pk)
+    def post(self, request, nickname):
+        user = get_object_or_404(User, nickname=nickname)
         me = request.user
 
         if me == user:
@@ -223,6 +210,7 @@ class UserFollowAPIView(APIView):
 class UserProfileAPIView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+    lookup_field = "nickname"
 
 
 class PaymentAPIView(RetrieveAPIView):
@@ -357,6 +345,10 @@ class SocialCallbackView(APIView):
         )
         if created:
             user.set_unusable_password()
+            user.save()
+
+        if user:
+            user.is_active = True
             user.save()
 
         return user

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,27 +10,30 @@
     <script src="search.js" defer></script>
 
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* 추가한 CSS 스타일 */
-        .movie-card-container {
-            display: flex;
-            flex-wrap: wrap; /* 줄 바꿈을 허용 */
-            justify-content: space-between; /* 여백 균일하게 배치 */
-        }
-
-        .movie-card {
-            width: calc(20% - 10px); /* 5개씩 보여주기 위해 너비 설정 */
-            margin-bottom: 20px; /* 카드 사이의 세로 여백 */
-            text-align: center; /* 카드 내용 중앙 정렬 */
-        }
-
-        .movie-card img {
-            width: 100%; /* 카드 내 이미지가 카드 너비에 맞도록 */
-            height: auto; /* 비율 유지 */
-        }
-    </style>
 </head>
+
 <body>
+
+    <div class="navbar">
+        <!-- <a href="#">Home</a>
+            <a href="#">About</a> -->
+        <a href="../accounts/profile.html">
+            <div class="user-info">
+                <img src="../BYTEBITE.png" alt="" style="width:50px;">
+                <p id="helloUser"></p>
+            </div>
+        </a>
+        <h3 onclick='location.href="./mainpage.html"'><strong>POPCORNGEEK</strong></h3>
+        <!-- <a href="#">Contact</a> -->
+
+        <div>
+            <a href='../accounts/signin.html' class="right" id="signinBtn">sign in</a>
+            <a href="../accounts/signup.html" id="signupBtn">sign up</a>
+            <a href="#" id="signoutBtn" style="display: none;">sign out</a>
+        </div>
+    </div>
+
+
     <h1>검색 결과</h1>
 
     <!-- 검색 결과를 카드 형식으로 출력 -->
@@ -37,4 +41,5 @@
 
     <script src="movies.js"></script>
 </body>
+
 </html>

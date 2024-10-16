@@ -12,7 +12,7 @@ const followBtn = document.getElementById("followUserBtn");
 const tokenManager = {
     getAccessToken: () => sessionStorage.getItem('jwtAccessToken'),
     getRefreshToken: () => sessionStorage.getItem('jwtRefreshToken'),
-    setTokens: ({access, refresh}) => {
+    setTokens: ({ access, refresh }) => {
         sessionStorage.setItem('jwtAccessToken', access);
         sessionStorage.setItem('jwtRefreshToken', refresh);
     },
@@ -34,6 +34,7 @@ const tokenManager = {
         } catch (error) {
             console.error('토큰 갱신 실패:', error.response ? error.response.data : error.message);
             this.clearTokens(); // 실패 시 토큰 제거
+            localStorage.clear()
             throw error;
         }
     }
@@ -72,8 +73,9 @@ axios.interceptors.response.use(
                 return axios(originalRequest); // 원래 요청 다시 시도
             } catch (err) {
                 console.error('새로운 토큰으로 재요청 실패:', err);
-                console.log("로컬 스토리지를 삭제합니다.")
+                console.log("세션 스토리지를 삭제합니다.")
                 sessionStorage.clear()
+                localStorage.clear()
 
                 alert("토큰이 만료되었습니다. 다시 로그인해주세요.")
                 window.location.href = "signin.html"
@@ -87,6 +89,36 @@ axios.interceptors.response.use(
     }
 );
 
+// 버튼 보여주기 설정
+document.addEventListener('DOMContentLoaded', function () {
+    const accessToken = sessionStorage.getItem('jwtAccessToken');
+    // 로컬스토리지에 토큰이 있는 경우
+    if (accessToken) {
+        // 로그아웃 버튼만 보여주기
+        document.getElementById('signinBtn').style.display = 'none';
+        document.getElementById('signupBtn').style.display = 'none';
+        document.getElementById('signoutBtn').style.display = 'block';
+    }
+    // 로컬스토리지에 토큰이 없는 경우 
+    else {
+        document.getElementById('signinBtn').style.display = 'block';
+        document.getElementById('signupBtn').style.display = 'block';
+        document.getElementById('signoutBtn').style.display = 'none';
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const helloUser = document.getElementById("helloUser");
+    const nickname = localStorage.getItem("nickname")
+    if (nickname) {
+        var userMessage = "hello, " + localStorage.getItem("nickname")
+    } else {
+        var userMessage = "welcome!"
+    }
+    helloUser.innerHTML = `
+<span>${userMessage}</span>
+`;
+});
 
 // 회원가입
 const signupUser = () => {
@@ -107,11 +139,13 @@ const signupUser = () => {
     })
         .then(response => {
             console.log(response);
+            alert("이메일을 확인하여 인증을 진행해주세요")
             // 이동할 페이지
-            window.location.href = "profile.html"
+            window.location.href = "signin.html"
         })
         .catch(error => {
             console.log(error)
+            alert(error.response.data.message || "회원가입에 실패하였습니다")
             // alert(email)
         })
 
@@ -157,7 +191,8 @@ const signinUser = () => {
 
 const signoutBtn = document.getElementById("signoutBtn")
 
-const signoutUser = () => {
+const signoutUser = (event) => {
+    event.preventDefault()
     const refreshToken = tokenManager.getRefreshToken();
 
     axios.post(`${API_BASE_URL}/accounts/signout/`, {
@@ -183,9 +218,9 @@ const profileBtn = document.getElementById("searchUserBtn")
 
 const userProfile = () => {
 
-    var userPK = document.getElementById("userpk").value
+    var userNickname = document.getElementById("userNickname").value || localStorage.getItem("nickname")
 
-    axios.get(`${API_BASE_URL}/accounts/${userPK}/`)
+    axios.get(`${API_BASE_URL}/accounts/${userNickname}/`)
         .then(response => {
             console.log(response)
 
@@ -292,6 +327,20 @@ const userProfile = () => {
                 myRatingList.appendChild(ratingdiv);
             });
 
+            // 로컬 스토리지 또는 서버에서 로그인한 사용자의 정보를 가져옴
+            const loggedInUser = localStorage.getItem('nickname'); // 예: 로그인한 사용자 닉네임
+            const viewedProfileUser = response.data.nickname; // 예: 조회한 프로필 닉네임 (이 값을 서버에서 받아온다고 가정)
+
+            // 버튼 요소 가져오기
+            const profileBtn = document.getElementById('profile-btn');
+
+            // 로그인한 사용자와 조회한 프로필 사용자가 같을 때만 버튼을 표시
+            if (loggedInUser === viewedProfileUser) {
+                profileBtn.style.display = 'block'; // 버튼 보이게 설정
+            } else {
+                profileBtn.style.display = 'none'; // 버튼 숨기기
+            }
+
 
         })
         .catch(error => {
@@ -308,9 +357,9 @@ const userProfile = () => {
 // 팔로우
 const followUser = (event) => {
     event.preventDefault();  // 기본 동작 방지 (페이지 새로고침 방지)
-    var userPK = document.getElementById("userpk").value
+    var userNickname = document.getElementById("userNickname").value
 
-    axios.post(`${API_BASE_URL}/accounts/${userPK}/follow/`, {})
+    axios.post(`${API_BASE_URL}/accounts/${userNickname}/follow/`, {})
         .then(response => {
             console.log(response)
             alert(response.data.message)
@@ -413,22 +462,24 @@ const changePassword = () => {
 // 회원탈퇴
 const withdrawBtn = document.getElementById('withdrawUser')
 const withdrawUser = () => {
-    axios({
-        method: "delete",
-        url: `${API_BASE_URL}/accounts/`,
-        data: {
-            password: document.getElementById("withdrawPassword").value
-        }
+    const password = document.getElementById("withdrawPassword").value
+    axios.delete(`${API_BASE_URL}/accounts/`, {
+        data: { password: password }
     })
         .then(response => {
             console.log(response)
             sessionStorage.clear()
+            localStorage.clear()
             window.location.href = 'profile.html'
         })
         .catch(error => {
-            console.log(error)
-            console.log(document.getElementById("withdrawPassword").value)
-            alert("error : 탈퇴에 실패하였습니다")
+            if (error.response) {
+                console.error("Response error:", error);
+                alert("탈퇴에 실패하였습니다: " + error.response.data.password);
+            } else {
+                console.error("Error:", error.message);
+                alert("탈퇴 요청 중 오류가 발생했습니다.");
+            }
         })
 }
 
@@ -438,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 카카오 로그인 버튼 이벤트 리스너 설정
     const kakaoLoginButton = document.getElementById('kakao-login-btn');
     if (kakaoLoginButton) {
-        kakaoLoginButton.onclick = function() {
+        kakaoLoginButton.onclick = function () {
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/kakao/';
         };
     }
@@ -446,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 네이버 로그인 버튼 이벤트 리스너 설정
     const naverLoginButton = document.getElementById('naver-login-btn');
     if (naverLoginButton) {
-        naverLoginButton.onclick = function() {
+        naverLoginButton.onclick = function () {
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/naver/';
         };
     }
@@ -454,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 구글 로그인 버튼 이벤트 리스너 설정
     const googleLoginButton = document.getElementById('google-login-btn');
     if (googleLoginButton) {
-        googleLoginButton.onclick = function() {
+        googleLoginButton.onclick = function () {
             window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/google/';
         };
     }
@@ -503,8 +554,9 @@ if (signoutBtn) {
     signoutBtn.addEventListener('click', signoutUser)
 }
 
-if (profileBtn) {
+if (profileBtn && localStorage.getItem("nickname")) {
     profileBtn.addEventListener('click', userProfile)
+    window.addEventListener('DOMContentLoaded', userProfile);
 }
 
 if (followBtn) {

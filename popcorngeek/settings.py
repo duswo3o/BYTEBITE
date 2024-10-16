@@ -114,6 +114,9 @@ DATABASES = {
     "dev": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "OPTIONS": {
+            "timeout": 30,
+        },
     },
     "production": {
         "ENGINE": "django.db.backends.postgresql",
@@ -188,6 +191,8 @@ INTERNAL_IPS = [
 
 # 환경변수 로드
 KMDB_API_KEY = env("KMDB_API_KEY")
+KMDB_API_KEY_EX1 = env("KMDB_API_KEY")
+KMDB_API_KEY_EX2 = env("KMDB_API_KEY")
 KOFIC_API_KEY = env("KOFIC_API_KEY")
 IMP_KEY = env("IMP_KEY")
 IMP_SECRET = env("IMP_SECRET")
