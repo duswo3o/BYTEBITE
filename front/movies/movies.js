@@ -22,9 +22,9 @@ const tokenManager = {
                 refresh: refreshToken
             });
             this.setTokens(response.data); // 새로운 토큰 저장
-            console.log('토큰이 갱신되었습니다:', response.data.access);
+            // console.log('토큰이 갱신되었습니다:', response.data.access);
         } catch (error) {
-            console.error('토큰 갱신 실패:', error.response ? error.response.data : error.message);
+            // console.error('토큰 갱신 실패:', error.response ? error.response.data : error.message);
             this.clearTokens(); // 실패 시 토큰 제거
             throw error;
         }
@@ -57,7 +57,7 @@ axios.interceptors.response.use(
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`; // 새로운 토큰 설정
                 return axios(originalRequest); // 원래 요청 다시 시도
             } catch (err) {
-                console.error('새로운 토큰으로 재요청 실패:', err);
+                // console.error('새로운 토큰으로 재요청 실패:', err);
                 return Promise.reject(error);
             }
         }
@@ -113,11 +113,11 @@ const signoutUser = (event) => {
         .then(response => {
             sessionStorage.clear()
             localStorage.clear()
-            console.log(response)
+            // console.log(response)
             alert("로그아웃 되었습니다")
         })
         .catch(error => {
-            console.log(error)
+            // console.log(error)
             sessionStorage.clear()
             localStorage.clear()
             // alert("로그아웃 실패")
@@ -148,7 +148,7 @@ const fetchMovies = () => {
             renderComingMovies(response.data.coming_movies);       // 개봉 예정작 출력
         })
         .catch(error => {
-            console.error('Error fetching movies:', error);
+            // console.error('Error fetching movies:', error);
         });
 };
 
@@ -222,7 +222,7 @@ function fetchMovieDetails(moviepk) {
             });
         })
         .catch(error => {
-            console.error('Error fetching movie details:', error);
+            // console.error('Error fetching movie details:', error);
         });
 }
 
@@ -334,7 +334,7 @@ function fetchSearchResults(searchType, searchKeyword) {
             displaySearchResults(response.data, searchType);
         })
         .catch(error => {
-            console.error('검색 결과를 가져오는 중 오류 발생:', error);
+            // console.error('검색 결과를 가져오는 중 오류 발생:', error);
         });
 }
 
@@ -399,6 +399,7 @@ function sendLikeData(moviepk, movieData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/`, movieData)
         .then(response => {
             alert(response.data.detail);
+            window.location.reload();
         })
         .catch(error => {
             alert('오류가 발생했습니다.');
@@ -419,6 +420,7 @@ function sendScoreData(moviepk, scoreData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/score/`, scoreData)
         .then(response => {
             alert('평가 완료!');
+            window.location.reload();
         })
         .catch(error => {
             alert('오류가 발생했습니다.');
@@ -442,10 +444,10 @@ async function getReviews(moviePk) {
             review.comments = commentResponses[index].data;
         });
 
-        console.log('리뷰 및 댓글 가져오기 성공:', reviews);
+        // console.log('리뷰 및 댓글 가져오기 성공:', reviews);
         return reviews;
     } catch (error) {
-        console.error('리뷰 가져오기 실패:', error);
+        // console.error('리뷰 가져오기 실패:', error);
         throw error;
     }
 }
@@ -456,7 +458,7 @@ async function refreshReviews(moviePk) {
         const reviews = await getReviews(moviePk);
         displayReviews(reviews);
     } catch (error) {
-        console.error('리뷰 목록 갱신 실패:', error);
+        // console.error('리뷰 목록 갱신 실패:', error);
         alert('리뷰 목록을 가져오는데 실패했습니다.');
     }
 }
@@ -543,11 +545,11 @@ async function deleteReview(reviewId) {
 async function reportReview(reviewId, reportType) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/report/review/${reviewId}/`, { report_type: reportType });
-        console.log(response);
+        // console.log(response);
         alert(response.data.message);
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         alert(error.response.data.message)
     }
 }
@@ -616,11 +618,11 @@ async function toggleCommentLike(commentId) {
 async function reportComment(commentId, reportType) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/report/comment/${commentId}/`, { report_type: reportType });
-        console.log(response);
+        // console.log(response);
         alert(response.data.message);
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         alert(error.response.data.message)
     }
 }
@@ -917,7 +919,7 @@ async function transformReviewContent(style) {
         document.getElementById('reviewContent').value = response.data.transformedContent;
         alert('말투가 변환되었습니다.');
     } catch (error) {
-        console.error('말투 변경 중 오류가 발생했습니다:', error);
+        // console.error('말투 변경 중 오류가 발생했습니다:', error);
     }
 }
 
@@ -926,9 +928,9 @@ async function transformReviewContent(style) {
 function sentimentReview(moviepk) {
     axios.get(`${API_BASE_URL}reviews/sentiment/${moviepk}/`)
         .then(response => {
-            console.log("top3 response", response);
+            // console.log("top3 response", response);
             const positiveReviews = response.data.positive_review;
-            console.log("pos", positiveReviews)
+            // console.log("pos", positiveReviews)
             const negativeReviews = response.data.negative_review;
 
 
@@ -974,7 +976,7 @@ function sentimentReview(moviepk) {
 
         })
         .catch(error => {
-            console.log(error)
+            // console.log(error)
         })
 
 }
