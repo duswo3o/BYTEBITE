@@ -215,7 +215,7 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         ]
 
     def validate_age(self, value):
-        if (value < 0) or (value > 150):
+        if value and ((value < 0) or (value > 150)):
             raise serializers.ValidationError(
                 {"error": "나이는 0세 이상 150세 이하로 입력 가능합니다."}
             )
