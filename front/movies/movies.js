@@ -67,7 +67,6 @@ axios.interceptors.response.use(
 );
 
 
-
 // 버튼 보여주기 설정
 document.addEventListener('DOMContentLoaded', function () {
     const accessToken = sessionStorage.getItem('jwtAccessToken');
@@ -129,7 +128,6 @@ if (signoutBtn) {
 }
 
 
-
 // url주소에서 데이터 추출
 const urlParams = new URLSearchParams(window.location.search);
 
@@ -182,6 +180,8 @@ function fetchMovieDetails(moviepk) {
             // 보고싶어요,관심없어요
             const likeButton = document.getElementById('like');
             const dislikeButton = document.getElementById('dislike');
+            likeButton.textContent = `보고싶어요! [${movie.like_users.length}]`;
+            dislikeButton.textContent = `관심없어요... [${movie.dislike_users.length}]`;
 
             handleReaction(likeButton, moviepk, 'like');
             handleReaction(dislikeButton, moviepk, 'dislike');
