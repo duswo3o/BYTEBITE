@@ -486,7 +486,7 @@ async function toggleLike(reviewId) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/likes/review/${reviewId}/`);
         alert(response.data.message);
-        await refreshReviews(moviePk);
+        window.location.reload();
     } catch (error) {
         handleError(error);
     }
@@ -524,7 +524,7 @@ async function updateReview(reviewId, content) {
     try {
         await axios.put(`${API_BASE_URL}reviews/detail/${reviewId}/`, { content });
         alert('리뷰 수정 성공');
-        await refreshReviews(moviePk);
+        window.location.reload();
     } catch (error) {
         handleError(error);
     }
@@ -535,7 +535,7 @@ async function deleteReview(reviewId) {
     try {
         await axios.delete(`${API_BASE_URL}reviews/detail/${reviewId}/`);
         alert('리뷰 삭제 성공');
-        await refreshReviews(moviePk);
+        window.location.reload();
     } catch (error) {
         handleError(error);
     }
@@ -567,10 +567,10 @@ async function postComment(reviewId, content) {
     try {
         await axios.post(`${API_BASE_URL}reviews/${reviewId}/comments/`, { content, is_spoiler: isSpoiler });
         alert('댓글 작성 성공');
+        window.location.reload();
         // 댓글 작성 후 입력 필드 및 체크박스 초기화
         document.getElementById(`comment-content-${reviewId}`).value = '';
         document.getElementById(`comment-is-spoiler-${reviewId}`).checked = false;
-        await refreshReviews(moviepk);
     } catch (error) {
         handleError(error);
     }
@@ -586,7 +586,7 @@ async function updateComment(reviewId, commentId, content) {
     try {
         await axios.put(`${API_BASE_URL}reviews/${reviewId}/comments/${commentId}/`, { content });
         alert('댓글 수정 성공');
-        await refreshReviews(moviePk);
+        window.location.reload();
     } catch (error) {
         handleError(error);
     }
@@ -597,7 +597,7 @@ async function deleteComment(reviewId, commentId) {
     try {
         await axios.delete(`${API_BASE_URL}reviews/${reviewId}/comments/${commentId}/`);
         alert('댓글 삭제 성공');
-        await refreshReviews(moviePk);
+        window.location.reload();
     } catch (error) {
         handleError(error);
     }
@@ -608,7 +608,7 @@ async function toggleCommentLike(commentId) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/likes/comment/${commentId}/`);
         alert(response.data.message);
-        await refreshReviews(moviePk);
+        window.location.reload();
     } catch (error) {
         handleError(error);
     }
