@@ -67,6 +67,7 @@ axios.interceptors.response.use(
 );
 
 
+
 // 버튼 보여주기 설정
 document.addEventListener('DOMContentLoaded', function () {
     const accessToken = sessionStorage.getItem('jwtAccessToken');
@@ -128,6 +129,7 @@ if (signoutBtn) {
 }
 
 
+
 // url주소에서 데이터 추출
 const urlParams = new URLSearchParams(window.location.search);
 
@@ -182,7 +184,7 @@ function fetchMovieDetails(moviepk) {
             const dislikeButton = document.getElementById('dislike');
             likeButton.textContent = `보고싶어요! [${movie.like_users.length}]`;
             dislikeButton.textContent = `관심없어요... [${movie.dislike_users.length}]`;
-
+            
             handleReaction(likeButton, moviepk, 'like');
             handleReaction(dislikeButton, moviepk, 'dislike');
 
@@ -321,7 +323,7 @@ function handleSearchSubmit(event) {
     }
 
     // 페이지 이동
-    const searchUrl = `search.html?search_keyword=${encodeURIComponent(searchKeyword)}&search_type=${searchType}`;
+    const searchUrl = `front/movies/search.html?search_keyword=${encodeURIComponent(searchKeyword)}&search_type=${searchType}`;
     window.location.href = searchUrl;
 }
 
@@ -460,11 +462,20 @@ async function refreshReviews(moviePk) {
 }
 
 // 공통 에러 처리 함수
-function handleError(action, error) {
+function handleError(error) {
     // Axios 오류만 처리
     if (error.isAxiosError) {
-        console.error(`${action} 실패:`, error.response ? error.response.data : error.message);
-        alert(`${action} 실패`);
+        // console.error(`${action} 실패:`, error.response ? error.response.data : error.message);
+        // alert(`${action} 실패`);
+        console.log(error)
+        const errorCode = error.status
+        if (errorCode == 401) {
+            alert("로그인이 필요한 서비스입니다")
+        } else if (errorCode == 403) {
+            alert("권한이 없습니다")
+        } else {
+            alert(error.response ? error.response.data : error.message)
+        }
     }
 }
 
@@ -473,8 +484,9 @@ async function toggleLike(reviewId) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/likes/review/${reviewId}/`);
         alert(response.data.message);
+        await refreshReviews(moviePk);
     } catch (error) {
-        handleError('좋아요 처리', error);
+        handleError(error);
     }
 }
 
@@ -495,7 +507,8 @@ async function postReview(moviePk, content) {
         document.getElementById('reviewContent').value = ''; // 입력 필드 초기화
         document.getElementById('isSpoiler').checked = false; // 체크박스 초기화
     } catch (error) {
-        handleError('리뷰 작성', error);
+        console.log(error)
+        handleError(error);
     }
 }
 
@@ -509,8 +522,9 @@ async function updateReview(reviewId, content) {
     try {
         await axios.put(`${API_BASE_URL}reviews/detail/${reviewId}/`, { content });
         alert('리뷰 수정 성공');
+        await refreshReviews(moviePk);
     } catch (error) {
-        handleError('리뷰 수정', error);
+        handleError(error);
     }
 }
 
@@ -519,8 +533,9 @@ async function deleteReview(reviewId) {
     try {
         await axios.delete(`${API_BASE_URL}reviews/detail/${reviewId}/`);
         alert('리뷰 삭제 성공');
+        await refreshReviews(moviePk);
     } catch (error) {
-        handleError('리뷰 삭제', error);
+        handleError(error);
     }
 }
 
@@ -555,7 +570,7 @@ async function postComment(reviewId, content) {
         document.getElementById(`comment-is-spoiler-${reviewId}`).checked = false;
         await refreshReviews(moviepk);
     } catch (error) {
-        handleError('댓글 작성', error);
+        handleError(error);
     }
 }
 
@@ -569,8 +584,9 @@ async function updateComment(reviewId, commentId, content) {
     try {
         await axios.put(`${API_BASE_URL}reviews/${reviewId}/comments/${commentId}/`, { content });
         alert('댓글 수정 성공');
+        await refreshReviews(moviePk);
     } catch (error) {
-        handleError('댓글 수정', error);
+        handleError(error);
     }
 }
 
@@ -579,8 +595,9 @@ async function deleteComment(reviewId, commentId) {
     try {
         await axios.delete(`${API_BASE_URL}reviews/${reviewId}/comments/${commentId}/`);
         alert('댓글 삭제 성공');
+        await refreshReviews(moviePk);
     } catch (error) {
-        handleError('댓글 삭제', error);
+        handleError(error);
     }
 }
 
@@ -589,8 +606,9 @@ async function toggleCommentLike(commentId) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/likes/comment/${commentId}/`);
         alert(response.data.message);
+        await refreshReviews(moviePk);
     } catch (error) {
-        handleError('댓글 좋아요 처리', error);
+        handleError(error);
     }
 }
 
