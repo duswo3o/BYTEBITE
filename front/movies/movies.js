@@ -397,6 +397,7 @@ function sendLikeData(moviepk, movieData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/`, movieData)
         .then(response => {
             alert(response.data.detail);
+            window.location.reload();
         })
         .catch(error => {
             alert('오류가 발생했습니다.');
@@ -417,6 +418,7 @@ function sendScoreData(moviepk, scoreData) {
     axios.post(`${API_BASE_URL}movies/${moviepk}/score/`, scoreData)
         .then(response => {
             alert('평가 완료!');
+            window.location.reload();
         })
         .catch(error => {
             alert('오류가 발생했습니다.');
