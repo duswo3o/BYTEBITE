@@ -139,11 +139,13 @@ const signupUser = () => {
     })
         .then(response => {
             console.log(response);
+            alert("이메일을 확인하여 인증을 진행해주세요")
             // 이동할 페이지
-            window.location.href = "profile.html"
+            window.location.href = "signin.html"
         })
         .catch(error => {
             console.log(error)
+            alert(error.response.data.message || "회원가입에 실패하였습니다")
             // alert(email)
         })
 
