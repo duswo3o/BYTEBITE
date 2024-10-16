@@ -104,7 +104,13 @@ class ComingSerializer(serializers.ModelSerializer):
 class FilmographySerializer(MovieSerializer):
     class Meta:
         model = Movie
-        fields = ["title"]
+        fields = ["id", "title", "poster"]
+
+    def get_poster(self, obj):
+        if obj.poster:
+            return obj.poster
+
+        return f"{settings.STATIC_URL}images/no_image.png"
 
 
 class StaffSerializer(serializers.ModelSerializer):
