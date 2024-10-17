@@ -218,7 +218,7 @@ const profileBtn = document.getElementById("searchUserBtn")
 
 const userProfile = () => {
 
-    var userNickname = document.getElementById("userNickname").value || localStorage.getItem("nickname")
+    var userNickname = document.getElementById("userNickname").value.trim() || localStorage.getItem("nickname");
 
     axios.get(`${API_BASE_URL}/accounts/${userNickname}/`)
         .then(response => {
@@ -291,7 +291,7 @@ const userProfile = () => {
                 const likedReviewdiv = document.createElement("div");
                 likedReviewdiv.innerHTML = `
                     <div class="card">
-                        <p>Movie ID : <span class="movieID">${likedReview.review.movie}</span></p>
+                        <p>Movie title : <span class="movieID">${likedReview.review.movie}</span></p>
                         <p>Movie review : <span class="review">${likedReview.review.content}</span></p>
                     </div>
                 `;
@@ -306,7 +306,7 @@ const userProfile = () => {
                 const reviewdiv = document.createElement("div");
                 reviewdiv.innerHTML = `
                     <div class="card">
-                        <p>MovieID : <span class="movieID">${myReview.movie}</span></p>
+                        <p>Movie title : <span class="movieID">${myReview.movie}</span></p>
                         <p>review : <span class="myReview">${myReview.content}</span></p>
                     </div>
                 `;
@@ -321,7 +321,7 @@ const userProfile = () => {
                 const ratingdiv = document.createElement("div");
                 ratingdiv.innerHTML = `
                 <div class="card">
-                    <p>MovieID : <span class="movieID">${myRating.movie}</span></p>
+                    <p>Movie title : <span class="movieID">${myRating.movie}</span></p>
                     <p>score : <span class="myReview">${myRating.score}</span></p>
                 </div>
             `;
@@ -572,9 +572,13 @@ if (signoutBtn) {
     signoutBtn.addEventListener('click', signoutUser)
 }
 
-if (profileBtn && localStorage.getItem("nickname")) {
-    profileBtn.addEventListener('click', userProfile)
-    window.addEventListener('DOMContentLoaded', userProfile);
+if (profileBtn) {
+    profileBtn.addEventListener('click', userProfile);
+
+    // 닉네임이 localStorage에 있을 때만 페이지 로드 시 userProfile 실행
+    if (localStorage.getItem("nickname")) {
+        window.addEventListener('DOMContentLoaded', userProfile);
+    }
 }
 
 if (followBtn) {

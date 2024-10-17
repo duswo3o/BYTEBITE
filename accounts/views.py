@@ -1,24 +1,23 @@
+import os
 from datetime import datetime, timedelta
+
+import requests
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.shortcuts import get_object_or_404, render
-from django.utils.http import urlsafe_base64_decode
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
-from rest_framework.decorators import permission_classes
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-import requests
-import os
-from django.shortcuts import redirect
-from django.http import JsonResponse
 
 from .serializers import (
     ChangePasswordSerializer,
@@ -45,7 +44,7 @@ class UserAPIView(APIView):
         user = User.objects.filter(email=email).first()
 
         # 이미 존재하는 사용자가 있고, 그 사용자가 비활성화된 상태인 경우
-        if user and user[0].is_active == False:
+        if user and user.is_active == False:
             return Response(
                 {
                     "message": "계정이 비활성화 상태입니다. 로그인해서 계정을 활성화 할 수 있습니다."

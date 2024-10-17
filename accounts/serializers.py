@@ -230,12 +230,16 @@ class MovieSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    movie = serializers.ReadOnlyField(source="movie.title")
+
     class Meta:
         model = Review
         fields = ["movie", "content"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    movie = serializers.ReadOnlyField(source="movie.title")
+
     class Meta:
         model = Comment
         fields = ["review", "content"]
@@ -248,6 +252,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RatingSerializer(serializers.ModelSerializer):
+    movie = serializers.ReadOnlyField(source="movie.title")
+
     class Meta:
         model = Rating
         fields = ["movie", "score"]
