@@ -17,14 +17,13 @@ from django.db.models.functions import Coalesce, Round
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from .models import Movie, Ranking, Rating, Staff
+from accounts.serializers import UserSerializer
 from .serializers import (
     AverageGradeSerializer,
     BoxofficeSerializer,
-    ComingSerializer,
     LikeSerializer,
     MovieSerializer,
     StaffSerializer,
-    UserSerializer,
 )
 
 
@@ -81,7 +80,7 @@ class MovieListApiView(APIView):
             top_movie = next(group)
             coming_liked_movies.append(top_movie)
 
-        coming_serializer = ComingSerializer(coming_liked_movies, many=True)
+        coming_serializer = LikeSerializer(coming_liked_movies, many=True)
 
         response_data = {
             "boxoffice_movies": boxoffice_serializer.data,

@@ -7,12 +7,6 @@ from django.contrib.auth import get_user_model
 from .models import Genre, Movie, Ranking, Staff, Tag
 
 
-class PosterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Movie
-        fields = ["poster"]
-
-
 class BoxofficeSerializer(serializers.ModelSerializer):
     poster = serializers.SerializerMethodField()
     movie_pk = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -56,61 +50,26 @@ class MovieSerializer(serializers.ModelSerializer):
         return f"{settings.STATIC_URL}images/no_image.png"
 
 
-class AverageGradeSerializer(serializers.ModelSerializer):
+class AverageGradeSerializer(MovieSerializer):
     average_grade = serializers.FloatField()
-    poster = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = ["id", "title", "average_grade", "poster"]
 
-    def get_poster(self, obj):
-        if obj.poster:
-            return obj.poster
 
-        return f"{settings.STATIC_URL}images/no_image.png"
-
-
-class LikeSerializer(serializers.ModelSerializer):
+class LikeSerializer(MovieSerializer):
     like = serializers.IntegerField()
-    poster = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Movie
-        fields = ["id", "title", "like", "poster"]
-
-    def get_poster(self, obj):
-        if obj.poster:
-            return obj.poster
-
-        return f"{settings.STATIC_URL}images/no_image.png"
-
-
-class ComingSerializer(serializers.ModelSerializer):
-    like = serializers.IntegerField()
-    poster = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = ["id", "title", "like", "release_date", "poster"]
-
-    def get_poster(self, obj):
-        if obj.poster:
-            return obj.poster
-
-        return f"{settings.STATIC_URL}images/no_image.png"
 
 
 class FilmographySerializer(MovieSerializer):
     class Meta:
         model = Movie
         fields = ["id", "title", "poster"]
-
-    def get_poster(self, obj):
-        if obj.poster:
-            return obj.poster
-
-        return f"{settings.STATIC_URL}images/no_image.png"
 
 
 class StaffSerializer(serializers.ModelSerializer):
@@ -119,9 +78,3 @@ class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = fields = ["name", "role", "filmographys"]
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ["nickname", "bio"]

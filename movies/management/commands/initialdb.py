@@ -260,7 +260,11 @@ class Command(BaseCommand):
 
         for actor in actors:
             staffs.append(
-                {"name_cd": actor["actorId"], "name": actor["actorNm"], "role": "actor"}
+                {
+                    "name_cd": actor["actorId"],
+                    "name": actor["actorNm"],
+                    "role": "actor"
+                }
             )
 
         for staff in staffs:
