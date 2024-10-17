@@ -15,11 +15,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 import requests
-import os
 from dotenv import load_dotenv
 from django.shortcuts import redirect
 from django.http import JsonResponse
-
+from popcorngeek import settings
 
 from .serializers import (
     ChangePasswordSerializer,
@@ -226,12 +225,11 @@ class PaymentAPIView(RetrieveAPIView):
 
 
 # 소셜로그인
-load_dotenv()
-KAKAO_REST_API_KEY = os.getenv("KAKAO_API_KEY")
-NAVER_REST_API_KEY = os.getenv("NAVER_API_KEY")
-NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+KAKAO_REST_API_KEY = settings.KAKAO_API_KEY
+NAVER_REST_API_KEY = settings.NAVER_API_KEY
+NAVER_CLIENT_SECRET = settings.NAVER_CLIENT_SECRET
+GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
 BASE_URL = "http://127.0.0.1:8000"
 FRONTEND_BASE_URL = "http://127.0.0.1:5500"
 
