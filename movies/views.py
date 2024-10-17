@@ -43,7 +43,7 @@ class MovieListApiView(APIView):
         graded_movies = Movie.objects.annotate(
             average_grade=Round(
                 Coalesce(Avg("ratings__score"), Value(0), output_field=FloatField()),
-                1  # 소수점 첫 번째 자리까지 반올림
+                1,  # 소수점 첫 번째 자리까지 반올림
             )
         ).order_by("-average_grade")[:10]
 
