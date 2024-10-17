@@ -218,7 +218,7 @@ const profileBtn = document.getElementById("searchUserBtn")
 
 const userProfile = () => {
 
-    var userNickname = document.getElementById("userNickname").value || localStorage.getItem("nickname")
+    var userNickname = document.getElementById("userNickname").value.trim() || localStorage.getItem("nickname");
 
     axios.get(`${API_BASE_URL}/accounts/${userNickname}/`)
         .then(response => {
@@ -554,9 +554,13 @@ if (signoutBtn) {
     signoutBtn.addEventListener('click', signoutUser)
 }
 
-if (profileBtn && localStorage.getItem("nickname")) {
-    profileBtn.addEventListener('click', userProfile)
-    window.addEventListener('DOMContentLoaded', userProfile);
+if (profileBtn) {
+    profileBtn.addEventListener('click', userProfile);
+
+    // 닉네임이 localStorage에 있을 때만 페이지 로드 시 userProfile 실행
+    if (localStorage.getItem("nickname")) {
+        window.addEventListener('DOMContentLoaded', userProfile);
+    }
 }
 
 if (followBtn) {
