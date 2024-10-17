@@ -290,7 +290,7 @@ const userProfile = () => {
                 const likedReviewdiv = document.createElement("div");
                 likedReviewdiv.innerHTML = `
                     <div class="card">
-                        <p>Movie ID : <span class="movieID">${likedReview.review.movie}</span></p>
+                        <p>Movie title : <span class="movieID">${likedReview.review.movie}</span></p>
                         <p>Movie review : <span class="review">${likedReview.review.content}</span></p>
                     </div>
                 `;
@@ -305,7 +305,7 @@ const userProfile = () => {
                 const reviewdiv = document.createElement("div");
                 reviewdiv.innerHTML = `
                     <div class="card">
-                        <p>MovieID : <span class="movieID">${myReview.movie}</span></p>
+                        <p>Movie title : <span class="movieID">${myReview.movie}</span></p>
                         <p>review : <span class="myReview">${myReview.content}</span></p>
                     </div>
                 `;
