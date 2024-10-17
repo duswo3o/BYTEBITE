@@ -365,15 +365,14 @@ function displaySearchResults(results, searchType) {
             const movieTitle = document.createElement('h3');
             movieTitle.textContent = item.title;
 
-            // 장르 정보
-            const genreNames = item.genre.map(genre => genre.name).join(', ');
-            const movieGenre = document.createElement('p');
-            movieGenre.textContent = `장르: ${genreNames}`;
+            // 평균 평점
+            const movieAverageGrade = document.createElement('p');
+            movieAverageGrade.textContent = `평균 평점: ${item.average_grade}`;
 
             // 영화 카드 구성
-            movieCard.appendChild(movieLink); // 영화 링크를 카드에 추가
-            movieCard.appendChild(movieGenre);
+            movieCard.appendChild(movieLink);
             movieCard.appendChild(movieTitle);
+            movieCard.appendChild(movieAverageGrade);
 
             // 카드 추가
             resultsList.appendChild(movieCard);

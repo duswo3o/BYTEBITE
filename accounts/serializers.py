@@ -363,7 +363,5 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_purchased_products(self, obj):
         # PurchasedProductSerializer로 직렬화한 후 유효한 데이터만 반환
-        products = PurchasedProductSerializer(
-            obj.products.all(), many=True
-        ).data
+        products = PurchasedProductSerializer(obj.products.all(), many=True).data
         return [product for product in products if product]

@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 # Django 기능 및 프로젝트 관련
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.db.models import Avg
 from .models import Genre, Movie, Ranking, Staff, Tag
 
 
@@ -51,11 +51,17 @@ class MovieSerializer(serializers.ModelSerializer):
 
 
 class AverageGradeSerializer(MovieSerializer):
-    average_grade = serializers.FloatField()
+    average_grade = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Movie
         fields = ["id", "title", "average_grade", "poster"]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        average_score = instance.ratings.aggregate(Avg("score"))["score__avg"] or 0
+        representation["average_grade"] = round(average_score, 1)
+        return representation
 
 
 class LikeSerializer(MovieSerializer):
