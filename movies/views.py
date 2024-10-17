@@ -1,15 +1,12 @@
-# 표준 라이브러리
 from datetime import datetime, timedelta
 from itertools import groupby
 
-# 서드파티 라이브러리
 from rest_framework import status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-# Django 기능 및 프로젝트 관련
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Avg, FloatField, Q, Value
@@ -43,7 +40,7 @@ class MovieListApiView(APIView):
         graded_movies = Movie.objects.annotate(
             average_grade=Round(
                 Coalesce(Avg("ratings__score"), Value(0), output_field=FloatField()),
-                1,  # 소수점 첫 번째 자리까지 반올림
+                1,
             )
         ).order_by("-average_grade")[:10]
 
@@ -92,8 +89,8 @@ class MovieListApiView(APIView):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
+# 검색
 class MovieSearchAPIView(APIView):
-    # 검색
     def get(self, request):
         # 검색할 데이터 종류(영화, 영화인, 회원)
         search_type = request.GET.get("search_type")
@@ -139,7 +136,7 @@ class MovieDetailAPIView(APIView):
     def get_object(self, pk):
         return get_object_or_404(Movie, pk=pk)
 
-    # 영화 상세페이지 조회
+    # 영화 상세페이지
     def get(self, request, movie_pk):
         movie = self.get_object(movie_pk)
         serializer = MovieSerializer(movie)
