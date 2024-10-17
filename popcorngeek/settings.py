@@ -198,6 +198,13 @@ IMP_KEY = env("IMP_KEY")
 IMP_SECRET = env("IMP_SECRET")
 OPENAI_API_KEY = env("OPENAI_API_KEY")
 
+# 간편로그인 관련 변수
+KAKAO_API_KEY = env("KAKAO_API_KEY")
+NAVER_API_KEY = env("NAVER_API_KEY")
+NAVER_CLIENT_SECRET = env("NAVER_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = env("GOOGLE_CLIENT_SECRET")
+
 # 이메일 인증 관련 설정
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"  # 메일 호스트 서버

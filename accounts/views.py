@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -16,10 +17,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 import requests
 import os
-from dotenv import load_dotenv
 from django.shortcuts import redirect
 from django.http import JsonResponse
-
 
 from .serializers import (
     ChangePasswordSerializer,
@@ -213,25 +212,9 @@ class UserProfileAPIView(RetrieveAPIView):
     lookup_field = "nickname"
 
 
-class PaymentAPIView(RetrieveAPIView):
-    def post(self, request, *args, **kwargs):
-        # 결제 정보를 터미널에 출력
-        print(request.data)
-
-        # 테스트 응답
-        return Response(
-            {"message": "결제 정보가 성공적으로 전달되었습니다."},
-            status=status.HTTP_200_OK,
-        )
-
-
 # 소셜로그인
-load_dotenv()
-KAKAO_REST_API_KEY = os.getenv("KAKAO_API_KEY")
-NAVER_REST_API_KEY = os.getenv("NAVER_API_KEY")
-NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+NAVER_CLIENT_SECRET = settings.NAVER_CLIENT_SECRET
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
 BASE_URL = "http://127.0.0.1:8000"
 FRONTEND_BASE_URL = "http://127.0.0.1:5500"
 
@@ -239,21 +222,21 @@ FRONTEND_BASE_URL = "http://127.0.0.1:5500"
 class SocialLoginView(APIView):
     def get(self, request, provider):
         if provider == "kakao":
-            client_id = KAKAO_REST_API_KEY
+            client_id = settings.KAKAO_API_KEY
             redirect_uri = f"{BASE_URL}/api/v1/accounts/social/callback/{provider}/"
             auth_url = (
                 f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}"
                 f"&redirect_uri={redirect_uri}&response_type=code"
             )
         elif provider == "naver":
-            client_id = NAVER_REST_API_KEY
+            client_id = settings.NAVER_API_KEY
             redirect_uri = f"{BASE_URL}/api/v1/accounts/social/callback/{provider}/"
             auth_url = (
                 f"https://nid.naver.com/oauth2.0/authorize?client_id={client_id}"
                 f"&redirect_uri={redirect_uri}&response_type=code"
             )
         elif provider == "google":
-            client_id = GOOGLE_CLIENT_ID
+            client_id = settings.GOOGLE_CLIENT_ID
             redirect_uri = f"{BASE_URL}/api/v1/accounts/social/callback/{provider}/"
             scope = "email profile"
             auth_url = (
@@ -298,13 +281,13 @@ class SocialCallbackView(APIView):
     def get_token(self, provider, code):
         if provider == "kakao":
             token_url = "https://kauth.kakao.com/oauth/token"
-            client_id = KAKAO_REST_API_KEY
+            client_id = settings.KAKAO_API_KEY
         elif provider == "naver":
             token_url = "https://nid.naver.com/oauth2.0/token"
-            client_id = NAVER_REST_API_KEY
+            client_id = settings.NAVER_API_KEY
         elif provider == "google":
             token_url = "https://oauth2.googleapis.com/token"
-            client_id = GOOGLE_CLIENT_ID
+            client_id = settings.GOOGLE_CLIENT_ID
         else:
             raise ValueError("지원되지 않는 소셜 로그인 제공자입니다.")
 
