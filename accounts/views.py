@@ -46,7 +46,7 @@ class UserAPIView(APIView):
         user = User.objects.filter(email=email).first()
 
         # 이미 존재하는 사용자가 있고, 그 사용자가 비활성화된 상태인 경우
-        if user and user[0].is_active == False:
+        if user and user.is_active == False:
             return Response(
                 {
                     "message": "계정이 비활성화 상태입니다. 로그인해서 계정을 활성화 할 수 있습니다."
