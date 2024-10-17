@@ -290,6 +290,9 @@ class LikedCommentSerializer(serializers.ModelSerializer):
 
 
 class PurchasedProductSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+
     class Meta:
         model = PurchasedProduct
         fields = [
@@ -298,6 +301,12 @@ class PurchasedProductSerializer(serializers.ModelSerializer):
             "price",
             "status",
         ]
+
+    def get_product(self, obj):
+        return obj.product.name
+
+    def get_status(self, obj):
+        return dict(PurchasedProduct.STATUS_SELECT).get(obj.status)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
