@@ -1,5 +1,4 @@
 # 표준 라이브러리
-import os
 import json
 
 # 서드파티 라이브러리
@@ -11,8 +10,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from rest_framework import permissions, status, viewsets
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -28,11 +27,8 @@ from .serializers import (
 )
 from .sentiment_analysis import predict
 from openai import OpenAI
-from dotenv import load_dotenv
 
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key)
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

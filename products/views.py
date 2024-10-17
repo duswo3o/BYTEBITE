@@ -12,6 +12,7 @@ from .models import Product, PurchasedProduct
 from .serializers import ProductSerializer, UserSerializer
 
 
+# 상품페이지
 class ProductAPIView(APIView):
     def get(self, request):
         products = Product.objects.all().order_by("-pk")
@@ -19,6 +20,7 @@ class ProductAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# 로그인 중인 유저 정보 반환
 class LoginUserAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -36,7 +38,7 @@ class ProductDetailAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# 결제 관련 로직
+# 결제 로직
 class PaymentAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
