@@ -320,7 +320,7 @@ const userProfile = () => {
                 const ratingdiv = document.createElement("div");
                 ratingdiv.innerHTML = `
                 <div class="card">
-                    <p>MovieID : <span class="movieID">${myRating.movie}</span></p>
+                    <p>Movie title : <span class="movieID">${myRating.movie}</span></p>
                     <p>score : <span class="myReview">${myRating.score}</span></p>
                 </div>
             `;
