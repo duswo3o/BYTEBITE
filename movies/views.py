@@ -9,8 +9,7 @@ from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Avg, FloatField, Q, Value
-from django.db.models.functions import Coalesce, Round
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from .models import Movie, Ranking, Rating, Staff
@@ -38,10 +37,7 @@ class MovieListApiView(APIView):
 
         # 평균 평점 순 출력
         graded_movies = Movie.objects.annotate(
-            average_grade=Round(
-                Coalesce(Avg("ratings__score"), Value(0), output_field=FloatField()),
-                1,
-            )
+            average_grade=Avg("ratings__score")
         ).order_by("-average_grade")[:10]
 
         graded_serializer = AverageGradeSerializer(graded_movies, many=True)
@@ -111,7 +107,7 @@ class MovieSearchAPIView(APIView):
                 | Q(plot__icontains=search_keyword)
             ).distinct()
 
-            serializer_class = MovieSerializer
+            serializer_class = AverageGradeSerializer
 
         # 영화인 검색(이름)
         elif search_type == "staff":
@@ -129,7 +125,12 @@ class MovieSearchAPIView(APIView):
 
         serializer = serializer_class(search_data, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if search_type == "movies":
+            output_data = sorted(serializer.data, key=lambda x: x['average_grade'], reverse=True)
+        else:
+            output_data = serializer.data
+
+        return Response(output_data, status=status.HTTP_200_OK)
 
 
 class MovieDetailAPIView(APIView):

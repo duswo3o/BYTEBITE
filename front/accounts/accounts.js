@@ -236,6 +236,7 @@ const userProfile = () => {
             document.getElementById("likedreview").innerText = response.data.liked_reviews.length
             document.getElementById("ratedmovie").innerText = response.data.rated_movie.length
             document.getElementById("myreview").innerText = response.data.reviews.length
+            document.getElementById("myproducts").innerText = response.data.purchased_products.length
             // document.getElementById("testreview").innerText = response.data.reviews.length
 
 
@@ -325,6 +326,23 @@ const userProfile = () => {
                 </div>
             `;
                 myRatingList.appendChild(ratingdiv);
+            });
+
+            // 구매한 상품
+            const myProducts = response.data.purchased_products;
+            const myProductList = document.getElementById("my-purchased-products");
+            myProductList.innerHTML = ""
+            myProducts.forEach(myProduct => {
+                const productdiv = document.createElement("div");
+                productdiv.innerHTML = `
+                <div class="card">
+                    <p>product : <span class="movieID">${myProduct.product}</span></p>
+                    <p>purchase code : <span class="myReview">${myProduct.merchant_uid}</span></p>
+                    <p>price : <span class="myReview">${myProduct.price}</span></p>
+                    <p>status : <span class="myReview">${myProduct.status}</span></p>
+                </div>
+            `;
+                myProductList.appendChild(productdiv);
             });
 
             // 로컬 스토리지 또는 서버에서 로그인한 사용자의 정보를 가져옴
