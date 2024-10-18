@@ -221,7 +221,7 @@ const userProfile = () => {
 
     axios.get(`${API_BASE_URL}/accounts/${userNickname}/`)
         .then(response => {
-            console.log(response);
+            console.log(response)
 
             // 프로필 정보 업데이트
             document.getElementById("nickname").innerText = response.data.nickname;
@@ -234,6 +234,7 @@ const userProfile = () => {
             document.getElementById("wannawatch").innerText = response.data.liked_movies.length;
             document.getElementById("likedreview").innerText = response.data.liked_reviews.length;
             document.getElementById("ratedmovie").innerText = response.data.rated_movie.length;
+            document.getElementById("myproducts").innerText = response.data.purchased_products.length
 
             // 로컬 스토리지 또는 서버에서 로그인한 사용자의 정보를 가져옴
             const loggedInUser = localStorage.getItem('nickname'); // 로그인한 사용자 닉네임
@@ -323,6 +324,7 @@ const userProfile = () => {
                 likedReviewList.appendChild(likedReviewdiv);
             });
 
+
             // 평가한 영화
             const myRatings = response.data.rated_movie;
             const myRatingList = document.getElementById("my-rated-movie");
@@ -338,7 +340,28 @@ const userProfile = () => {
                 myRatingList.appendChild(ratingdiv);
             });
 
-            // 프로필 버튼 표시 여부 설정
+            // 구매한 상품
+            const myProducts = response.data.purchased_products;
+            const myProductList = document.getElementById("my-purchased-products");
+            myProductList.innerHTML = ""
+            myProducts.forEach(myProduct => {
+                const productdiv = document.createElement("div");
+                productdiv.innerHTML = `
+                <div class="card">
+                    <p>product : <span class="movieID">${myProduct.product}</span></p>
+                    <p>purchase code : <span class="myReview">${myProduct.merchant_uid}</span></p>
+                    <p>price : <span class="myReview">${myProduct.price}</span></p>
+                    <p>status : <span class="myReview">${myProduct.status}</span></p>
+                </div>
+            `;
+                myProductList.appendChild(productdiv);
+            });
+
+            // 로컬 스토리지 또는 서버에서 로그인한 사용자의 정보를 가져옴
+            // const loggedInUser = localStorage.getItem('nickname'); // 예: 로그인한 사용자 닉네임
+            // const viewedProfileUser = response.data.nickname; // 예: 조회한 프로필 닉네임 (이 값을 서버에서 받아온다고 가정)
+
+            // 버튼 요소 가져오기
             const profileBtn = document.getElementById('profile-btn');
             if (loggedInUser === viewedProfileUser) {
                 profileBtn.style.display = 'block'; // 자신의 프로필을 보는 경우 버튼 표시

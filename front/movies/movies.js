@@ -529,6 +529,7 @@ async function toggleLike(reviewId) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/likes/review/${reviewId}/`);
         alert(response.data.message);
+        window.location.reload();
     } catch (error) {
         handleError('좋아요 처리', error);
     }
@@ -573,6 +574,7 @@ async function updateReview(reviewId, content) {
     try {
         await axios.put(`${API_BASE_URL}reviews/detail/${reviewId}/`, { content });
         alert('리뷰 수정 성공');
+        window.location.reload();
     } catch (error) {
         handleError('리뷰 수정', error);
     }
@@ -583,6 +585,7 @@ async function deleteReview(reviewId) {
     try {
         await axios.delete(`${API_BASE_URL}reviews/detail/${reviewId}/`);
         alert('리뷰 삭제 성공');
+        window.location.reload();
     } catch (error) {
         handleError('리뷰 삭제', error);
     }
@@ -633,6 +636,7 @@ async function updateComment(reviewId, commentId, content) {
     try {
         await axios.put(`${API_BASE_URL}reviews/${reviewId}/comments/${commentId}/`, { content });
         alert('댓글 수정 성공');
+        window.location.reload();
     } catch (error) {
         handleError('댓글 수정', error);
     }
@@ -643,6 +647,7 @@ async function deleteComment(reviewId, commentId) {
     try {
         await axios.delete(`${API_BASE_URL}reviews/${reviewId}/comments/${commentId}/`);
         alert('댓글 삭제 성공');
+        window.location.reload();
     } catch (error) {
         handleError('댓글 삭제', error);
     }
@@ -653,6 +658,7 @@ async function toggleCommentLike(commentId) {
     try {
         const response = await axios.post(`${API_BASE_URL}reviews/likes/comment/${commentId}/`);
         alert(response.data.message);
+        window.location.reload();
     } catch (error) {
         handleError('댓글 좋아요 처리', error);
     }

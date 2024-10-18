@@ -12,6 +12,7 @@ from rest_framework import serializers
 
 from movies.models import Movie, Rating
 from reviews.models import Review, Comment, Like
+from products.models import PurchasedProduct
 
 User = get_user_model()
 
@@ -229,12 +230,16 @@ class MovieSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    movie = serializers.ReadOnlyField(source="movie.title")
+
     class Meta:
         model = Review
         fields = ["movie", "content", "private"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    movie = serializers.ReadOnlyField(source="movie.title")
+
     class Meta:
         model = Comment
         fields = ["review", "content"]
@@ -247,6 +252,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RatingSerializer(serializers.ModelSerializer):
+    movie = serializers.ReadOnlyField(source="movie.title")
+
     class Meta:
         model = Rating
         fields = ["movie", "score"]
@@ -288,6 +295,26 @@ class LikedCommentSerializer(serializers.ModelSerializer):
         return representation
 
 
+class PurchasedProductSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PurchasedProduct
+        fields = [
+            "product",
+            "merchant_uid",
+            "price",
+            "status",
+        ]
+
+    def get_product(self, obj):
+        return obj.product.name
+
+    def get_status(self, obj):
+        return dict(PurchasedProduct.STATUS_SELECT).get(obj.status)
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     liked_movies = MovieSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True,)
@@ -300,6 +327,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     rated_movie = RatingSerializer(many=True, read_only=True, source="ratings")
     liked_reviews = serializers.SerializerMethodField()
     liked_comments = serializers.SerializerMethodField()
+    purchased_products = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -318,6 +346,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "reviews",
             "liked_reviews",
             "liked_comments",
+            "purchased_products",
         ]
 
     def get_liked_reviews(self, obj):
@@ -337,3 +366,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return [
             comment for comment in comments if comment
         ]  # None 값이 아닌 유효한 댓글만 반환
+
+    def get_purchased_products(self, obj):
+        # PurchasedProductSerializer로 직렬화한 후 유효한 데이터만 반환
+        products = PurchasedProductSerializer(obj.products.all(), many=True).data
+        return [product for product in products if product]

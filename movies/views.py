@@ -1,30 +1,25 @@
-# 표준 라이브러리
 from datetime import datetime, timedelta
 from itertools import groupby
 
-# 서드파티 라이브러리
 from rest_framework import status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-# Django 기능 및 프로젝트 관련
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Avg, FloatField, Q, Value
-from django.db.models.functions import Coalesce, Round
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from .models import Movie, Ranking, Rating, Staff
+from accounts.serializers import UserSerializer
 from .serializers import (
     AverageGradeSerializer,
     BoxofficeSerializer,
-    ComingSerializer,
     LikeSerializer,
     MovieSerializer,
     StaffSerializer,
-    UserSerializer,
 )
 
 
@@ -42,10 +37,7 @@ class MovieListApiView(APIView):
 
         # 평균 평점 순 출력
         graded_movies = Movie.objects.annotate(
-            average_grade=Round(
-                Coalesce(Avg("ratings__score"), Value(0), output_field=FloatField()),
-                1  # 소수점 첫 번째 자리까지 반올림
-            )
+            average_grade=Avg("ratings__score")
         ).order_by("-average_grade")[:10]
 
         graded_serializer = AverageGradeSerializer(graded_movies, many=True)
@@ -81,7 +73,7 @@ class MovieListApiView(APIView):
             top_movie = next(group)
             coming_liked_movies.append(top_movie)
 
-        coming_serializer = ComingSerializer(coming_liked_movies, many=True)
+        coming_serializer = LikeSerializer(coming_liked_movies, many=True)
 
         response_data = {
             "boxoffice_movies": boxoffice_serializer.data,
@@ -93,8 +85,8 @@ class MovieListApiView(APIView):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
+# 검색
 class MovieSearchAPIView(APIView):
-    # 검색
     def get(self, request):
         # 검색할 데이터 종류(영화, 영화인, 회원)
         search_type = request.GET.get("search_type")
@@ -115,7 +107,7 @@ class MovieSearchAPIView(APIView):
                 | Q(plot__icontains=search_keyword)
             ).distinct()
 
-            serializer_class = MovieSerializer
+            serializer_class = AverageGradeSerializer
 
         # 영화인 검색(이름)
         elif search_type == "staff":
@@ -133,14 +125,20 @@ class MovieSearchAPIView(APIView):
 
         serializer = serializer_class(search_data, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if search_type == "movies":
+            output_data = sorted(
+                serializer.data, key=lambda x: x['average_grade'], reverse=True)
+        else:
+            output_data = serializer.data
+
+        return Response(output_data, status=status.HTTP_200_OK)
 
 
 class MovieDetailAPIView(APIView):
     def get_object(self, pk):
         return get_object_or_404(Movie, pk=pk)
 
-    # 영화 상세페이지 조회
+    # 영화 상세페이지
     def get(self, request, movie_pk):
         movie = self.get_object(movie_pk)
         serializer = MovieSerializer(movie)

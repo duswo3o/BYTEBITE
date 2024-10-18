@@ -3,14 +3,8 @@ from rest_framework import serializers
 
 # Django 기능 및 프로젝트 관련
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.db.models import Avg
 from .models import Genre, Movie, Ranking, Staff, Tag
-
-
-class PosterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Movie
-        fields = ["poster"]
 
 
 class BoxofficeSerializer(serializers.ModelSerializer):
@@ -56,61 +50,33 @@ class MovieSerializer(serializers.ModelSerializer):
         return f"{settings.STATIC_URL}images/no_image.png"
 
 
-class AverageGradeSerializer(serializers.ModelSerializer):
-    average_grade = serializers.FloatField()
-    poster = serializers.SerializerMethodField()
+class AverageGradeSerializer(MovieSerializer):
+    average_grade = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Movie
         fields = ["id", "title", "average_grade", "poster"]
 
-    def get_poster(self, obj):
-        if obj.poster:
-            return obj.poster
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        average_score = instance.ratings.aggregate(Avg("score"))[
+            "score__avg"] or 0
+        representation["average_grade"] = round(average_score, 1)
+        return representation
 
-        return f"{settings.STATIC_URL}images/no_image.png"
 
-
-class LikeSerializer(serializers.ModelSerializer):
+class LikeSerializer(MovieSerializer):
     like = serializers.IntegerField()
-    poster = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Movie
-        fields = ["id", "title", "like", "poster"]
-
-    def get_poster(self, obj):
-        if obj.poster:
-            return obj.poster
-
-        return f"{settings.STATIC_URL}images/no_image.png"
-
-
-class ComingSerializer(serializers.ModelSerializer):
-    like = serializers.IntegerField()
-    poster = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = ["id", "title", "like", "release_date", "poster"]
-
-    def get_poster(self, obj):
-        if obj.poster:
-            return obj.poster
-
-        return f"{settings.STATIC_URL}images/no_image.png"
 
 
 class FilmographySerializer(MovieSerializer):
     class Meta:
         model = Movie
         fields = ["id", "title", "poster"]
-
-    def get_poster(self, obj):
-        if obj.poster:
-            return obj.poster
-
-        return f"{settings.STATIC_URL}images/no_image.png"
 
 
 class StaffSerializer(serializers.ModelSerializer):
@@ -119,9 +85,3 @@ class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = fields = ["name", "role", "filmographys"]
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ["nickname", "bio"]

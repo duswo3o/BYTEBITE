@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 
 <head>
     <meta charset="UTF-8">
@@ -48,7 +48,7 @@
 
         <!-- 팔로우 버튼 -->
         <div class="container p-1">
-            <button id="followUserBtn" class="btn btn-primary btn-sm">follow</button>
+            <button id="followUserBtn" class="button">follow</button>
         </div>
 
 
@@ -206,6 +206,38 @@
                         </div>
                     </div>
 
+
+
+                    <!-- 구매한 상품 -->
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#PurchasedProductModal">
+                        Purchased Products <br> <span id="myproducts"></span>
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="PurchasedProductModal" tabindex="-1" aria-labelledby="PurchasedProductLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="PurchasedProductLabel">구매한 상품</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="my-purchased-products">
+                                        <!-- 여기에서 JavaScript를 통해 구매한 상품 목록이 동적으로 추가됩니다. -->
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
 
@@ -282,7 +314,7 @@
 
 
         <div class="d-grid gap-2 d-md-flex justify-content-md-end p-1">
-            <button type="button" class="btn btn-secondary" onclick="location.href='updateprofile.html'" id="profile-btn">update
+            <button type="button" class="button" onclick="location.href='updateprofile.html'" id="profile-btn">update
                 Profile</button>
         </div>
 
