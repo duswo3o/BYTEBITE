@@ -231,7 +231,7 @@ class MovieSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ["movie", "content"]
+        fields = ["movie", "content", "private"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -290,7 +290,7 @@ class LikedCommentSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     liked_movies = MovieSerializer(many=True, read_only=True)
-    reviews = ReviewSerializer(many=True, read_only=True)
+    reviews = ReviewSerializer(many=True, read_only=True,)
     followings = UserSerializer(many=True)
     followings_count = serializers.IntegerField(
         source="followings.count", read_only=True

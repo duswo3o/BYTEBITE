@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from rest_framework import permissions, status, viewsets
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -49,21 +49,49 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_queryset(self):
-        movie_id = self.kwargs.get("movie_pk")
-        section = self.request.query_params.get('section', 'public')
         user = self.request.user
+        base_query = Review.objects.all()  
+        movie_id = self.kwargs.get("movie_pk")
+        if movie_id:
+            base_query = base_query.filter(movie_id=movie_id)  
 
-        if section == 'private':
-            # Only show private reviews written by the current user
-            return self.queryset.filter(movie_id=movie_id, private=True, author=user)
-        
-        elif section == 'following':
-            # Only show reviews that are marked as 'follows_only' and are written by users the current user follows
-            following_users = user.following.all()
-            return self.queryset.filter(movie_id=movie_id, follows_only=True, author__in=following_users)
-        
-        # Default to showing public reviews (not private and not follows_only)
-        return self.queryset.filter(movie_id=movie_id, private=False, follows_only=False)
+        filter_param = self.request.query_params.get('filter', 'all')  
+
+        # 특정 리뷰를 조회, 업데이트, 삭제
+        if self.action in ["retrieve", "update", "destroy"]:
+            review_id = self.kwargs.get("pk")
+            return base_query.filter(id=review_id) 
+
+        # 팔로우하는 유저의 리뷰만 
+        if filter_param == 'following':
+            if user.is_authenticated:
+                followings = user.followings.all()  
+                # 팔로우하는 유저의 리뷰 중 private=False 리뷰 반환
+                return base_query.filter(
+                    author__in=followings,
+                    private=False
+                )
+            else:
+                return Review.objects.none()  
+
+        # 모든 공개 리뷰를 보려는 경우
+        elif filter_param == 'all':
+            # 공개된 리뷰만 반환
+            return base_query.filter(private=False)
+
+        # 로그인한 유저의 비공개 리뷰만 보려는 경우
+        elif filter_param == 'private':
+            if user.is_authenticated:
+                # 로그인한 유저의 비공개 리뷰만 반환
+                return base_query.filter(private=True, author=user)
+            else:
+                return Review.objects.none()  
+
+        # 기본적으로 공개 리뷰만 반환
+        else:
+            return base_query.filter(private=False)
+
+
 
 
 
@@ -73,16 +101,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
         review = serializer.validated_data.get("content")
         is_positive = predict(review)
 
-        # Get the values of private and followers_only
+        # Get the values of private 
         private = serializer.validated_data.get("private", False)
-        followers_only = serializer.validated_data.get("followers_only", False)
 
         serializer.save(
             author=self.request.user,
             movie=movie,
             is_positive=is_positive,
             private=private,  # Save private value
-            followers_only=followers_only  # Save followers_only value
         )
 
 

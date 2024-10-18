@@ -13,7 +13,6 @@ class Review(models.Model):
     )
     is_spoiler = models.BooleanField(default=False)
     private = models.BooleanField(default=False)
-    followers_only = models.BooleanField(default=False)
     is_positive = models.BooleanField(null=True)
 
     def __str__(self):

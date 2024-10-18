@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://api.popcorngeek.store/api/v1/'
+const API_BASE_URL = 'http://127.0.0.1:8000/api/v1/'
 
 // 토큰 저장 및 관리 함수
 const tokenManager = {
@@ -178,7 +178,7 @@ localStorage.setItem('purchaseNumber', purchaseNumber);
               .catch(function (error) {
                   alert("서버에서 결제 검증에 실패했습니다.");
               });
-              window.location.replace(`https://popcorngeek.store/front/products/products.html`);
+              window.location.replace(`http://127.0.0.1:5500/front/products/products.html`);
           } else {
               alert(`결제에 실패하였습니다. 에러 내용: ${rsp.error_msg}`);
           }
