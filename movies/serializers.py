@@ -59,8 +59,7 @@ class AverageGradeSerializer(MovieSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        average_score = instance.ratings.aggregate(Avg("score"))[
-            "score__avg"] or 0
+        average_score = instance.ratings.aggregate(Avg("score"))["score__avg"] or 0
         representation["average_grade"] = round(average_score, 1)
         return representation
 

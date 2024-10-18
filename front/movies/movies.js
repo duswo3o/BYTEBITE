@@ -489,7 +489,7 @@ async function getReviews(moviePk, filter) {
         const response = await axios.get(url);
         const reviews = response.data;
 
-        // Fetch comments for each review
+        // 각 리뷰에 대한 댓글을 동시에 가져오기 (Promise.all 활용)
         const commentPromises = reviews.map(review => {
             return axios.get(`${API_BASE_URL}reviews/${review.id}/comments/`);
         });

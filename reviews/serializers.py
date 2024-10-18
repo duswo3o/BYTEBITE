@@ -47,7 +47,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             "is_positive",
             "private",
         ]
-        read_only_fields = ["author", "movie", "created_at", "is_positive",]
+        read_only_fields = ["author", "movie", "created_at", "is_positive"]
 
     def get_like_count(self, obj):
         return Like.objects.filter(review=obj).count()

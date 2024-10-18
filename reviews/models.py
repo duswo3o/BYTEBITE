@@ -6,8 +6,7 @@ from movies.models import Movie
 class Review(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    movie = models.ForeignKey(
-        Movie, on_delete=models.CASCADE, related_name="reviews")
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="reviews")
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews"
     )
