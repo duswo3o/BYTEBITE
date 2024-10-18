@@ -12,7 +12,8 @@ from rest_framework import serializers
 
 from movies.models import Movie, Rating
 from reviews.models import Review, Comment, Like
-from products.models import PurchasedProduct
+from products.models import Product, PurchasedProduct
+from products.serializers import ProductSerializer
 
 User = get_user_model()
 
@@ -371,3 +372,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
         # PurchasedProductSerializer로 직렬화한 후 유효한 데이터만 반환
         products = PurchasedProductSerializer(obj.products.all(), many=True).data
         return [product for product in products if product]
+
+
+class BasketSerializer(serializers.ModelSerializer):
+    products = serializers.SerializerMethodField()
+    nickname = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["nickname", "products"]
+
+    def get_products(self, obj):
+        # 사용자가 장바구니에 넣은 상품들을 가져와 ProductSerializer로 직렬화
+        products = Product.objects.filter(consumer=obj)
+        return ProductSerializer(products, many=True).data
+
+    def get_nickname(self, obj):
+        # 로그인한 사용자의 닉네임을 반환
+        return obj.nickname

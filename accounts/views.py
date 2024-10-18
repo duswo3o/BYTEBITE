@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import (
+    BasketSerializer,
     ChangePasswordSerializer,
     UpdateProfileSerializer,
     UserCreateSerializer,
@@ -209,6 +210,16 @@ class UserProfileAPIView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
     lookup_field = "nickname"
+
+
+class UserBasketAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        serializer = BasketSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # 소셜로그인

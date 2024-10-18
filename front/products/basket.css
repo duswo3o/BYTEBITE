@@ -1,0 +1,103 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9; /* 배경색 추가 */
+}
+
+h1 {
+    text-align: center;
+    color: darkgreen; /* 제목 색상 변경 */
+    margin-top: 20px; /* 위쪽 여백 추가 */
+}
+
+#basket-container {
+    max-width: 800px; /* 최대 너비 설정 */
+    margin: 20px auto; /* 중앙 정렬 */
+    padding: 20px;
+    background-color: #fff; /* 배경색 */
+    border: 1px solid #ddd; /* 테두리 색상 */
+    border-radius: 8px; /* 모서리 둥글게 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+}
+
+.product-item {
+    display: flex; /* 가로 정렬 */
+    align-items: center; /* 수직 중앙 정렬 */
+    margin-bottom: 20px; /* 항목 간 간격 */
+    border-bottom: 1px solid #eee; /* 항목 구분선 */
+    padding-bottom: 10px; /* 아래쪽 여백 */
+}
+
+.product-item:last-child {
+    border-bottom: none; /* 마지막 항목의 구분선 제거 */
+}
+
+.product-item img {
+    width: 100px; /* 이미지 크기 조정 */
+    height: auto; /* 비율 유지 */
+    margin-right: 20px; /* 이미지와 텍스트 간 간격 */
+    border-radius: 4px; /* 이미지 모서리 둥글게 */
+}
+
+.product-info {
+    display: flex;
+    flex-direction: column; /* 세로 정렬 */
+    justify-content: center; /* 수직 중앙 정렬 */
+}
+
+.product-info h3 {
+    margin: 0; /* 제목 여백 제거 */
+    color: darkgreen; /* 품목명 색상 변경 */
+}
+
+.product-info p {
+    margin: 5px 0; /* 품목 설명 여백 조정 */
+    color: gray; /* 설명 색상 */
+}
+
+.price {
+    font-weight: bold; /* 가격을 굵게 */
+    color: darkgreen; /* 가격 색상 변경 */
+}
+
+.navbar {
+    background-color: bisque;
+    overflow: hidden;
+    display: flex;
+    justify-content:space-between; /* 요소 간의 공간 분배 */
+    align-items: center; /* 세로 정렬 */
+
+}
+
+.navbar a {
+    float: left;
+    display: block;
+    color: gray;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.navbar .right {
+    float: right;
+}
+
+
+.user-info {
+    display: flex;
+    /* Flexbox 사용 */
+    align-items: center;
+    /* 수직 중앙 정렬 */
+    justify-content: center;
+    /* 수평 가운데 정렬 */
+}
+
+#helloUser {
+    margin: 0;
+    line-height: 50px; /* 텍스트의 줄 높이를 이미지 높이와 맞추기 */
+}
