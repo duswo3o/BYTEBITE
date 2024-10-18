@@ -61,7 +61,8 @@ p {
 }
 
 h3 {
-    color: darkgreen;
+    color: #9a4168;
+    font-size: 2em;
 }
 
 
@@ -71,26 +72,25 @@ body {
 }
 
 .navbar {
-    background-color: bisque;
-    overflow: hidden;
+    background-color: #f4f4f4; 
     display: flex;
-    justify-content:space-between; /* 요소 간의 공간 분배 */
+    justify-content: space-between; /* 요소 간의 공간 분배 */
     align-items: center; /* 세로 정렬 */
-
 }
 
 .navbar a {
     float: left;
     display: block;
-    color: gray;
+    color: rgb(0, 0, 0); /* 흰색 텍스트 */
     text-align: center;
     padding: 14px 20px;
     text-decoration: none;
+    transition: background-color 0.3s ease; /* 부드러운 호버 애니메이션 */
 }
 
 .navbar a:hover {
-    background-color: #ddd;
-    color: black;
+    background-color: #5b2532; /* 호버 시 어두운 파란색 */
+    color: #ffffff; /* 흰색 텍스트 유지 */
 }
 
 .navbar .right {
