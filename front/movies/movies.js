@@ -1034,3 +1034,7 @@ document.getElementById('transformToMz').addEventListener('click', () => {
     transformReviewContent('Mz');
 });
 
+// 뒤로가기 함수 정의
+function goBack() {
+    window.history.back(); // 이전 페이지로 돌아감
+}

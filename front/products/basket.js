@@ -116,5 +116,10 @@ function displayBasket(basketData) {
     }
 }
 
+// 뒤로가기 함수 정의
+function goBack() {
+    window.history.back(); // 이전 페이지로 돌아감
+}
+
 // 예시: 함수 호출 (필요 시 호출하는 곳에서 처리)
 document.addEventListener('DOMContentLoaded', fetchBasket);
