@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from rest_framework import status
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -32,10 +33,26 @@ class LoginUserAPIView(APIView):
 
 # 상품 상세페이지
 class ProductDetailAPIView(APIView):
+    def get_object(self, pk):
+        return get_object_or_404(Product, pk=pk)
+
     def get(self, request, product_pk):
-        product = get_object_or_404(Product, pk=product_pk)
+        product = self.get_object(product_pk)
         serializer = ProductSerializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # 장바구니
+    @permission_classes([IsAuthenticated])
+    def post(self, request, product_pk):
+        product = self.get_object(product_pk)
+
+        if product.consumer.filter(pk=request.user.pk).exists():
+            product.consumer.remove(request.user)
+            return Response({"detail": "장바구니에서 삭제"}, status=status.HTTP_200_OK)
+        else:
+            product.consumer.add(request.user)
+            product.save()
+            return Response({"detail": "장바구니에 추가"}, status=status.HTTP_200_OK)
 
 
 # 결제 로직

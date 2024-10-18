@@ -10,9 +10,8 @@ class Product(models.Model):
     price = models.PositiveIntegerField()
     image = models.URLField(max_length=255, null=True, blank=True)
     consumer = models.ManyToManyField(
-        User,
-        related_name='basket',
-        )
+        User, related_name="basket", null=True, blank=True
+    )
 
     def __str__(self):
         return self.name
