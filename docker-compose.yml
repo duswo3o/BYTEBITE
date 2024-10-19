@@ -9,3 +9,26 @@ services:
     ports:
       - "5432:5432"
 
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app # 현재 디렉토리를 /app으로 마운
+    ports:
+      - "8000:8000"
+
+  celery:
+    build: .
+    command: celery -A popcorngeek worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - f8redis=${f8redis}  # 환경 변수를 사용
+
+  redis:
+    image: redis:alpine
+#    environment:
+#      - REDIS_HOST=${f8redis}  # 환경 변수 사용
