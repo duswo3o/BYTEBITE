@@ -139,6 +139,10 @@ class PaymentAPIView(APIView):
                 quantity=quantity,
             )
             purchased_products.append(purchased_product)
+
+            # 장바구니에서 해당 상품 삭제
+            product.consumer.remove(self.request.user)
+
         return purchased_products
 
     def send_email(self, name, products, total_amount, merchant_uid, recipient_email):

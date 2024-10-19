@@ -365,8 +365,12 @@ function requestPay(selectedCheckboxes, name, address, address2, user_id, email)
     const day = String(today.getDate()).padStart(2, '0');
     const dateString = `${year}${month}${day}`;
 
+    const min = 100000; // 6자리 수의 최소값
+    const max = 999999; // 6자리 수의 최대값
+    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+
     // merchant_uid 설정
-    const merchant_uid = `${user_id}-${dateString}-996`;
+    const merchant_uid = `${user_id}-${dateString}-${randomNumber}`;
     const totalAmount = parseInt(document.getElementById('total-amount').textContent.replace('원', ''));
 
     // 결제 요청 로직
