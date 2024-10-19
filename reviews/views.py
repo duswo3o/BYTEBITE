@@ -26,6 +26,7 @@ from .serializers import (
     SentimentSerializer,
 )
 from .sentiment_analysis import predict
+from .tasks import send_email
 from openai import OpenAI
 
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
@@ -231,7 +232,7 @@ class ReportAPIView(APIView):
         if report_count == 7:
             obj.is_spoiler = True
             obj.save()
-            self.send_email(
+            send_email.delay(
                 subject="popcorngeek에서 작성한 리뷰가 스포방지 처리 되었습니다.",
                 message=f"귀하의 리뷰/댓글이 {report_count}회 신고되어 스포방지 처리 되었습니다.",
                 recipient=obj.author.email,
@@ -272,14 +273,14 @@ class ReportAPIView(APIView):
 
         # 경고 및 삭제 로직
         if report_count == 5:
-            self.send_email(
+            send_email.delay(
                 subject=f"popcorngeek에서 작성한 {'리뷰' if is_review else '댓글'}가 신고되었습니다.",
                 message=f"귀하의 {'리뷰' if is_review else '댓글'}가 {report_count}회 신고되었습니다.",
                 recipient=obj.author.email,
             )
         elif report_count >= 10:
             obj.delete()
-            self.send_email(
+            send_email.delay(
                 subject=f"popcorngeek에서 작성한 {'리뷰' if is_review else '댓글'}가 지속적으로 신고되어 삭제되었습니다.",
                 message=f"귀하의 {'리뷰' if is_review else '댓글'}가 {report_count}회 신고되어 삭제되었습니다.",
                 recipient=obj.author.email,
@@ -298,7 +299,7 @@ class ReportAPIView(APIView):
         if writer.admonition >= 5:
             writer.is_suspended = True
             writer.suspended_time = timezone.now()
-            self.send_email(
+            send_email.delay(
                 subject="popcorngeek에서 귀하의 계정이 정지되었습니다.",
                 message="popcorngeek에서 귀하는 경고가 누적되어 계정이 정지되었습니다.",
                 recipient=writer.email,
@@ -309,15 +310,6 @@ class ReportAPIView(APIView):
         if is_review:
             return get_object_or_404(Review, id=object_id)
         return get_object_or_404(Comment, id=object_id)
-
-    def send_email(self, subject, message, recipient):
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[recipient],
-            fail_silently=False,
-        )
 
 
 class SentimentAPIView(APIView):
