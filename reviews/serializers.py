@@ -54,7 +54,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def get_comment_count(self, obj):
         return Comment.objects.filter(review=obj).count()
-    
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -75,7 +74,7 @@ class SentimentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ["id", "content", "author", "like_count", "is_spoiler","private"]
+        fields = ["id", "content", "author", "like_count", "is_spoiler", "private"]
 
     def get_like_count(self, obj):
         return Like.objects.filter(review=obj).count()

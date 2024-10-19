@@ -1057,6 +1057,10 @@ document.getElementById('transformToMz').addEventListener('click', () => {
     transformReviewContent('Mz');
 });
 
+// 뒤로가기 함수 정의
+function goBack() {
+    window.history.back(); // 이전 페이지로 돌아감
+}
 // URL 매개변수에서 moviePk 가져오기
 const moviePk = urlParams.get('pk');
 
