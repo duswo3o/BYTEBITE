@@ -102,7 +102,6 @@ function loadProductDetail() {
                     <h2>${product.name}</h2>
                     <p>${product.content}</p>
                     <p>가격: ${product.price}원</p>
-                    <button onclick="goToPayment('${product.id}', '${product.name}', ${product.price})">구매하기</button>
                     <button onclick="addToCart('${product.id}')">장바구니에 추가</button>
                 </div>
             `;
