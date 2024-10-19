@@ -82,44 +82,360 @@ function displayBasket(basketData) {
     const basketContainer = document.getElementById('basket-container');
     basketContainer.innerHTML = ''; // 기존 내용을 초기화
 
+    // 테이블 생성
+    const table = document.createElement('table');
+    table.style.width = '100%'; // 테이블 너비 설정
+    table.border = '1'; // 테두리 설정
+    table.style.textAlign = 'center'; // 테이블 내 모든 셀의 텍스트를 가운데 정렬
+
+    // 테이블 헤더 생성
+    const headerRow = document.createElement('tr');
+    const headers = ['확인', '이미지', '상품명', '수량', '가격'];
+    headers.forEach(headerText => {
+        const th = document.createElement('th');
+        th.textContent = headerText;
+        th.style.textAlign = 'center'; // 헤더 셀의 텍스트를 가운데 정렬
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
     // products 속성이 존재하고 배열인지 확인
     if (Array.isArray(basketData.products) && basketData.products.length > 0) {
+        let totalAmount = 0; // 총 금액 변수
+
         basketData.products.forEach(product => {
-            const productItem = document.createElement('div');
-            productItem.classList.add('product-item');
+            const row = document.createElement('tr');
+
+            // 체크박스 생성
+            const checkBoxCell = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = JSON.stringify(product); // 체크박스 값으로 상품 정보를 저장
+            checkBoxCell.appendChild(checkbox);
+            row.appendChild(checkBoxCell);
 
             // 이미지 생성
+            const imageCell = document.createElement('td');
             const productImage = document.createElement('img');
-            productImage.src = product.image || '기본이미지경로.jpg'; // 기본 이미지 경로
+            productImage.src = product.image;
             productImage.alt = product.name;
-            productItem.appendChild(productImage);
+            productImage.style.width = '50px';
+            imageCell.appendChild(productImage);
+            row.appendChild(imageCell);
 
-            // 정보 컨테이너 생성
-            const productInfo = document.createElement('div');
-            productInfo.classList.add('product-info');
+            // 상품명 생성
+            const productNameCell = document.createElement('td');
+            productNameCell.textContent = product.name;
+            row.appendChild(productNameCell);
 
-            const productName = document.createElement('h3');
-            productName.textContent = product.name;
-            productInfo.appendChild(productName);
+            // 수량 선택 박스 생성
+            const quantityCell = document.createElement('td');
+            const quantitySelect = document.createElement('select');
+            for (let i = 1; i <= 10; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                quantitySelect.appendChild(option);
+            }
+            quantityCell.appendChild(quantitySelect);
+            row.appendChild(quantityCell);
 
-            const productPrice = document.createElement('p');
-            productPrice.textContent = `가격: ${product.price}원`;
-            productInfo.appendChild(productPrice);
+            // 가격 생성
+            const priceCell = document.createElement('td');
+            const totalPrice = product.price * (parseInt(quantitySelect.value) || 1);
+            priceCell.textContent = `${totalPrice}원`;
+            row.appendChild(priceCell);
 
-            productItem.appendChild(productInfo);
-            basketContainer.appendChild(productItem);
+            // 체크박스와 수량 선택 박스의 change 이벤트 리스너
+            checkbox.addEventListener('change', updateTotalAmount);
+            quantitySelect.addEventListener('change', () => {
+                const updatedPrice = product.price * parseInt(quantitySelect.value);
+                priceCell.textContent = `${updatedPrice}원`;
+                updateTotalAmount();
+            });
+
+            // 행을 테이블에 추가
+            table.appendChild(row);
         });
+
+        // 총 금액 표시
+        const totalAmountCell = document.createElement('tr');
+        totalAmountCell.innerHTML = `<td colspan="4" style="text-align: right;">총 금액:</td><td id="total-amount">0원</td>`;
+        table.appendChild(totalAmountCell);
+
+        // 결제하기 버튼 추가
+        const paymentButton = document.createElement('button');
+        paymentButton.textContent = '결제하기';
+        paymentButton.onclick = () => {
+            const selectedCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            if (selectedCheckboxes.length > 0) {
+                showPaymentForm(selectedCheckboxes);
+            } else {
+                alert('상품을 선택해 주세요.');
+            }
+        };
+        basketContainer.appendChild(paymentButton);
+
     } else {
         const noProductsMessage = document.createElement('p');
         noProductsMessage.textContent = '장바구니에 상품이 없습니다.';
         basketContainer.appendChild(noProductsMessage);
     }
+
+    // 테이블을 컨테이너에 추가
+    basketContainer.appendChild(table);
+
+    // 초기 총 금액 계산
+    updateTotalAmount();
 }
+
+// 총 금액 업데이트 함수
+function updateTotalAmount() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    let total = 0;
+
+    checkboxes.forEach(checkbox => {
+        const product = JSON.parse(checkbox.value);
+        const quantity = checkbox.closest('tr').querySelector('select').value;
+        total += product.price * parseInt(quantity);
+    });
+
+    document.getElementById('total-amount').textContent = `${total}원`;
+}
+
+// 주소 검색 호출 함수
+function openPostcode() {
+    new daum.Postcode({
+        oncomplete: function(data) {
+            // 선택된 주소 정보를 주소 입력란에 채우기
+            const address = data.address; // 기본 주소
+            let extraAddress = ''; // 상세 주소 (필요한 경우 추가)
+
+            // 주소 구성
+            if (data.bname !== '') {
+                extraAddress += data.bname; // 건물명 추가
+            }
+            if (data.buildingName !== '') {
+                extraAddress += (extraAddress !== '' ? ', ' + data.buildingName : data.buildingName); // 상세 주소 추가
+            }
+            if (extraAddress !== '') {
+                extraAddress = ' (' + extraAddress + ')';
+            }
+
+            // 최종 주소
+            const fullAddress = address + extraAddress;
+
+            // 주소 입력란에 채우기
+            document.getElementById('address').value = fullAddress;
+        }
+    }).open();
+}
+
+// 결제 정보 입력 폼 표시 함수
+function showPaymentForm(selectedCheckboxes) {
+    const paymentFormContainer = document.createElement('div');
+
+    const nameInput = document.createElement('input');
+    nameInput.placeholder = '구매자 이름';
+    nameInput.classList.add('input-address');
+    paymentFormContainer.appendChild(nameInput);
+
+    paymentFormContainer.appendChild(document.createElement('br'));
+
+    // 주소 입력란 추가
+    const addressInput = document.createElement('input');
+    addressInput.id = 'address';
+    addressInput.placeholder = '주소';
+    addressInput.required = true;
+    addressInput.readOnly = true;
+    addressInput.onclick = openPostcode;
+    addressInput.classList.add('input-address');
+    paymentFormContainer.appendChild(addressInput);
+
+    paymentFormContainer.appendChild(document.createElement('br'));
+
+    const address2Input = document.createElement('input');
+    address2Input.placeholder = '상세주소';
+    address2Input.classList.add('input-address');
+    paymentFormContainer.appendChild(address2Input);
+
+    paymentFormContainer.appendChild(document.createElement('br'));
+
+    const submitButton = document.createElement('button');
+    submitButton.textContent = '결제 진행';
+    submitButton.onclick = () => {
+        // 결제 요청 함수 호출
+        requestPay(selectedCheckboxes, nameInput.value, addressInput.value, address2Input.value);
+    };
+    paymentFormContainer.appendChild(submitButton);
+
+    document.getElementById('basket-container').appendChild(paymentFormContainer);
+}
+
+var IMP = window.IMP;
+IMP.init("imp43760436");
+
+let user_id;
+
+// 로그인 중인 사용자 정보 로드
+function loadUserInfo() {
+    axios.get(`${API_BASE_URL}products/login_user/`)
+        .then(response => {
+            const user = response.data;
+            user_id = user.id
+            const email = user.email;
+
+            document.getElementById('user-email').textContent = email;
+        })
+        .catch(error => {
+            console.error('사용자 정보를 불러오는 중 오류 발생:', error);
+            alert('사용자 정보를 불러오는 중 오류가 발생했습니다.');
+        });
+}
+
+// 결제 요청 함수
+function requestPay(selectedCheckboxes, name, address, address2) {
+
+    // 선택된 상품 정보와 결제 정보를 이용하여 결제 처리
+    const selectedProducts = [];
+    const productQuantities = {};
+
+    selectedCheckboxes.forEach(checkbox => {
+        const product = JSON.parse(checkbox.value);
+        const quantity = parseInt(checkbox.closest('tr').querySelector('select').value);
+
+        // 상품 정보 저장
+        selectedProducts.push({ ...product, quantity });
+        
+        // 상품명별 수량 업데이트
+        if (productQuantities[product.name]) {
+            productQuantities[product.name] += quantity; // 기존 수량 추가
+        } else {
+            productQuantities[product.name] = quantity; // 새로운 상품 추가
+        }
+    });
+
+    // 상품명 설정
+    let productName;
+    const productNames = Object.keys(productQuantities); // 상품명 목록
+
+    if (productNames.length === 1 && productQuantities[productNames[0]] === 1) {
+        productName = productNames[0]; // 상품이 하나이고 수량이 1일 경우
+    } else {
+        const primaryProduct = productNames[0]; // 대표 상품명
+        const totalQuantity = Object.values(productQuantities).reduce((acc, qty) => acc + qty, 0); // 총 수량
+        
+        productName = `${primaryProduct} 외 ${totalQuantity-1}개`; // 대표 상품명과 총 수량
+    }
+
+    // 현재 날짜 포맷팅 (YYYYMMDD)
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const dateString = `${year}${month}${day}`;
+
+    // purchaseNumber 설정
+    let purchaseNumber = localStorage.getItem('purchaseNumber');
+    let lastDate = localStorage.getItem('lastPurchaseDate');
+    const currentDate  = new Date().toISOString().split('T')[0]; // 오늘 날짜 (YYYY-MM-DD 형식)
+
+    if (lastDate !== currentDate ) {
+        purchaseNumber = 1; // 초기값 설정
+        localStorage.setItem('lastPurchaseDate', currentDate ); // 오늘 날짜 저장
+    } else {
+        if (!purchaseNumber) {
+            purchaseNumber = 1; // 초기값 설정
+        } else {
+            purchaseNumber = parseInt(purchaseNumber) + 1; // 1씩 증가
+        }
+    }
+
+localStorage.setItem('purchaseNumber', purchaseNumber);
+
+    // merchant_uid 설정
+    const merchant_uid = `${user_id}-${dateString}-${purchaseNumber}`;
+    const totalAmount = parseInt(document.getElementById('total-amount').textContent.replace('원', ''));
+
+    // 결제 요청 로직
+    IMP.request_pay(
+        {
+            pg: "kakaopay.TC0ONETIME",
+            pay_method: "card",
+            merchant_uid: merchant_uid, // 동적으로 설정된 merchant_uid 사용
+            name: productName, // 상품명
+            amount: totalAmount, // 가격
+            buyer_name: name,
+            buyer_addr: address,
+            buyer_addr2: address2,
+            buyer_postcode: "123-456", // 필요한 경우 여기에 우편번호를 추가하세요.
+        },
+        rsp => {
+            if (rsp.success) {
+                axios({
+                    url: `${API_BASE_URL}products/payments/`,
+                    method: "post",
+                    headers: { "Content-Type": "application/json" },
+                    data: {
+                        imp_uid: rsp.imp_uid,
+                        merchant_uid: rsp.merchant_uid,
+                        name: name,           // 구매자 이름
+                        address: address,     // 구매자 주소
+                        address2: address2,   // 구매자 추가 주소
+                        product_name: productName,
+                        amount: totalAmount       // 상품 가격
+                    }
+                })
+                .then(function (response) {
+                    alert("결제가 성공적으로 완료되었습니다!");
+                    window.location.replace(`http://127.0.0.1:5500/front/products/products.html`);
+                })
+                .catch(function (error) {
+                    alert("서버에서 결제 검증에 실패했습니다.");
+                });
+            } else {
+                alert(`결제에 실패하였습니다. 에러 내용: ${rsp.error_msg}`);
+            }
+        }
+    );
+  }
 
 // 뒤로가기 함수 정의
 function goBack() {
     window.history.back(); // 이전 페이지로 돌아감
 }
 
-// 예시: 함수 호출 (필요 시 호출하는 곳에서 처리)
+// 함수 호출
 document.addEventListener('DOMContentLoaded', fetchBasket);
+
+
+// 버튼 보여주기 설정
+document.addEventListener('DOMContentLoaded', function () {
+    const accessToken = sessionStorage.getItem('jwtAccessToken');
+    // 로컬스토리지에 토큰이 있는 경우
+    if (accessToken) {
+        // 로그아웃 버튼만 보여주기
+        document.getElementById('signinBtn').style.display = 'none';
+        document.getElementById('signupBtn').style.display = 'none';
+        document.getElementById('signoutBtn').style.display = 'block';
+    }
+    // 로컬스토리지에 토큰이 없는 경우 
+    else {
+        document.getElementById('signinBtn').style.display = 'block';
+        document.getElementById('signupBtn').style.display = 'block';
+        document.getElementById('signoutBtn').style.display = 'none';
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const helloUser = document.getElementById("helloUser");
+    const nickname = localStorage.getItem("nickname")
+    if (nickname) {
+        var userMessage = "hello, " + localStorage.getItem("nickname")
+    } else {
+        var userMessage = "welcome!"
+    }
+    helloUser.innerHTML = `
+<span>${userMessage}</span>
+`;
+});
