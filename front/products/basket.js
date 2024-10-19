@@ -147,7 +147,10 @@ function displayBasket(basketData) {
             row.appendChild(priceCell);
 
             // 체크박스와 수량 선택 박스의 change 이벤트 리스너
-            checkbox.addEventListener('change', updateTotalAmount);
+            checkbox.addEventListener('change', () => {
+                updateTotalAmount();
+                togglePaymentForm();
+            });
             quantitySelect.addEventListener('change', () => {
                 const updatedPrice = product.price * parseInt(quantitySelect.value);
                 priceCell.textContent = `${updatedPrice}원`;
@@ -163,18 +166,15 @@ function displayBasket(basketData) {
         totalAmountCell.innerHTML = `<td colspan="4" style="text-align: right;">총 금액:</td><td id="total-amount">0원</td>`;
         table.appendChild(totalAmountCell);
 
-        // 결제하기 버튼 추가
-        const paymentButton = document.createElement('button');
-        paymentButton.textContent = '결제하기';
-        paymentButton.onclick = () => {
+        // 체크박스 상태에 따라 결제 폼 표시 또는 숨기기
+        const togglePaymentForm = () => {
             const selectedCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
             if (selectedCheckboxes.length > 0) {
                 showPaymentForm(selectedCheckboxes);
             } else {
-                alert('상품을 선택해 주세요.');
+                hidePaymentForm(); // 모든 체크박스가 해제된 경우 폼 숨기기
             }
         };
-        basketContainer.appendChild(paymentButton);
 
     } else {
         const noProductsMessage = document.createElement('p');
@@ -231,9 +231,30 @@ function openPostcode() {
     }).open();
 }
 
+// 로그인 중인 사용자 정보 로드
+function loadUserInfo() {
+    return axios.get(`${API_BASE_URL}products/login_user/`)
+        .then(response => {
+            const user = response.data;
+            return { user_id: user.id, email: user.email };
+        })
+        .catch(error => {
+            console.error('사용자 정보를 불러오는 중 오류 발생:', error);
+            alert('사용자 정보를 불러오는 중 오류가 발생했습니다.');
+            throw error;
+        });
+}
+
 // 결제 정보 입력 폼 표시 함수
 function showPaymentForm(selectedCheckboxes) {
+    const existingForm = document.getElementById('payment-form');
+    if (existingForm) {
+        // 이미 폼이 존재하면 제거하고 새로 표시하지 않음
+        existingForm.remove();
+    }
+
     const paymentFormContainer = document.createElement('div');
+    paymentFormContainer.id = 'payment-form'; // 고유 ID 추가
 
     const nameInput = document.createElement('input');
     nameInput.placeholder = '구매자 이름';
@@ -242,7 +263,6 @@ function showPaymentForm(selectedCheckboxes) {
 
     paymentFormContainer.appendChild(document.createElement('br'));
 
-    // 주소 입력란 추가
     const addressInput = document.createElement('input');
     addressInput.id = 'address';
     addressInput.placeholder = '주소';
@@ -264,37 +284,35 @@ function showPaymentForm(selectedCheckboxes) {
     const submitButton = document.createElement('button');
     submitButton.textContent = '결제 진행';
     submitButton.onclick = () => {
-        // 결제 요청 함수 호출
-        requestPay(selectedCheckboxes, nameInput.value, addressInput.value, address2Input.value);
+        loadUserInfo().then(({ user_id, email }) => {
+            // 사용자 정보 로드가 완료된 후 결제 요청
+            requestPay(selectedCheckboxes, nameInput.value, addressInput.value, address2Input.value, user_id, email);
+        }).catch(error => {
+            // 오류 처리
+            console.error('결제 진행 중 오류 발생:', error);
+        });
     };
+
+    // 결제 버튼을 폼에 추가
     paymentFormContainer.appendChild(submitButton);
 
+    // 장바구니 컨테이너에 결제 폼 추가
     document.getElementById('basket-container').appendChild(paymentFormContainer);
+}
+
+// 결제 정보 입력 폼 숨기는 함수
+function hidePaymentForm() {
+    const existingForm = document.getElementById('payment-form');
+    if (existingForm) {
+        existingForm.remove(); // 결제 폼이 있으면 제거
+    }
 }
 
 var IMP = window.IMP;
 IMP.init("imp43760436");
 
-let user_id;
-
-// 로그인 중인 사용자 정보 로드
-function loadUserInfo() {
-    axios.get(`${API_BASE_URL}products/login_user/`)
-        .then(response => {
-            const user = response.data;
-            user_id = user.id
-            const email = user.email;
-
-            document.getElementById('user-email').textContent = email;
-        })
-        .catch(error => {
-            console.error('사용자 정보를 불러오는 중 오류 발생:', error);
-            alert('사용자 정보를 불러오는 중 오류가 발생했습니다.');
-        });
-}
-
 // 결제 요청 함수
-function requestPay(selectedCheckboxes, name, address, address2) {
+function requestPay(selectedCheckboxes, name, address, address2, user_id, email) {
 
     // 선택된 상품 정보와 결제 정보를 이용하여 결제 처리
     const selectedProducts = [];
@@ -351,7 +369,7 @@ function requestPay(selectedCheckboxes, name, address, address2) {
         }
     }
 
-localStorage.setItem('purchaseNumber', purchaseNumber);
+    localStorage.setItem('purchaseNumber', purchaseNumber);
 
     // merchant_uid 설정
     const merchant_uid = `${user_id}-${dateString}-${purchaseNumber}`;
