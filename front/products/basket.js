@@ -245,58 +245,71 @@ function loadUserInfo() {
         });
 }
 
-// 결제 정보 입력 폼 표시 함수
+// 결제 정보 입력 필드 표시 함수
 function showPaymentForm(selectedCheckboxes) {
+    // 기존에 생성된 필드 제거
     const existingForm = document.getElementById('payment-form');
     if (existingForm) {
-        // 이미 폼이 존재하면 제거하고 새로 표시하지 않음
-        existingForm.remove();
+        existingForm.remove(); 
     }
 
+    // 결제 정보 입력 필드 생성
     const paymentFormContainer = document.createElement('div');
     paymentFormContainer.id = 'payment-form'; // 고유 ID 추가
 
+    // 구매자 이름 입력 필드
     const nameInput = document.createElement('input');
     nameInput.placeholder = '구매자 이름';
     nameInput.classList.add('input-address');
     paymentFormContainer.appendChild(nameInput);
 
+    // 줄 바꿈 추가
     paymentFormContainer.appendChild(document.createElement('br'));
 
+    // 주소 입력 필드
     const addressInput = document.createElement('input');
     addressInput.id = 'address';
     addressInput.placeholder = '주소';
     addressInput.required = true;
     addressInput.readOnly = true;
-    addressInput.onclick = openPostcode;
+    addressInput.onclick = openPostcode; // 주소 입력 클릭 시 주소 찾기 함수 호출
     addressInput.classList.add('input-address');
     paymentFormContainer.appendChild(addressInput);
 
+    // 줄 바꿈 추가
     paymentFormContainer.appendChild(document.createElement('br'));
 
+    // 상세주소 입력 필드
     const address2Input = document.createElement('input');
     address2Input.placeholder = '상세주소';
     address2Input.classList.add('input-address');
     paymentFormContainer.appendChild(address2Input);
 
+    // 줄 바꿈 추가
     paymentFormContainer.appendChild(document.createElement('br'));
 
+    // 결제 진행 버튼
     const submitButton = document.createElement('button');
     submitButton.textContent = '결제 진행';
+    submitButton.type = 'button'; // 기본 동작 방지
+
+    // 버튼 클릭 시 결제 요청
     submitButton.onclick = () => {
-        loadUserInfo().then(({ user_id, email }) => {
-            // 사용자 정보 로드가 완료된 후 결제 요청
-            requestPay(selectedCheckboxes, nameInput.value, addressInput.value, address2Input.value, user_id, email);
-        }).catch(error => {
-            // 오류 처리
-            console.error('결제 진행 중 오류 발생:', error);
-        });
+        loadUserInfo()
+            .then(({ user_id, email }) => {
+                // 사용자 정보 로드가 완료된 후 결제 요청
+                requestPay(selectedCheckboxes, nameInput.value, addressInput.value, address2Input.value, user_id, email);
+            })
+            .catch(error => {
+                // 오류 처리
+                console.error('결제 진행 중 오류 발생:', error);
+            });
     };
 
-    // 결제 버튼을 폼에 추가
+    // 결제 버튼을 컨테이너에 추가
     paymentFormContainer.appendChild(submitButton);
 
-    // 장바구니 컨테이너에 결제 폼 추가
+    // 장바구니 컨테이너에 결제 필드 추가
     document.getElementById('basket-container').appendChild(paymentFormContainer);
 }
 
@@ -313,18 +326,17 @@ IMP.init("imp43760436");
 
 // 결제 요청 함수
 function requestPay(selectedCheckboxes, name, address, address2, user_id, email) {
-
-    // 선택된 상품 정보와 결제 정보를 이용하여 결제 처리
     const selectedProducts = [];
     const productQuantities = {};
 
+    // 선택된 상품 정보를 수집
     selectedCheckboxes.forEach(checkbox => {
         const product = JSON.parse(checkbox.value);
         const quantity = parseInt(checkbox.closest('tr').querySelector('select').value);
 
         // 상품 정보 저장
         selectedProducts.push({ ...product, quantity });
-        
+
         // 상품명별 수량 업데이트
         if (productQuantities[product.name]) {
             productQuantities[product.name] += quantity; // 기존 수량 추가
@@ -342,8 +354,8 @@ function requestPay(selectedCheckboxes, name, address, address2, user_id, email)
     } else {
         const primaryProduct = productNames[0]; // 대표 상품명
         const totalQuantity = Object.values(productQuantities).reduce((acc, qty) => acc + qty, 0); // 총 수량
-        
-        productName = `${primaryProduct} 외 ${totalQuantity-1}개`; // 대표 상품명과 총 수량
+
+        productName = `${primaryProduct} 외 ${totalQuantity - 1}개`; // 대표 상품명과 총 수량
     }
 
     // 현재 날짜 포맷팅 (YYYYMMDD)
@@ -353,26 +365,8 @@ function requestPay(selectedCheckboxes, name, address, address2, user_id, email)
     const day = String(today.getDate()).padStart(2, '0');
     const dateString = `${year}${month}${day}`;
 
-    // purchaseNumber 설정
-    let purchaseNumber = localStorage.getItem('purchaseNumber');
-    let lastDate = localStorage.getItem('lastPurchaseDate');
-    const currentDate  = new Date().toISOString().split('T')[0]; // 오늘 날짜 (YYYY-MM-DD 형식)
-
-    if (lastDate !== currentDate ) {
-        purchaseNumber = 1; // 초기값 설정
-        localStorage.setItem('lastPurchaseDate', currentDate ); // 오늘 날짜 저장
-    } else {
-        if (!purchaseNumber) {
-            purchaseNumber = 1; // 초기값 설정
-        } else {
-            purchaseNumber = parseInt(purchaseNumber) + 1; // 1씩 증가
-        }
-    }
-
-    localStorage.setItem('purchaseNumber', purchaseNumber);
-
     // merchant_uid 설정
-    const merchant_uid = `${user_id}-${dateString}-${purchaseNumber}`;
+    const merchant_uid = `${user_id}-${dateString}-996`;
     const totalAmount = parseInt(document.getElementById('total-amount').textContent.replace('원', ''));
 
     // 결제 요청 로직
@@ -390,6 +384,12 @@ function requestPay(selectedCheckboxes, name, address, address2, user_id, email)
         },
         rsp => {
             if (rsp.success) {
+                // 여러 상품 정보 서버로 전송
+                const productsData = selectedProducts.map(product => ({
+                    product_id: product.id,    // 상품 ID
+                    quantity: product.quantity  // 수량
+                }));
+    
                 axios({
                     url: `${API_BASE_URL}products/payments/`,
                     method: "post",
@@ -400,23 +400,25 @@ function requestPay(selectedCheckboxes, name, address, address2, user_id, email)
                         name: name,           // 구매자 이름
                         address: address,     // 구매자 주소
                         address2: address2,   // 구매자 추가 주소
-                        product_name: productName,
-                        amount: totalAmount       // 상품 가격
+                        products: productsData, // 여러 상품 정보
+                        total_amount: totalAmount // 총 금액
                     }
                 })
                 .then(function (response) {
-                    alert("결제가 성공적으로 완료되었습니다!");
-                    window.location.replace(`http://127.0.0.1:5500/front/products/products.html`);
+                    console.log("서버 응답:", response);
+                    alert("결제가 성공적으로 완료되었습니다!"); // 성공 메시지 추가
                 })
                 .catch(function (error) {
-                    alert("서버에서 결제 검증에 실패했습니다.");
+                    console.error("결제 검증 실패:", error);
+                    alert("서버에서 결제 검증에 실패했습니다. 관리자에게 문의하세요.");
                 });
             } else {
-                alert(`결제에 실패하였습니다. 에러 내용: ${rsp.error_msg}`);
+                console.error("결제 실패:", rsp);
+                alert(`결제에 실패하였습니다. 에러 내용: ${rsp.error_msg}`); // 실패 메시지 추가
             }
         }
     );
-  }
+}
 
 // 뒤로가기 함수 정의
 function goBack() {
