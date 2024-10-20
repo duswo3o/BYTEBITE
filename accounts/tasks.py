@@ -1,3 +1,4 @@
+import environ
 from celery import shared_task
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -7,6 +8,12 @@ from django.utils.encoding import force_bytes
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import ObjectDoesNotExist
+
+
+env = environ.Env(
+    # 기본값을 설정하거나 강제할 수 있습니다.
+    DEBUG=(bool, False)
+)
 
 User = get_user_model()
 
@@ -31,7 +38,7 @@ def send_activation_email(user_data):
             "accounts/account_active_email.html",  # 이메일 템플릿 경로
             {
                 "user": user,
-                "domain": "127.0.0.1:8000",  # 도메인 설정
+                "domain": env("domain"),  # 도메인 설정
                 "uid": uid,
                 "token": token,
             },

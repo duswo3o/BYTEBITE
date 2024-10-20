@@ -14,9 +14,7 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 # Django에서 설정한 모든 앱에서 비동기 태스크를 찾음
 app.autodiscover_tasks()
 
-app.conf.broker_url = (
-    "redis://redis:6379/0"  # Docker에서 'redis' 컨테이너를 호스트로 사용
-)
+
 app.conf.update(
     broker_url="redis://redis:6379/0",  # Docker 환경에서 Redis 컨테이너 이름 사용
     result_backend="redis://redis:6379/0",

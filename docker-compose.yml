@@ -21,52 +21,9 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - EMAIL_HOST=smtp.gmail.com
-      - EMAIL_PORT=587
-      - EMAIL_USE_TLS=True
-      - EMAIL_HOST_USER=${EMAIL}
-      - EMAIL_HOST_PASSWORD=${EMAIL_PASSWORD}
-      - DEFAULT_FROM_EMAIL=${EMAIL}
 
   redis:
     image: redis:alpine
     container_name: redis
     ports:
       - "6379:6379"
-
-
-#  web:
-#    build: .
-#    command: python manage.py runserver 0.0.0.0:8000
-#    volumes:
-#      - .:/app # 현재 디렉토리를 /app으로 마운
-#    ports:
-#      - "8000:8000"
-
-
-#  celery:
-#    image: python:3.10
-#    container_name: celery_worker
-#    command: sh -c "pip install --no-cache-dir -r requirements.txt && celery -A popcorngeek worker --loglevel=info -E"
-#    volumes:
-#      - .:/app
-#    working_dir: /app
-#    environment:
-#      - CELERY_BROKER_URL=redis://redis:6379/0
-#      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-#    depends_on:
-#      - redis
-#    networks:
-#      - my_network
-#
-#  redis:
-#    image: redis:alpine
-#    container_name: redis
-#    ports:
-#      - "6379:6379"# 환경 변수 사용
-#    networks:
-#      - my_network
-#
-#networks:
-#  my_network:
-#    driver: bridge

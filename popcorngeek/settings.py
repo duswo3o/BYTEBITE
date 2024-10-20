@@ -223,9 +223,6 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 
 # CELERY
-# local 환경
-# CELERY_BROKER_URL = "redis://localhost:6379/0"
-# CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 # Docker 환경
 CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_RESULT_BACKEND = "redis://redis:6379/0"
