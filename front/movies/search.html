@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="search.js" defer></script>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
@@ -35,6 +35,9 @@
 
 
     <h1>검색 결과</h1>
+
+    <!-- 뒤로가기 버튼 추가 -->
+    <button onclick="goBack()" style="margin-bottom: 20px;">뒤로가기</button>
 
     <!-- 검색 결과를 카드 형식으로 출력 -->
     <div id="searchresults" class="movie-card-container"></div>

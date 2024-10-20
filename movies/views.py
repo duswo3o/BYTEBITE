@@ -126,7 +126,9 @@ class MovieSearchAPIView(APIView):
         serializer = serializer_class(search_data, many=True)
 
         if search_type == "movies":
-            output_data = sorted(serializer.data, key=lambda x: x['average_grade'], reverse=True)
+            output_data = sorted(
+                serializer.data, key=lambda x: x["average_grade"], reverse=True
+            )
         else:
             output_data = serializer.data
 
