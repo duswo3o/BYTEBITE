@@ -1,5 +1,4 @@
 # 표준 라이브러리
-import os
 import json
 
 # 서드파티 라이브러리
@@ -11,8 +10,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from rest_framework import permissions, status, viewsets
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -27,12 +26,10 @@ from .serializers import (
     SentimentSerializer,
 )
 from .sentiment_analysis import predict
+from .tasks import send_email
 from openai import OpenAI
-from dotenv import load_dotenv
 
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key)
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -49,25 +46,59 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_queryset(self):
-        if self.action in ["retrieve", "update", "destroy"]:
-            review_id = self.kwargs.get("pk")
-            return self.queryset.filter(id=review_id)
-
+        user = self.request.user
+        base_query = Review.objects.all()
         movie_id = self.kwargs.get("movie_pk")
         if movie_id:
-            return self.queryset.filter(movie_id=movie_id)
+            base_query = base_query.filter(movie_id=movie_id)
 
-        return self.queryset
+        filter_param = self.request.query_params.get("filter", "all")
+
+        # 특정 리뷰를 조회, 업데이트, 삭제
+        if self.action in ["retrieve", "update", "destroy"]:
+            review_id = self.kwargs.get("pk")
+            return base_query.filter(id=review_id)
+
+        # 팔로우하는 유저의 리뷰만
+        if filter_param == "following":
+            if user.is_authenticated:
+                followings = user.followings.all()
+                # 팔로우하는 유저의 리뷰 중 private=False 리뷰 반환
+                return base_query.filter(author__in=followings, private=False)
+            else:
+                return Review.objects.none()
+
+        # 모든 공개 리뷰를 보려는 경우
+        elif filter_param == "all":
+            # 공개된 리뷰만 반환
+            return base_query.filter(private=False)
+
+        # 로그인한 유저의 비공개 리뷰만 보려는 경우
+        elif filter_param == "private":
+            if user.is_authenticated:
+                # 로그인한 유저의 비공개 리뷰만 반환
+                return base_query.filter(private=True, author=user)
+            else:
+                return Review.objects.none()
+
+        # 기본적으로 공개 리뷰만 반환
+        else:
+            return base_query.filter(private=False)
 
     def perform_create(self, serializer):
         movie_id = self.kwargs.get("movie_pk")
         movie = Movie.objects.get(pk=movie_id)
         review = serializer.validated_data.get("content")
         is_positive = predict(review)
+
+        # Get the values of private
+        private = serializer.validated_data.get("private", False)
+
         serializer.save(
             author=self.request.user,
             movie=movie,
             is_positive=is_positive,
+            private=private,  # Save private value
         )
 
 
@@ -191,186 +222,128 @@ class ReportAPIView(APIView):
 
         if report_type == "spoiler":
             if review_id:
-                review = get_object_or_404(Review, id=review_id)
-                report = Report.objects.filter(
-                    reporter=reporter, review=review, report_type=report_type
-                ).first()
-                if report:
-                    return Response(
-                        {"message": "이미 신고한 리뷰입니다"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                report = Report.objects.create(
-                    reporter=reporter, review=review, report_type=report_type
-                )
-                report_count = Report.objects.filter(
-                    review=review, report_type=report_type
-                ).count()
-                writer = review.author
-
-                if report_count == 7:
-                    review.is_spoiler = True
-                    review.save()
-                    send_mail(
-                        subject="popcorngeek에서 작성한 리뷰가 스포방지 처리 되었습니다.",
-                        message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되어 스포방지 처리 되었습니다.",
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[writer.email],
-                        fail_silently=False,
-                    )
-                    spoiled_reports = Report.objects.filter(review=review)
-                    spoiled_reports.delete()
-
-                return Response({"message": "해당 리뷰가 신고 완료되었습니다."})
-
-            if comment_id:
-                comment = get_object_or_404(Comment, id=comment_id)
-                report = Report.objects.filter(
-                    reporter=reporter, comment=comment, report_type=report_type
-                ).first()
-
-                if report:
-                    return Response(
-                        {"message": "이미 신고한 리뷰입니다"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                report = Report.objects.create(
-                    reporter=reporter, comment=comment, report_type=report_type
-                )
-                report_count = Report.objects.filter(
-                    comment=comment, report_type=report_type
-                ).count()
-                writer = comment.author
-
-                if report_count == 7:
-                    comment.is_spoiler = True
-                    comment.save()
-                    send_mail(
-                        subject="popcorngeek에서 작성한 리뷰가 스포방지 처리 되었습니다.",
-                        message=f"귀하의 리뷰('{comment.content}')가 {report_count}회 신고되어 스포방지 처리 되었습니다.",
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[writer.email],
-                        fail_silently=False,
-                    )
-                    spoiled_reports = Report.objects.filter(review=comment)
-                    spoiled_reports.delete()
-
-                return Response({"message": "해당 댓글이 신고 완료되었습니다."})
-
+                return self.handle_spoiler_report(review_id, reporter, is_review=True)
+            elif comment_id:
+                return self.handle_spoiler_report(comment_id, reporter, is_review=False)
         else:
             if review_id:
-                review = get_object_or_404(Review, id=review_id)
-                report = Report.objects.filter(
-                    reporter=reporter, review=review, report_type=report_type
-                ).first()
-                if report:
-                    return Response(
-                        {"message": "이미 신고한 리뷰입니다"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                report = Report.objects.create(
-                    reporter=reporter, review=review, report_type=report_type
-                )
-                report_count = Report.objects.filter(
-                    review=review, report_type=report_type
-                ).count()
-                writer = review.author
-
-                # 작성자에게 경고 이메일 전송
-                if report_count == 5:
-                    send_mail(
-                        subject="popcorngeek에서 작성한 리뷰가 신고되었습니다.",
-                        message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되었습니다.",
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[writer.email],
-                        fail_silently=False,
-                    )
-
-                # 작성자에게 리뷰 삭제 이메일 전송
-                elif report_count >= 10:
-                    review.delete()
-                    send_mail(
-                        subject="popcorngeek에서 작성한 리뷰가 지속적으로 신고되어 삭제되었습니다.",
-                        message=f"귀하의 리뷰('{review.movie}')가 {report_count}회 신고되어 삭제되었습니다.",
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[writer.email],
-                        fail_silently=False,
-                    )
-                    writer.admonition += 1
-                    if writer.admonition >= 5:
-                        writer.is_suspended = True
-                        writer.suspended_time = timezone.now()
-                        send_mail(
-                            subject="popcorngeek에서 귀하의 계정이 정지되었습니다.",
-                            message="popcoengeek에서 귀하는 경고가 누적되어 계정이 정지되었습니다.",
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            recipient_list=[writer.email],
-                            fail_silently=False,
-                        )
-                    review.author.save()
-
-                return Response(
-                    {"message": "해당 리뷰가 신고 완료되었습니다."},
-                    status=status.HTTP_200_OK,
-                )
-
+                return self.handle_report(review_id, reporter, is_review=True)
             elif comment_id:
-                comment = get_object_or_404(Comment, id=comment_id)
-                report = Report.objects.filter(
-                    reporter=reporter, comment=comment, report_type=report_type
-                ).first()
-                if report:
-                    return Response(
-                        {"message": "이미 신고한 댓글입니다."},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+                return self.handle_report(comment_id, reporter, is_review=False)
 
-                report = Report.objects.create(
-                    reporter=reporter, comment=comment, report_type=report_type
-                )
-                report_count = Report.objects.filter(comment=comment).count()
-                writer = comment.author
+        return Response(
+            {"message": "신고 타입 또는 대상이 잘못되었습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
-                # 작성자에게 경고 이메일 전송
-                if report_count == 5:
-                    send_mail(
-                        subject="popcorngeek에서 작성한 리뷰가 신고되었습니다.",
-                        message=f"귀하의 댓글('{comment.content[:10]}...')가 {report_count}회 신고되었습니다.",
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[writer.email],
-                        fail_silently=False,
-                    )
+    def handle_spoiler_report(self, object_id, reporter, is_review=True):
+        obj = self.get_review_or_comment(object_id, is_review)
+        report = Report.objects.filter(
+            reporter=reporter,
+            review=obj if is_review else None,
+            comment=None if is_review else obj,
+            report_type="spoiler",
+        ).first()
 
-                # 작성자에게 댓글 삭제 이메일 전송
-                elif report_count >= 10:
-                    comment.delete()
-                    send_mail(
-                        subject="popcorngeek에서 작성한 리뷰가 지속적으로 신고되어 삭제되었습니다.",
-                        message=f"귀하의 댓글('{comment.content[:10]}...')가 {report_count}회 신고되어 삭제되었습니다.",
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[writer.email],
-                        fail_silently=False,
-                    )
-                    writer.admonition += 1
-                    if writer.admonition >= 5:  # 테스트용 2회
-                        writer.is_suspended = True
-                        writer.suspended_time = timezone.now()
-                        send_mail(
-                            subject="popcorngeek에서 귀하의 계정이 정지되었습니다.",
-                            message="popcoengeek에서 귀하는 경고가 누적되어 계정이 정지되었습니다.",
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            recipient_list=[writer.email],
-                            fail_silently=False,
-                        )
-                    comment.author.save()
+        if report:
+            return Response(
+                {"message": "이미 신고한 리뷰/댓글입니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-                return Response(
-                    {"message": "해당 댓글이 신고 완료되었습니다."},
-                    status=status.HTTP_200_OK,
-                )
+        Report.objects.create(
+            reporter=reporter,
+            review=obj if is_review else None,
+            comment=None if is_review else obj,
+            report_type="spoiler",
+        )
+        report_count = Report.objects.filter(
+            review=obj if is_review else None,
+            comment=None if is_review else obj,
+            report_type="spoiler",
+        ).count()
+
+        if report_count == 7:
+            obj.is_spoiler = True
+            obj.save()
+            send_email.delay(
+                subject="popcorngeek에서 작성한 리뷰가 스포방지 처리 되었습니다.",
+                message=f"귀하의 리뷰/댓글이 {report_count}회 신고되어 스포방지 처리 되었습니다.",
+                recipient=obj.author.email,
+            )
+            Report.objects.filter(
+                review=obj if is_review else None, comment=None if is_review else obj
+            ).delete()
+
+        return Response(
+            {
+                "message": f"해당 {'리뷰' if is_review else '댓글'}가 신고 완료되었습니다."
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def handle_report(self, object_id, reporter, is_review=True):
+        obj = self.get_review_or_comment(object_id, is_review)
+        report = Report.objects.filter(
+            reporter=reporter,
+            review=obj if is_review else None,
+            comment=None if is_review else obj,
+        ).first()
+
+        if report:
+            return Response(
+                {"message": "이미 신고한 리뷰/댓글입니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        Report.objects.create(
+            reporter=reporter,
+            review=obj if is_review else None,
+            comment=None if is_review else obj,
+        )
+        report_count = Report.objects.filter(
+            review=obj if is_review else None, comment=None if is_review else obj
+        ).count()
+
+        # 경고 및 삭제 로직
+        if report_count == 5:
+            send_email.delay(
+                subject=f"popcorngeek에서 작성한 {'리뷰' if is_review else '댓글'}가 신고되었습니다.",
+                message=f"귀하의 {'리뷰' if is_review else '댓글'}가 {report_count}회 신고되었습니다.",
+                recipient=obj.author.email,
+            )
+        elif report_count >= 10:
+            obj.delete()
+            send_email.delay(
+                subject=f"popcorngeek에서 작성한 {'리뷰' if is_review else '댓글'}가 지속적으로 신고되어 삭제되었습니다.",
+                message=f"귀하의 {'리뷰' if is_review else '댓글'}가 {report_count}회 신고되어 삭제되었습니다.",
+                recipient=obj.author.email,
+            )
+            self.handle_user_admonition(obj.author)
+
+        return Response(
+            {
+                "message": f"해당 {'리뷰' if is_review else '댓글'}가 신고 완료되었습니다."
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def handle_user_admonition(self, writer):
+        writer.admonition += 1
+        if writer.admonition >= 5:
+            writer.is_suspended = True
+            writer.suspended_time = timezone.now()
+            send_email.delay(
+                subject="popcorngeek에서 귀하의 계정이 정지되었습니다.",
+                message="popcorngeek에서 귀하는 경고가 누적되어 계정이 정지되었습니다.",
+                recipient=writer.email,
+            )
+        writer.save()
+
+    def get_review_or_comment(self, object_id, is_review=True):
+        if is_review:
+            return get_object_or_404(Review, id=object_id)
+        return get_object_or_404(Comment, id=object_id)
 
 
 class SentimentAPIView(APIView):

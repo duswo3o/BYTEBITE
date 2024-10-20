@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>검색 결과</title>
-
+    <title>장바구니</title>
+    <!-- CSS 파일 추가 -->
+    <link rel="stylesheet" href="basket.css">
+    <!-- 포트원 SDK 라이브러리 추가 -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+    <!-- Axios 라이브러리 추가 -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="search.js" defer></script>
-
-    <link rel="stylesheet" href="../style.css">
+    <!-- 카카오 주소 검색 API 스크립트 추가 -->
+    <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
+    <!-- 카카오페이 결제 라이브러리 로드  -->
+    <script src="https://payment.kakao.com/v1/kakaopay.js"></script>
 </head>
-
 <body>
 
     <div class="navbar">
@@ -23,26 +26,27 @@
                 <p id="helloUser"></p>
             </div>
         </a>
-        <h3 onclick='location.href="https://popcorngeek.store/"'><strong>POPCORNGEEK</strong></h3>
+        <h3 onclick='location.href="../movies/mainpage.html"'><strong>POPCORNGEEK</strong></h3>
         <!-- <a href="#">Contact</a> -->
 
         <div>
             <a href='../accounts/signin.html' class="right" id="signinBtn">sign in</a>
-            <a href="../accounts/signup.html" id="signupBtn">sign up</a>
+            <a href="../accounts/signin.html" id="signupBtn">sign up</a>
             <a href="#" id="signoutBtn" style="display: none;">sign out</a>
         </div>
     </div>
 
 
-    <h1>검색 결과</h1>
+
+    <h1>장바구니</h1>
 
     <!-- 뒤로가기 버튼 추가 -->
     <button onclick="goBack()" style="margin-bottom: 20px;">뒤로가기</button>
+    
+    <div id="basket-container">
+        <!-- 장바구니 항목이 여기에 표시됩니다. -->
+    </div>
 
-    <!-- 검색 결과를 카드 형식으로 출력 -->
-    <div id="searchresults" class="movie-card-container"></div>
-
-    <script src="movies.js"></script>
+    <script src="basket.js"></script> <!-- JavaScript 파일 연결 -->
 </body>
-
 </html>

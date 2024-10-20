@@ -367,15 +367,14 @@ function displaySearchResults(results, searchType) {
             const movieTitle = document.createElement('h3');
             movieTitle.textContent = item.title;
 
-            // 장르 정보
-            const genreNames = item.genre.map(genre => genre.name).join(', ');
-            const movieGenre = document.createElement('p');
-            movieGenre.textContent = `장르: ${genreNames}`;
+            // 평균 평점
+            const movieAverageGrade = document.createElement('p');
+            movieAverageGrade.textContent = `평균 평점: ${item.average_grade}`;
 
             // 영화 카드 구성
-            movieCard.appendChild(movieLink); // 영화 링크를 카드에 추가
-            movieCard.appendChild(movieGenre);
+            movieCard.appendChild(movieLink);
             movieCard.appendChild(movieTitle);
+            movieCard.appendChild(movieAverageGrade);
 
             // 카드 추가
             resultsList.appendChild(movieCard);
@@ -483,9 +482,13 @@ function sendScoreData(moviepk, scoreData) {
 }
 
 // 리뷰 코맨트 가져오기 함수
-async function getReviews(moviePk) {
+async function getReviews(moviePk, filter) {
     try {
-        const response = await axios.get(`${API_BASE_URL}reviews/${moviePk}/`);
+        let url = `${API_BASE_URL}reviews/${moviePk}/`;
+        if (filter) {
+            url += `?filter=${filter}`;
+        }
+        const response = await axios.get(url);
         const reviews = response.data;
 
         // 각 리뷰에 대한 댓글을 동시에 가져오기 (Promise.all 활용)
@@ -493,30 +496,26 @@ async function getReviews(moviePk) {
             return axios.get(`${API_BASE_URL}reviews/${review.id}/comments/`);
         });
         const commentResponses = await Promise.all(commentPromises);
-
-        // 각 리뷰에 댓글 할당
         reviews.forEach((review, index) => {
             review.comments = commentResponses[index].data;
         });
 
-        // console.log('리뷰 및 댓글 가져오기 성공:', reviews);
         return reviews;
     } catch (error) {
-        // console.error('리뷰 가져오기 실패:', error);
         throw error;
     }
 }
 
 // 리뷰 목록 갱신 함수
-async function refreshReviews(moviePk) {
+async function refreshReviews(moviePk, filter = 'all') {
     try {
-        const reviews = await getReviews(moviePk);
+        const reviews = await getReviews(moviePk, filter);
         displayReviews(reviews);
     } catch (error) {
-        // console.error('리뷰 목록 갱신 실패:', error);
         alert('리뷰 목록을 가져오는데 실패했습니다.');
     }
 }
+
 
 // 공통 에러 처리 함수
 function handleError(error) {
@@ -555,19 +554,27 @@ async function postReview(moviePk, content) {
     }
 
     const isSpoiler = document.getElementById('isSpoiler').checked;
+    const isPrivate = document.getElementById('isPrivate').checked;
+    
 
     try {
-        await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { content, is_spoiler: isSpoiler });
+        await axios.post(`${API_BASE_URL}reviews/${moviePk}/`, { 
+            content,
+            is_spoiler: isSpoiler,
+            private: isPrivate
+        });
 
         alert('리뷰 작성 성공');
         await refreshReviews(moviePk);
         document.getElementById('reviewContent').value = ''; // 입력 필드 초기화
         document.getElementById('isSpoiler').checked = false; // 체크박스 초기화
+        
     } catch (error) {
         console.log(error)
         handleError(error);
     }
 }
+
 
 // 리뷰 수정하기 함수
 async function updateReview(reviewId, content) {
@@ -703,6 +710,7 @@ function displayReviews(reviews) {
             <div class="header">
                 <span class="author">${review.author}</span>
                 <span class="date">${new Date(review.created_at).toLocaleString()}</span>
+
             </div>
             ${contentHTML}
             <div class="footer">
@@ -983,58 +991,66 @@ async function transformReviewContent(style) {
 function sentimentReview(moviepk) {
     axios.get(`${API_BASE_URL}reviews/sentiment/${moviepk}/`)
         .then(response => {
-            // console.log("top3 response", response);
-            const positiveReviews = response.data.positive_review;
-            // console.log("pos", positiveReviews)
-            const negativeReviews = response.data.negative_review;
-
+            // API 응답에 따라 필드 이름 조정
+            const positiveReviews = response.data.positive_review.filter(review => !review.private);
+            const negativeReviews = response.data.negative_review.filter(review => !review.private);
 
             const postopReviewList = document.getElementById("positive-top3");
-            postopReviewList.innerHTML = ""
+            postopReviewList.innerHTML = "";
             positiveReviews.forEach(positiveReview => {
                 let posreviewHTML;
                 if (positiveReview.is_spoiler) {
                     posreviewHTML = `<div class="content spoiler">${positiveReview.content}</div>`;
                 } else {
-                    posreviewHTML = `<div class="content" >${positiveReview.content}</div>`;
+                    posreviewHTML = `<div class="content">${positiveReview.content}</div>`;
                 }
 
                 const positiveReviewDiv = document.createElement("p");
                 positiveReviewDiv.innerHTML = `
-                <div class="container text-center">
-                    <p><strong>${positiveReview.author}</strong> [❤ : ${positiveReview.like_count}]</p>
-                    ${posreviewHTML}
-                </div>
+                    <div class="container text-center">
+                        <p><strong>${positiveReview.author}</strong> [❤ : ${positiveReview.like_count}]</p>
+                        ${posreviewHTML}
+                    </div>
                 `;
                 postopReviewList.appendChild(positiveReviewDiv);
-            })
+            });
 
             const negtopReviewList = document.getElementById("negative-top3");
-            negtopReviewList.innerHTML = ""
+            negtopReviewList.innerHTML = "";
             negativeReviews.forEach(negativeReview => {
-                let megReviewHTML;
+                let negReviewHTML;
                 if (negativeReview.is_spoiler) {
-                    megReviewHTML = `<div class="content spoiler">${negativeReview.content}</div>`;
+                    negReviewHTML = `<div class="content spoiler">${negativeReview.content}</div>`;
                 } else {
-                    megReviewHTML = `<div class="content" >${negativeReview.content}</div>`;
+                    negReviewHTML = `<div class="content">${negativeReview.content}</div>`;
                 }
                 const negativeReviewDiv = document.createElement("p");
                 negativeReviewDiv.innerHTML = `
-                <div class="container text-center">
-                    <p><strong>${negativeReview.author}</strong> [❤ : ${negativeReview.like_count}]</p>
-                    ${megReviewHTML}
-                </div>
+                    <div class="container text-center">
+                        <p><strong>${negativeReview.author}</strong> [❤ : ${negativeReview.like_count}]</p>
+                        ${negReviewHTML}
+                    </div>
                 `;
                 negtopReviewList.appendChild(negativeReviewDiv);
-            })
+            });
 
-
+            // 스포일러에 대한 이벤트 리스너 첨부
+            attachSpoilerToggle(postopReviewList);
+            attachSpoilerToggle(negtopReviewList);
         })
         .catch(error => {
-            // console.log(error)
-        })
-
+            
+        });
 }
+
+function attachSpoilerToggle(container) {
+    container.addEventListener('click', function(event) {
+        if (event.target.classList.contains('spoiler')) {
+            event.target.classList.toggle('revealed');
+        }
+    });
+}
+
 
 if (urlParams.get('pk')) {
     document.addEventListener("DOMContentLoaded", sentimentReview(urlParams.get('pk')))
@@ -1053,3 +1069,28 @@ document.getElementById('transformToMz').addEventListener('click', () => {
     transformReviewContent('Mz');
 });
 
+// 뒤로가기 함수 정의
+function goBack() {
+    window.history.back(); // 이전 페이지로 돌아감
+}
+// URL 매개변수에서 moviePk 가져오기
+const moviePk = urlParams.get('pk');
+
+// 필터 버튼에 이벤트 리스너 추가
+document.getElementById('allReviewsBtn').addEventListener('click', () => {
+    refreshReviews(moviePk, 'all'); // '전체 리뷰' 버튼 클릭 시 리뷰 업데이트
+});
+
+document.getElementById('followingReviewsBtn').addEventListener('click', () => {
+    refreshReviews(moviePk, 'following'); // '팔로잉 리뷰' 버튼 클릭 시 리뷰 업데이트
+});
+
+document.getElementById('privateReviewsBtn').addEventListener('click', () => {
+    refreshReviews(moviePk, 'private'); // '비공개 리뷰' 버튼 클릭 시 리뷰 업데이트
+});
+
+// DOMContentLoaded 이벤트가 발생하면 초기화 작업 수행
+document.addEventListener('DOMContentLoaded', () => {
+    // 다른 초기화 코드
+    refreshReviews(moviePk, 'all'); // 페이지 로드 시 '전체 리뷰' 표시
+});

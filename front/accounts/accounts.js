@@ -139,9 +139,9 @@ const signupUser = () => {
     })
         .then(response => {
             console.log(response);
-            alert("이메일을 확인하여 인증을 진행해주세요")
-            // 이동할 페이지
             window.location.href = "signin.html"
+            alert("계정이 생성되었습니다. 이메일을 확인하여 인증을 진행해주세요")
+            // 이동할 페이지
         })
         .catch(error => {
             console.log(error)
@@ -214,40 +214,68 @@ const signoutUser = (event) => {
 
 
 // 프로필 조회
-const profileBtn = document.getElementById("searchUserBtn")
+const profileBtn = document.getElementById("searchUserBtn");
 
 const userProfile = () => {
-
-    var userNickname = document.getElementById("userNickname").value || localStorage.getItem("nickname")
+    var userNickname = document.getElementById("userNickname").value.trim() || localStorage.getItem("nickname");
 
     axios.get(`${API_BASE_URL}/accounts/${userNickname}/`)
         .then(response => {
             console.log(response)
 
-            // console.log(document)
-            document.getElementById("nickname").innerText = response.data.nickname
-            document.getElementById("email").innerText = response.data.email
-            document.getElementById("gender").innerText = response.data.gender
-            document.getElementById("age").innerText = response.data.age
-            document.getElementById("bio").innerText = response.data.bio
-            document.getElementById("followers").innerText = response.data.followers_count
-            document.getElementById("followings").innerText = response.data.followings_count
-            document.getElementById("wannawatch").innerText = response.data.liked_movies.length
-            document.getElementById("likedreview").innerText = response.data.liked_reviews.length
-            document.getElementById("ratedmovie").innerText = response.data.rated_movie.length
-            document.getElementById("myreview").innerText = response.data.reviews.length
-            // document.getElementById("testreview").innerText = response.data.reviews.length
+            // 프로필 정보 업데이트
+            document.getElementById("nickname").innerText = response.data.nickname;
+            document.getElementById("email").innerText = response.data.email;
+            document.getElementById("gender").innerText = response.data.gender;
+            document.getElementById("age").innerText = response.data.age;
+            document.getElementById("bio").innerText = response.data.bio;
+            document.getElementById("followers").innerText = response.data.followers_count;
+            document.getElementById("followings").innerText = response.data.followings_count;
+            document.getElementById("wannawatch").innerText = response.data.liked_movies.length;
+            document.getElementById("likedreview").innerText = response.data.liked_reviews.length;
+            document.getElementById("ratedmovie").innerText = response.data.rated_movie.length;
+            document.getElementById("myproducts").innerText = response.data.purchased_products.length
 
+            // 로컬 스토리지 또는 서버에서 로그인한 사용자의 정보를 가져옴
+            const loggedInUser = localStorage.getItem('nickname'); // 로그인한 사용자 닉네임
+            const viewedProfileUser = response.data.nickname; // 조회한 프로필의 닉네임
+            let reviews = response.data.reviews;
 
-            // 팔로워
+            // 리뷰 필터링: 자기 자신의 프로필을 보는 경우에만 비공개 리뷰 표시
+            if (loggedInUser !== viewedProfileUser) {
+                reviews = reviews.filter(review => !review.private);
+            }
+
+            // 필터링 후 리뷰 수 업데이트
+            document.getElementById("myreview").innerText = reviews.length;
+
+            // 필터링된 리뷰 렌더링
+            const myReviewList = document.getElementById("my-movie-reviews");
+            myReviewList.innerHTML = ""; // 리뷰 목록 초기화
+            if (reviews.length === 0) {
+                myReviewList.innerHTML = "<p>표시할 리뷰가 없습니다.</p>"; // 리뷰가 없는 경우 메시지 표시
+            } else {
+                reviews.forEach(myReview => {
+                    const reviewdiv = document.createElement("div");
+                    reviewdiv.innerHTML = `
+                        <div class="card">
+                            <p>영화 ID : <span class="movieID">${myReview.movie}</span></p>
+                            <p>리뷰 : <span class="myReview">${myReview.content}</span></p>
+                        </div>
+                    `;
+                    myReviewList.appendChild(reviewdiv);
+                });
+            }
+
+            // 팔로잉
             const followUsers = response.data.followers;
             const followUserList = document.getElementById("follower-users");
-            followUserList.innerHTML = ""
+            followUserList.innerHTML = "";
             followUsers.forEach(followUser => {
                 const followUserdiv = document.createElement("div");
                 followUserdiv.innerHTML = `
                     <div class="card">
-                        <p>username : <span class="movieID">${followUser.nickname}</span></p>
+                        <p>사용자 이름 : <span class="movieID">${followUser.nickname}</span></p>
                     </div>
                 `;
                 followUserList.appendChild(followUserdiv);
@@ -256,27 +284,26 @@ const userProfile = () => {
             // 팔로워
             const followingUsers = response.data.followings;
             const followingUserList = document.getElementById("following-users");
-            followingUserList.innerHTML = ""
+            followingUserList.innerHTML = "";
             followingUsers.forEach(followingUser => {
                 const followingUserdiv = document.createElement("div");
                 followingUserdiv.innerHTML = `
                     <div class="card">
-                        <p>username : <span class="movieID">${followingUser.nickname}</span></p>
+                        <p>사용자 이름 : <span class="movieID">${followingUser.nickname}</span></p>
                     </div>
                 `;
                 followingUserList.appendChild(followingUserdiv);
             });
 
-
-            // 보고싶어요 영화
+            // 보고싶어요 영화 목록
             const wishMovies = response.data.liked_movies;
             const wishMovieList = document.getElementById("wnat-to-watch");
-            wishMovieList.innerHTML = ""
+            wishMovieList.innerHTML = "";
             wishMovies.forEach(wishMovie => {
                 const wishMoviediv = document.createElement("div");
                 wishMoviediv.innerHTML = `
                     <div class="card">
-                        <p>Movie Title : <span class="movieID">${wishMovie.title}</span></p>
+                        <p>영화 제목 : <span class="movieID">${wishMovie.title}</span></p>
                     </div>
                 `;
                 wishMovieList.appendChild(wishMoviediv);
@@ -285,70 +312,77 @@ const userProfile = () => {
             // 좋아요 한 리뷰
             const likedReviews = response.data.liked_reviews;
             const likedReviewList = document.getElementById("liked-review");
-            likedReviewList.innerHTML = ""
+            likedReviewList.innerHTML = "";
             likedReviews.forEach(likedReview => {
                 const likedReviewdiv = document.createElement("div");
                 likedReviewdiv.innerHTML = `
                     <div class="card">
-                        <p>Movie ID : <span class="movieID">${likedReview.review.movie}</span></p>
-                        <p>Movie review : <span class="review">${likedReview.review.content}</span></p>
+                        <p>영화 ID : <span class="movieID">${likedReview.review.movie}</span></p>
+                        <p>영화 리뷰 : <span class="review">${likedReview.review.content}</span></p>
                     </div>
                 `;
                 likedReviewList.appendChild(likedReviewdiv);
             });
 
-            // 작성한 리뷰
-            const myReviews = response.data.reviews;
-            const myReviewList = document.getElementById("my-movie-reviews");
-            myReviewList.innerHTML = ""
-            myReviews.forEach(myReview => {
-                const reviewdiv = document.createElement("div");
-                reviewdiv.innerHTML = `
-                    <div class="card">
-                        <p>MovieID : <span class="movieID">${myReview.movie}</span></p>
-                        <p>review : <span class="myReview">${myReview.content}</span></p>
-                    </div>
-                `;
-                myReviewList.appendChild(reviewdiv);
-            });
 
             // 평가한 영화
             const myRatings = response.data.rated_movie;
             const myRatingList = document.getElementById("my-rated-movie");
-            myRatingList.innerHTML = ""
+            myRatingList.innerHTML = "";
             myRatings.forEach(myRating => {
                 const ratingdiv = document.createElement("div");
                 ratingdiv.innerHTML = `
                 <div class="card">
-                    <p>MovieID : <span class="movieID">${myRating.movie}</span></p>
-                    <p>score : <span class="myReview">${myRating.score}</span></p>
+                    <p>영화 ID : <span class="movieID">${myRating.movie}</span></p>
+                    <p>평점 : <span class="myReview">${myRating.score}</span></p>
                 </div>
             `;
                 myRatingList.appendChild(ratingdiv);
             });
 
+            // 구매한 상품
+            const myProducts = response.data.purchased_products;
+            const myProductList = document.getElementById("my-purchased-products");
+            myProductList.innerHTML = ""
+            myProducts.forEach(myProduct => {
+                const productdiv = document.createElement("div");
+                productdiv.innerHTML = `
+                <div class="card">
+                    <p>product : <span class="movieID">${myProduct.product}</span></p>
+                    <p>purchase code : <span class="myReview">${myProduct.merchant_uid}</span></p>
+                    <p>price : <span class="myReview">${myProduct.price}</span></p>
+                    <p>status : <span class="myReview">${myProduct.status}</span></p>
+                </div>
+            `;
+                myProductList.appendChild(productdiv);
+            });
+
             // 로컬 스토리지 또는 서버에서 로그인한 사용자의 정보를 가져옴
-            const loggedInUser = localStorage.getItem('nickname'); // 예: 로그인한 사용자 닉네임
-            const viewedProfileUser = response.data.nickname; // 예: 조회한 프로필 닉네임 (이 값을 서버에서 받아온다고 가정)
+            // const loggedInUser = localStorage.getItem('nickname'); // 예: 로그인한 사용자 닉네임
+            // const viewedProfileUser = response.data.nickname; // 예: 조회한 프로필 닉네임 (이 값을 서버에서 받아온다고 가정)
 
             // 버튼 요소 가져오기
             const profileBtn = document.getElementById('profile-btn');
-
-            // 로그인한 사용자와 조회한 프로필 사용자가 같을 때만 버튼을 표시
             if (loggedInUser === viewedProfileUser) {
-                profileBtn.style.display = 'block'; // 버튼 보이게 설정
+                profileBtn.style.display = 'block'; // 자신의 프로필을 보는 경우 버튼 표시
             } else {
-                profileBtn.style.display = 'none'; // 버튼 숨기기
+                profileBtn.style.display = 'none'; // 그 외의 경우 버튼 숨기기
             }
-
 
         })
         .catch(error => {
-            console.log(error)
-            alert("없는 회원입니다")
-        })
+            console.error(error);
+            alert("없는 회원입니다");
+        });
+};
 
+// 검색 버튼에 이벤트 리스너 연결
+if (profileBtn) {
+    profileBtn.addEventListener('click', userProfile);
 }
+
+
+
 
 // document.addEventListener("DOMContentLoaded", () => {
 //     userProfile(); // 페이지가 로드되면 userProfile 함수 호출
@@ -554,9 +588,13 @@ if (signoutBtn) {
     signoutBtn.addEventListener('click', signoutUser)
 }
 
-if (profileBtn && localStorage.getItem("nickname")) {
-    profileBtn.addEventListener('click', userProfile)
-    window.addEventListener('DOMContentLoaded', userProfile);
+if (profileBtn) {
+    profileBtn.addEventListener('click', userProfile);
+
+    // 닉네임이 localStorage에 있을 때만 페이지 로드 시 userProfile 실행
+    if (localStorage.getItem("nickname")) {
+        window.addEventListener('DOMContentLoaded', userProfile);
+    }
 }
 
 if (followBtn) {

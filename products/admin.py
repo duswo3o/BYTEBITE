@@ -5,6 +5,7 @@ from .models import Product, PurchasedProduct
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ("name", "price")
+    exclude = ("consumer",)
 
 
 @admin.register(PurchasedProduct)

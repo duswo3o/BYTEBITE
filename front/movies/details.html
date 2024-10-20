@@ -75,6 +75,10 @@
 
         </div>
         <br>
+
+        
+
+        
         <div class="button-container">
             <button id="goBack" onclick="window.history.back();">뒤로가기</button>
         </div>
@@ -85,6 +89,9 @@
             <label>
                 <input type="checkbox" id="isSpoiler"> 스포일러 포함
             </label>
+            <label>
+                <input type="checkbox" id="isPrivate"> 비공개
+            </label>
             <div class="button-container">
                 <button id="transformToJoseon">조선시대 말투</button>
                 <button id="transformToCritic">평론가 말투</button>
@@ -92,7 +99,13 @@
             </div>
             <button id="postReviewBtn">리뷰 작성하기</button>
         </div>
-
+        <br>
+        <div class="button-container">
+            <button id="allReviewsBtn">전체 리뷰</button>
+            <button id="followingReviewsBtn">팔로잉 리뷰</button>
+            <button id="privateReviewsBtn" >비공개 리뷰</button>
+        </div>
+        
         <div id="response" class="reviews-container"></div>
     </div>
 
