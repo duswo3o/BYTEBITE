@@ -2,18 +2,13 @@ import re
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.conf import settings
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from rest_framework import serializers
 
 from movies.models import Movie, Rating
 from reviews.models import Review, Comment, Like
 from products.models import Product, PurchasedProduct
 from products.serializers import ProductSerializer
+from .tasks import send_activation_email
 
 User = get_user_model()
 
@@ -63,23 +58,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def send_verification_email(self, user, uid, token):
-        message = render_to_string(
-            "accounts/account_active_email.html",
-            {
-                "user": user,
-                "domain": "127.0.0.1:8000",  # 실제 도메인으로 교체
-                "uid": uid,
-                "token": token,
-            },
-        )
-        send_mail(
-            subject="Activate your account",
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-        )
-
     def create(self, validated_data):
         user = User.objects.create_user(
             email=validated_data["email"],
@@ -92,13 +70,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.is_active = False  # 이메일 인증 전에는 계정 비활성화
         user.save()
 
-        # 이메일 전송을 위한 토큰 생성
-        token_generator = PasswordResetTokenGenerator()
-        token = token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))  # .decode("utf-8")
-
-        # 이메일 전송
-        self.send_verification_email(user, uid, token)
+        user_data = {"id": user.id, "email": user.email}
+        send_activation_email.delay(user_data)
 
         return user
 
@@ -124,7 +97,9 @@ class UserSigninSerializer(serializers.ModelSerializer):
 
         # 비활성화된 계정일 경우
         if not user.is_active:
-            self.send_activation_email(user)
+            user_data = {"id": user.id, "email": user.email}
+
+            send_activation_email.delay(user_data)
             raise serializers.ValidationError(
                 "계정이 비활성화 상태입니다. 이메일 인증을 통해 계정을 활성화해주세요."
             )
@@ -136,32 +111,6 @@ class UserSigninSerializer(serializers.ModelSerializer):
             )
 
         return attrs
-
-    def send_activation_email(self, user):
-
-        # 이메일 전송을 위한 토큰 생성
-        token_generator = PasswordResetTokenGenerator()
-        token = token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-
-        subject = "Activate Your Account"
-        message = render_to_string(
-            "accounts/account_active_email.html",  # 이메일 템플릿 경로
-            {
-                "user": user,
-                "domain": "127.0.0.1:8000",  # 도메인 설정
-                "uid": uid,  # 사용자 ID 인코딩
-                "token": token,  # 활성화 토큰 생성
-            },
-        )
-
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,  # 발신자 이메일
-            [user.email],  # 수신자 이메일
-            fail_silently=False,
-        )
 
 
 class ChangePasswordSerializer(serializers.ModelSerializer):

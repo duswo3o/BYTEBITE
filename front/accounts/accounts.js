@@ -139,9 +139,9 @@ const signupUser = () => {
     })
         .then(response => {
             console.log(response);
-            alert("이메일을 확인하여 인증을 진행해주세요")
-            // 이동할 페이지
             window.location.href = "signin.html"
+            alert("계정이 생성되었습니다. 이메일을 확인하여 인증을 진행해주세요")
+            // 이동할 페이지
         })
         .catch(error => {
             console.log(error)
