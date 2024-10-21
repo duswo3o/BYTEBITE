@@ -1,6 +1,7 @@
 import os
 
 import requests
+from dotenv import load_dotenv
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
@@ -222,10 +223,14 @@ class UserBasketAPIView(APIView):
 
 
 # 소셜로그인
-NAVER_CLIENT_SECRET = settings.NAVER_CLIENT_SECRET
-GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
-BASE_URL = "http://127.0.0.1:8000"
-FRONTEND_BASE_URL = "http://127.0.0.1:5500"
+load_dotenv()
+KAKAO_REST_API_KEY = os.getenv("KAKAO_API_KEY")
+NAVER_REST_API_KEY = os.getenv("NAVER_API_KEY")
+NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+BASE_URL = "https://api.popcorngeek.store"
+FRONTEND_BASE_URL = "https://popcorngeek.store"
 
 
 class SocialLoginView(APIView):

@@ -1,6 +1,6 @@
 // import axios from "axios";
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
+const API_BASE_URL = 'https://api.popcorngeek.store/api/v1'
 
 const signupBtn = document.getElementById("signup-btn");
 const signinBtn = document.getElementById("signin-btn");
@@ -523,24 +523,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // 카카오 로그인 버튼 이벤트 리스너 설정
     const kakaoLoginButton = document.getElementById('kakao-login-btn');
     if (kakaoLoginButton) {
-        kakaoLoginButton.onclick = function () {
-            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/kakao/';
+        kakaoLoginButton.onclick = function() {
+            window.location.href = 'https://api.popcorngeek.store/api/v1/accounts/social/login/kakao/';
         };
     }
 
     // 네이버 로그인 버튼 이벤트 리스너 설정
     const naverLoginButton = document.getElementById('naver-login-btn');
     if (naverLoginButton) {
-        naverLoginButton.onclick = function () {
-            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/naver/';
+        naverLoginButton.onclick = function() {
+            window.location.href = 'https://api.popcorngeek.store/api/v1/accounts/social/login/naver/';
         };
     }
 
     // 구글 로그인 버튼 이벤트 리스너 설정
     const googleLoginButton = document.getElementById('google-login-btn');
     if (googleLoginButton) {
-        googleLoginButton.onclick = function () {
-            window.location.href = 'http://127.0.0.1:8000/api/v1/accounts/social/login/google/';
+        googleLoginButton.onclick = function() {
+            window.location.href = 'https://api.popcorngeek.store/api/v1/accounts/social/login/google/';
         };
     }
 
