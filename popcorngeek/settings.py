@@ -36,7 +36,14 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = ["43.201.150.34", "127.0.0.1", "localhost", "popcorngeek.store", "api.popcorngeek.store"]
+
+ALLOWED_HOSTS = [
+    "43.201.150.34",
+    "127.0.0.1",
+    "localhost",
+    "popcorngeek.store",
+    "api.popcorngeek.store",
+]
 # ALLOWED_HOSTS = ["*"]
 
 
@@ -250,8 +257,8 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 # CELERY
 # Docker 환경
-CELERY_BROKER_URL = "redis://redis:6379/0"
-CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+CELERY_BROKER_URL = f"redis://{env('DEFAULT_DOMAIN')}:6379/0"
+CELERY_RESULT_BACKEND = f"redis://{env('DEFAULT_DOMAIN')}:6379/0"
 
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
@@ -260,3 +267,5 @@ CELERY_TIMEZONE = "Asia/Seoul"
 
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_CONNECTION_RETRY = True
+
+DEFAULT_DOMAIN = env("DEFAULT_DOMAIN")
