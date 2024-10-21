@@ -35,7 +35,14 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = [
+    "43.201.150.34",
+    "127.0.0.1",
+    "localhost",
+    "popcorngeek.store",
+    "api.popcorngeek.store",
+]
+# ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -165,6 +172,8 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
@@ -174,7 +183,7 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
 if DEBUG:
     INSTALLED_APPS += [
@@ -246,8 +255,8 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 # CELERY
 # Docker 환경
-CELERY_BROKER_URL = "redis://redis:6379/0"
-CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+CELERY_BROKER_URL = f"redis://{env('DEFAULT_DOMAIN')}:6379/0"
+CELERY_RESULT_BACKEND = f"redis://{env('DEFAULT_DOMAIN')}:6379/0"
 
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
@@ -256,3 +265,5 @@ CELERY_TIMEZONE = "Asia/Seoul"
 
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_CONNECTION_RETRY = True
+
+DEFAULT_DOMAIN = env("DEFAULT_DOMAIN")
