@@ -390,7 +390,8 @@ function requestPay(selectedCheckboxes, name, address, address2, user_id, email)
             if (rsp.success) {
                 // 여러 상품 정보 서버로 전송
                 const productsData = selectedProducts.map(product => ({
-                    product_id: product.id,    // 상품 ID
+                    product_id: product.id,     // 상품 ID
+                    product_name: product.name, // 상품명
                     quantity: product.quantity  // 수량
                 }));
     

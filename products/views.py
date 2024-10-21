@@ -116,6 +116,7 @@ class PaymentAPIView(APIView):
 
     def process_products(self, products, merchant_uid, address, address2):
         purchased_products = []
+
         for product_info in products:
             product_id = product_info.get("product_id")
             quantity = product_info.get("quantity")
@@ -147,7 +148,7 @@ class PaymentAPIView(APIView):
 
     def send_email(self, name, products, total_amount, merchant_uid, recipient_email):
         product_list = ", ".join(
-            [f"{p['product_id']} (수량: {p['quantity']})" for p in products]
+            [f"{p['product_name']} (수량: {p['quantity']})" for p in products]
         )
         send_mail(
             "[WEB 발신] 결제 완료 알림",
