@@ -266,30 +266,19 @@ class Command(BaseCommand):
         for staff in staffs:
             name_cd = staff.get("name_cd")
             name_cd = int(name_cd) if name_cd else None
-
             name = staff.get("name")
             role = staff.get("role")
 
-            if not name_cd or not name or not role:
+            if name_cd is None:
                 continue
 
-            try:
-                if name_cd is not None:
-                    staff, created = Staff.objects.get_or_create(
-                        name_cd=name_cd, defaults={"name": name, "role": role}
-                    )
-                else:
-                    staff_obj, created = Staff.objects.get_or_create(
-                        name=name, role=role
-                    )
-
-                movie.staffs.add(staff)
-
-            except MultipleObjectsReturned:
-                continue
-
-            except IntegrityError:
-                pass
+        try:
+            staff, created = Staff.objects.get_or_create(
+                name_cd=name_cd, defaults={"name": name, "role": role}
+            )
+            movie.staffs.add(staff)
+        except IntegrityError:
+            pass
 
     def save_to_rank_database(self):
         for date in range(1, 8):

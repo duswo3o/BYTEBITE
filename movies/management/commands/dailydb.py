@@ -178,14 +178,13 @@ class Command(BaseCommand):
             name = staff.get("name")
             role = staff.get("role")
 
-        try:
-            if name_cd is not None:
-                staff, created = Staff.objects.get_or_create(
-                    name_cd=name_cd, defaults={"name": name, "role": role}
-                )
+            if name_cd is None:
+                continue
 
-            else:
-                staff, created = Staff.objects.get_or_create(name=name, role=role)
+        try:
+            staff, created = Staff.objects.get_or_create(
+                name_cd=name_cd, defaults={"name": name, "role": role}
+            )
             movie.staffs.add(staff)
         except IntegrityError:
             pass
