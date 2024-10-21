@@ -6,6 +6,7 @@
 # local
 .idea
 config.py
+logs/
 
 ### macOS ###
 # General

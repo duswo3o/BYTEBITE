@@ -189,6 +189,28 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+        "file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "logs", "django_error.log"),
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
+}
+
 # 환경변수 로드
 KMDB_API_KEY = env("KMDB_API_KEY")
 KMDB_API_KEY_EX1 = env("KMDB_API_KEY")
